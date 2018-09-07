@@ -14,7 +14,7 @@ Data synchronizing tool between CodeChain and ElasticSearch
 
 The following are the software dependencies required to install and run CodeChain-indexer:
 
-- [CodeChain](https://github.com/CodeChain-io/codechain) version of commit [`a47061`](https://github.com/CodeChain-io/codechain/commit/a47061089ac93c238a97c49aa430adec9e1c5c52)
+- [CodeChain](https://github.com/CodeChain-io/codechain) version of commit [`008b03`](https://github.com/CodeChain-io/codechain/commit/008b036289c3c2f5981fa5bd7e0887453edba9bd)
 - ElasticSearch [`v6.2.4`](https://www.elastic.co/guide/en/beats/libbeat/6.2/elasticsearch-installation.html)
 - Nodejs v10.4.1
 - Yarn v1.9.2

@@ -266,13 +266,14 @@ export class BlockSyncWorker {
             await this.queryLog(isRetract, dateString, LogType.PARCEL_PAYMENT_COUNT, paymentParcelCount);
             const serRegularKeyParcelCount = _.filter(blockDoc.parcels, p => Type.isSetRegularKeyDoc(p.action)).length;
             await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_REGULAR_KEY_COUNT, serRegularKeyParcelCount);
-            const changeShardStateParcelCount = _.filter(blockDoc.parcels, p => Type.isChangeShardStateDoc(p.action))
-                .length;
+            const assetTransactionGroupParcelCount = _.filter(blockDoc.parcels, p =>
+                Type.isAssetTransactionGroupDoc(p.action)
+            ).length;
             await this.queryLog(
                 isRetract,
                 dateString,
-                LogType.PARCEL_CHANGE_SHARD_STATE_COUNT,
-                changeShardStateParcelCount
+                LogType.PARCEL_ASSET_TRANSACTION_GROUP_COUNT,
+                assetTransactionGroupParcelCount
             );
         }
         const transactions = Type.getTransactionsByBlock(blockDoc);
