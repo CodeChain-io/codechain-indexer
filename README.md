@@ -1,4 +1,4 @@
-# CodeChain Indexer
+# CodeChain Indexer [![Build Status](https://travis-ci.org/CodeChain-io/codechain-es.svg?branch=master)](https://travis-ci.org/CodeChain-indexer/codechain-indexer)
 
 Data synchronizing tool between CodeChain and ElasticSearch
 
