@@ -24,8 +24,8 @@ The software dependencies required to install and run CodeChain-indexer are:
 Download CodeChain-indexer code from the GitHub repository
 
 ```
-# git clone git@github.com:kodebox-io/codechain-indexer.git
-# cd codechain-indexer
+git clone git@github.com:kodebox-io/codechain-indexer.git
+cd codechain-indexer
 ```
 
 #### Install packages
@@ -33,7 +33,7 @@ Download CodeChain-indexer code from the GitHub repository
 Use yarn package manager to install packages
 
 ```
-# yarn install
+yarn install
 ```
 
 ## Before start
@@ -48,7 +48,7 @@ Use yarn package manager to install packages
 Run codechain-indexer to create indices on ElasticSearch
 
 ```
-# yarn run start
+yarn run start
 
 // You can change the ElasticSearch and the CodeChain host URL using the environment variables.
 # CODECHAIN_CHAIN=huksy CODECHAIN_HOST=http://52.79.108.1:8080 ELASTICSEARCH_HOST=http://127.0.0.1:9200 yarn run start
@@ -59,7 +59,7 @@ Run codechain-indexer to create indices on ElasticSearch
 #### Delete all indices from ElasticSearch
 
 ```
-# yarn run clear
+yarn run clear
 ```
 
 ## Custom Configuration
