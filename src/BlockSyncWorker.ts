@@ -7,8 +7,9 @@ import { Block, H256, Invoice } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as moment from "moment";
 import { Job, scheduleJob } from "node-schedule";
+import * as sharp from "sharp";
 import { WorkerConfig } from "./";
-// const request = require("request-promise-native");
+const request = require("request-promise-native");
 
 export class BlockSyncWorker {
     private watchJob!: Job;
@@ -293,9 +294,9 @@ export class BlockSyncWorker {
         }
         for (const parcel of blockDoc.parcels) {
             if (isRetract) {
-                await this.elasticSearchAgent.increaseBalance(parcel.sender, parcel.fee);
+                await this.elasticSearchAgent.increaseBalance(parcel.signer, parcel.fee);
             } else {
-                await this.elasticSearchAgent.decreaseBalance(parcel.sender, parcel.fee);
+                await this.elasticSearchAgent.decreaseBalance(parcel.signer, parcel.fee);
             }
         }
         const paymentParcels = _.filter(blockDoc.parcels, parcel => Type.isPaymentDoc(parcel.action));
@@ -312,45 +313,41 @@ export class BlockSyncWorker {
             const paymentAction = parcel.action as PaymentDoc;
             if (isRetract) {
                 await this.elasticSearchAgent.decreaseBalance(paymentAction.receiver, paymentAction.amount);
-                await this.elasticSearchAgent.increaseBalance(parcel.sender, paymentAction.amount);
+                await this.elasticSearchAgent.increaseBalance(parcel.signer, paymentAction.amount);
             } else {
                 await this.elasticSearchAgent.increaseBalance(paymentAction.receiver, paymentAction.amount);
-                await this.elasticSearchAgent.decreaseBalance(parcel.sender, paymentAction.amount);
+                await this.elasticSearchAgent.decreaseBalance(parcel.signer, paymentAction.amount);
             }
         }
     };
 
-    // tslint:disable-next-line:variable-name
-    private handleAssetImage = async (_assetMintTx: AssetMintTransactionDoc, _isRetract: boolean) => {
-        /*
+    private handleAssetImage = async (assetMintTx: AssetMintTransactionDoc, isRetract: boolean) => {
         const metadata = Type.getMetadata(assetMintTx.data.metadata);
         if (!metadata || !metadata.icon_url) {
             return;
         }
         const iconUrl = metadata.icon_url;
-        const imageDir = path.join(__dirname, "../../", "/download/assetImage");
-        const imagePath = path.join(imageDir, `${assetMintTx.data.output.assetType}.png`);
+        const assetType = assetMintTx.data.output.assetType;
         if (!isRetract) {
-            try {
-                await mkdirp(imageDir);
-                const isExists = await fs.pathExists(imagePath);
-                if (!isExists) {
-                    const imageBuffer = await request({ url: iconUrl, encoding: null });
-                    await sharp(imageBuffer)
+            const isExists = await this.elasticSearchAgent.getAssetImageBlob(new H256(assetType));
+            if (!isExists) {
+                let imageBuffer;
+                try {
+                    imageBuffer = await request({ url: iconUrl, encoding: null });
+                } catch (e) {
+                    // nothing
+                }
+                if (imageBuffer) {
+                    const imageDataBuffer = await sharp(imageBuffer)
                         .resize(65, 65)
                         .png()
-                        .toFile(imagePath);
+                        .toBuffer();
+                    await this.elasticSearchAgent.indexImage(new H256(assetType), imageDataBuffer.toString("base64"));
                 }
-            } catch (e) {
-                // nothing
             }
         } else {
-            try {
-                await fs.remove(imagePath);
-            } catch (e) {
-                // nothing
-            }
-        }*/
+            await this.elasticSearchAgent.removeImage(new H256(assetType));
+        }
     };
 
     private handleGenesisBlock = async (isRetract: boolean) => {
