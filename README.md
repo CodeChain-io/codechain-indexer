@@ -1,6 +1,6 @@
 # CodeChain Indexer [![Build Status](https://travis-ci.org/CodeChain-io/codechain-indexer.svg?branch=master)](https://travis-ci.org/CodeChain-io/codechain-indexer)
 
-A blockchain data indexing tool for CodeChain.
+A blockchain data indexing tool for CodeChain
 
 ## Table of Contents
 
@@ -45,7 +45,7 @@ Use yarn package manager to install packages
 
 ## Run
 
-Run CodeChain-indexer for indexing data to ElasticSearch
+Run codechain-indexer to create indices on ElasticSearch
 
 ```
 # yarn run start
