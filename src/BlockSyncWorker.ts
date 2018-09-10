@@ -332,17 +332,19 @@ export class BlockSyncWorker {
         if (!isRetract) {
             const isExists = await this.elasticSearchAgent.getAssetImageBlob(new H256(assetType));
             if (!isExists) {
-                let imageBuffer;
+                let imageDataBuffer;
                 try {
-                    imageBuffer = await request({ url: iconUrl, encoding: null });
+                    const imageBuffer = await request({ url: iconUrl, encoding: null });
+                    if (imageBuffer) {
+                        imageDataBuffer = await sharp(imageBuffer)
+                            .resize(65, 65)
+                            .png()
+                            .toBuffer();
+                    }
                 } catch (e) {
                     // nothing
                 }
-                if (imageBuffer) {
-                    const imageDataBuffer = await sharp(imageBuffer)
-                        .resize(65, 65)
-                        .png()
-                        .toBuffer();
+                if (imageDataBuffer) {
                     await this.elasticSearchAgent.indexImage(new H256(assetType), imageDataBuffer.toString("base64"));
                 }
             }
