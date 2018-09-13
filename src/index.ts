@@ -14,10 +14,12 @@ export interface WorkerConfig {
     miningReward: {
         solo: number;
         husky: number;
+        saluki: number;
     };
     genesisAddressList: {
         solo: string[];
         husky: string[];
+        saluki: string[];
     };
 }
 

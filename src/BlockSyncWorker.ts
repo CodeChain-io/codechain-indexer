@@ -192,7 +192,7 @@ export class BlockSyncWorker {
     private indexingNewBlock = async (nextBlock: Block) => {
         const blockDoc = await this.typeConverter.fromBlock(
             nextBlock,
-            this.config.miningReward[(process.env.CODECHAIN_CHAIN as "solo" | "husky" | undefined) || "solo"]
+            this.config.miningReward[(process.env.CODECHAIN_CHAIN as "solo" | "husky" | "saluki" | undefined) || "solo"]
         );
         await this.elasticSearchAgent.indexBlock(blockDoc);
         if (blockDoc.number === 0) {
@@ -355,7 +355,9 @@ export class BlockSyncWorker {
 
     private handleGenesisBlock = async (isRetract: boolean) => {
         const addressListJob = _.map(
-            this.config.genesisAddressList[(process.env.CODECHAIN_CHAIN as "solo" | "husky" | undefined) || "solo"],
+            this.config.genesisAddressList[
+                (process.env.CODECHAIN_CHAIN as "solo" | "husky" | "saluki" | undefined) || "solo"
+            ],
             async address => {
                 const balance = await this.sdk.rpc.chain.getBalance(address, 0);
                 return {
