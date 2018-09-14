@@ -24,7 +24,7 @@ export class BlockSyncWorker {
         this.config = config;
         this.elasticSearchAgent = new ElasticSearchAgent(config.elasticSearch.host);
         this.typeConverter = new TypeConverter(config.codeChain.host);
-        this.sdk = new SDK({ server: config.codeChain.host });
+        this.sdk = new SDK({ server: config.codeChain.host, networkId: config.codeChain.networkId });
         this.jobIsRunning = false;
     }
 

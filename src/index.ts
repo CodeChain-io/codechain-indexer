@@ -7,6 +7,7 @@ export interface WorkerConfig {
     };
     codeChain: {
         host: string;
+        networkId: string;
     };
     cron: {
         blockWatch: string;

@@ -8,7 +8,8 @@ export default {
         host: process.env.ELASTICSEARCH_HOST || "http://localhost:9200"
     },
     codeChain: {
-        host: process.env.CODECHAIN_HOST || "http://localhost:8080"
+        host: process.env.CODECHAIN_HOST || "http://localhost:8080",
+        networkId: process.env.CODECHAIN_NETWORK_ID || "tc"
     },
     miningReward: {
         solo: 0,
