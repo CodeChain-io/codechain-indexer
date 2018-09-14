@@ -247,9 +247,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codechain-es@^0.1.0-alpha.2:
-  version "0.1.0-alpha.2"
-  resolved "https://registry.yarnpkg.com/codechain-es/-/codechain-es-0.1.0-alpha.2.tgz#65310afdc1228422e421b623b97b3c766ecc2185"
+codechain-es@^0.1.0-alpha.3:
+  version "0.1.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/codechain-es/-/codechain-es-0.1.0-alpha.3.tgz#98a97a7c2980b1d359f216d3b8bafc5c5acf7419"
   dependencies:
     buffer "^5.2.1"
     codechain-sdk "^0.1.1-alpha.4"
