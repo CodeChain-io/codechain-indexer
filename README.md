@@ -64,8 +64,8 @@ yarn run clear
 
 ## Custom Configuration
 
-|                    | Default               | Options     | Description |
-| ------------------ | --------------------- | ----------- | ----------- |
-| CODECHAIN_HOST     | http://127.0.0.1:8080 |             |             |
-| ELASTICSEARCH_HOST | http://127.0.0.1:9200 |             |             |
-| CODECHAIN_CHAIN    | solo                  | solo, husky |             |
+|                    | Default               | Options             | Description |
+| ------------------ | --------------------- | ------------------- | ----------- |
+| CODECHAIN_HOST     | http://127.0.0.1:8080 |                     |             |
+| ELASTICSEARCH_HOST | http://127.0.0.1:9200 |                     |             |
+| CODECHAIN_CHAIN    | solo                  | solo, husky, saluki |             |
