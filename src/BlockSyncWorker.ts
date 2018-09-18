@@ -198,7 +198,6 @@ export class BlockSyncWorker {
             nextBlock,
             this.config.miningReward[(process.env.CODECHAIN_CHAIN as "solo" | "husky" | "saluki" | undefined) || "solo"]
         );
-        await this.elasticSearchAgent.indexBlock(blockDoc);
         if (blockDoc.number === 0) {
             await this.handleGenesisBlock(false);
         }
@@ -220,10 +219,11 @@ export class BlockSyncWorker {
 
         await this.handleLogData(blockDoc, false);
         await this.handleBalance(blockDoc, false);
+
+        await this.elasticSearchAgent.indexBlock(blockDoc);
     };
 
     private retractBlock = async (retractedBlock: BlockDoc) => {
-        await this.elasticSearchAgent.retractBlock(new H256(retractedBlock.hash));
         if (retractedBlock.number === 0) {
             await this.handleGenesisBlock(true);
         }
@@ -244,6 +244,8 @@ export class BlockSyncWorker {
         );
         await this.handleLogData(retractedBlock, true);
         await this.handleBalance(retractedBlock, true);
+
+        await this.elasticSearchAgent.retractBlock(new H256(retractedBlock.hash));
     };
 
     private queryLog = async (
