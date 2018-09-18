@@ -128,7 +128,7 @@ export class BlockSyncWorker {
                     return this.elasticSearchAgent.deadPendingParcel(new H256(removedPendingParcel.parcel.hash));
                 }
             }),
-            100
+            10
         );
 
         // Index new pending parcel
@@ -146,7 +146,7 @@ export class BlockSyncWorker {
                 }
                 return this.elasticSearchAgent.indexPendingParcel(pendingParcelDoc);
             }),
-            100
+            10
         );
 
         // Revival pending parcel
@@ -164,7 +164,7 @@ export class BlockSyncWorker {
                 }
                 return this.elasticSearchAgent.revialPendingParcel(new H256(pendingParcelDoc.parcel.hash));
             }),
-            100
+            10
         );
     };
 
@@ -205,12 +205,12 @@ export class BlockSyncWorker {
             _.map(blockDoc.parcels, async parcel => {
                 return this.elasticSearchAgent.indexParcel(parcel);
             }),
-            100
+            10
         );
         const transactions = Type.getTransactionsByBlock(blockDoc);
         await this.runWithLimit(
             _.map(transactions, async transaction => await this.elasticSearchAgent.indexTransaction(transaction)),
-            100
+            10
         );
         const assetMintTransactions = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx));
         for (const mintTx of assetMintTransactions) {
@@ -232,7 +232,7 @@ export class BlockSyncWorker {
                 retractedBlock.parcels,
                 async parcel => await this.elasticSearchAgent.retractParcel(new H256(parcel.hash))
             ),
-            100
+            10
         );
         const transactions = Type.getTransactionsByBlock(retractedBlock);
         await this.runWithLimit(
@@ -240,7 +240,7 @@ export class BlockSyncWorker {
                 transactions,
                 async transaction => await this.elasticSearchAgent.retractTransaction(new H256(transaction.data.hash))
             ),
-            100
+            10
         );
         await this.handleLogData(retractedBlock, true);
         await this.handleBalance(retractedBlock, true);
@@ -319,7 +319,7 @@ export class BlockSyncWorker {
                 return null;
             }
         });
-        const succeedPaymentParcels = _.compact(await this.runWithLimit(succeedPaymentParcelJob, 100));
+        const succeedPaymentParcels = _.compact(await this.runWithLimit(succeedPaymentParcelJob, 10));
         for (const parcel of succeedPaymentParcels) {
             const paymentAction = parcel.action as PaymentDoc;
             if (isRetract) {
@@ -376,7 +376,7 @@ export class BlockSyncWorker {
                 };
             }
         );
-        const addressList = await this.runWithLimit(addressListJob, 100);
+        const addressList = await this.runWithLimit(addressListJob, 10);
         const updateAddressJob = _.map(
             addressList,
             address =>
@@ -384,7 +384,7 @@ export class BlockSyncWorker {
                     ? this.elasticSearchAgent.decreaseBalance(address.address, address.balance)
                     : this.elasticSearchAgent.increaseBalance(address.address, address.balance)
         );
-        await this.runWithLimit(updateAddressJob, 100);
+        await this.runWithLimit(updateAddressJob, 10);
     };
 
     private runWithLimit = async (tasks: Promise<any>[], limitNumber: number) => {
