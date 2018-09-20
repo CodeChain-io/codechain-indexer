@@ -14,7 +14,7 @@ export default {
     miningReward: {
         solo: 0,
         husky: 50000000000,
-        saluki: 0
+        saluki: 50000000000
     },
     genesisAddressList: {
         solo: [
