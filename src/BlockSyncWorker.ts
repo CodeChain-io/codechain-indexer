@@ -3,7 +3,7 @@ import { LogType } from "codechain-es/lib/actions/QueryLog";
 import { AssetMintTransactionDoc, BlockDoc, PaymentDoc } from "codechain-es/lib/types";
 import { Type, TypeConverter } from "codechain-es/lib/utils";
 import { SDK } from "codechain-sdk";
-import { Block, H256, Invoice } from "codechain-sdk/lib/core/classes";
+import { Block, H256 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as moment from "moment";
 import { Job, scheduleJob } from "node-schedule";
@@ -91,6 +91,7 @@ export class BlockSyncWorker {
                     continue;
                 }
             }
+            console.log("%d block is indexing...", nextBlockIndex);
             await this.indexingNewBlock(nextBlock);
             console.log("%d block is synchronized", nextBlockIndex);
             latestSyncBlockNumber = nextBlockIndex;
@@ -186,8 +187,9 @@ export class BlockSyncWorker {
                 break;
             }
 
-            console.log("%d block is retracted", currentBlockNumber);
+            console.log("%d block is retracting...", currentBlockNumber);
             await this.retractBlock(lastSynchronizedBlock);
+            console.log("%d block is retracted", currentBlockNumber);
             currentBlockNumber--;
         }
         return currentBlockNumber;
@@ -310,8 +312,7 @@ export class BlockSyncWorker {
         }
         const paymentParcels = _.filter(blockDoc.parcels, parcel => Type.isPaymentDoc(parcel.action));
         const succeedPaymentParcelJob = _.map(paymentParcels, parcel => async () => {
-            const invoices = (await this.sdk.rpc.chain.getParcelInvoice(new H256(parcel.hash))) as Invoice;
-            if (invoices.success) {
+            if ((parcel.action as PaymentDoc).invoice) {
                 return parcel;
             } else {
                 return null;
