@@ -129,7 +129,7 @@ export class BlockSyncWorker {
                     return this.elasticSearchAgent.deadPendingParcel(new H256(removedPendingParcel.parcel.hash));
                 }
             }),
-            50
+            100
         );
 
         // Index new pending parcel
@@ -147,7 +147,7 @@ export class BlockSyncWorker {
                 }
                 return this.elasticSearchAgent.indexPendingParcel(pendingParcelDoc);
             }),
-            50
+            100
         );
 
         // Revival pending parcel
@@ -165,7 +165,7 @@ export class BlockSyncWorker {
                 }
                 return this.elasticSearchAgent.revialPendingParcel(new H256(pendingParcelDoc.parcel.hash));
             }),
-            50
+            100
         );
     };
 
@@ -201,18 +201,18 @@ export class BlockSyncWorker {
             this.config.miningReward[(process.env.CODECHAIN_CHAIN as "solo" | "husky" | "saluki" | undefined) || "solo"]
         );
         if (blockDoc.number === 0) {
-            await this.handleGenesisBlock(false);
+            await this.handleGenesisBlock();
         }
         await this.runWithLimit(
             _.map(blockDoc.parcels, parcel => async () => {
                 return this.elasticSearchAgent.indexParcel(parcel);
             }),
-            50
+            100
         );
         const transactions = Type.getTransactionsByBlock(blockDoc);
         await this.runWithLimit(
             _.map(transactions, transaction => async () => await this.elasticSearchAgent.indexTransaction(transaction)),
-            50
+            100
         );
         const assetMintTransactions = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx));
         for (const mintTx of assetMintTransactions) {
@@ -226,21 +226,18 @@ export class BlockSyncWorker {
     };
 
     private retractBlock = async (retractedBlock: BlockDoc) => {
-        if (retractedBlock.number === 0) {
-            await this.handleGenesisBlock(true);
-        }
         await this.runWithLimit(
             _.map(retractedBlock.parcels, parcel => async () =>
                 await this.elasticSearchAgent.retractParcel(new H256(parcel.hash))
             ),
-            50
+            100
         );
         const transactions = Type.getTransactionsByBlock(retractedBlock);
         await this.runWithLimit(
             _.map(transactions, transaction => async () =>
                 await this.elasticSearchAgent.retractTransaction(new H256(transaction.data.hash))
             ),
-            50
+            100
         );
         await this.handleLogData(retractedBlock, true);
         await this.handleBalance(retractedBlock, true);
@@ -298,37 +295,32 @@ export class BlockSyncWorker {
     };
 
     private handleBalance = async (blockDoc: BlockDoc, isRetract: boolean) => {
-        if (isRetract) {
-            await this.elasticSearchAgent.decreaseBalance(blockDoc.author, blockDoc.miningReward);
-        } else {
-            await this.elasticSearchAgent.increaseBalance(blockDoc.author, blockDoc.miningReward);
-        }
+        const affectedAddresses = new Array<string>();
+        affectedAddresses.push(blockDoc.author);
         for (const parcel of blockDoc.parcels) {
-            if (isRetract) {
-                await this.elasticSearchAgent.increaseBalance(parcel.signer, parcel.fee);
-            } else {
-                await this.elasticSearchAgent.decreaseBalance(parcel.signer, parcel.fee);
-            }
+            affectedAddresses.push(parcel.signer);
         }
         const paymentParcels = _.filter(blockDoc.parcels, parcel => Type.isPaymentDoc(parcel.action));
-        const succeedPaymentParcelJob = _.map(paymentParcels, parcel => async () => {
-            if ((parcel.action as PaymentDoc).invoice) {
-                return parcel;
-            } else {
-                return null;
+        _.each(paymentParcels, parcel => async () => {
+            const paymentAction = parcel.action as PaymentDoc;
+            if (paymentAction.invoice) {
+                affectedAddresses.push(paymentAction.receiver);
             }
         });
-        const succeedPaymentParcels = _.compact(await this.runWithLimit(succeedPaymentParcelJob, 50));
-        for (const parcel of succeedPaymentParcels) {
-            const paymentAction = parcel.action as PaymentDoc;
-            if (isRetract) {
-                await this.elasticSearchAgent.decreaseBalance(paymentAction.receiver, paymentAction.amount);
-                await this.elasticSearchAgent.increaseBalance(parcel.signer, paymentAction.amount);
-            } else {
-                await this.elasticSearchAgent.increaseBalance(paymentAction.receiver, paymentAction.amount);
-                await this.elasticSearchAgent.decreaseBalance(parcel.signer, paymentAction.amount);
-            }
+        let checkingBlockNumber = 0;
+        if (isRetract) {
+            checkingBlockNumber = blockDoc.number - 1;
+        } else {
+            checkingBlockNumber = blockDoc.number;
         }
+
+        await this.runWithLimit(
+            _.map(_.uniq(affectedAddresses), address => async () => {
+                const balance = await this.sdk.rpc.chain.getBalance(address, checkingBlockNumber);
+                return this.elasticSearchAgent.updateAccount(address, balance.value.toString(10));
+            }),
+            100
+        );
     };
 
     private handleAssetImage = async (assetMintTx: AssetMintTransactionDoc, isRetract: boolean) => {
@@ -362,7 +354,7 @@ export class BlockSyncWorker {
         }
     };
 
-    private handleGenesisBlock = async (isRetract: boolean) => {
+    private handleGenesisBlock = async () => {
         const addressListJob = _.map(
             this.config.genesisAddressList[
                 (process.env.CODECHAIN_CHAIN as "solo" | "husky" | "saluki" | undefined) || "solo"
@@ -375,13 +367,11 @@ export class BlockSyncWorker {
                 };
             }
         );
-        const addressList = await this.runWithLimit(addressListJob, 50);
+        const addressList = await this.runWithLimit(addressListJob, 100);
         const updateAddressJob = _.map(addressList, address => () =>
-            isRetract
-                ? this.elasticSearchAgent.decreaseBalance(address.address, address.balance)
-                : this.elasticSearchAgent.increaseBalance(address.address, address.balance)
+            this.elasticSearchAgent.updateAccount(address.address, address.balance)
         );
-        await this.runWithLimit(updateAddressJob, 50);
+        await this.runWithLimit(updateAddressJob, 100);
     };
 
     private runWithLimit = async (tasks: (() => Promise<any>)[], limitNumber: number) => {
