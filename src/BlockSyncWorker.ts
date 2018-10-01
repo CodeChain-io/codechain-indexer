@@ -71,7 +71,9 @@ export class BlockSyncWorker {
             console.log("lastest indexed block number : %d", latestSyncBlockNumber);
         }
         console.log("lastest codechain block number : %d", latestCodechainBlockNumber);
+        let isIndexingNewBlock = false;
         while (latestSyncBlockNumber < latestCodechainBlockNumber) {
+            isIndexingNewBlock = true;
             const nextBlockIndex: number = latestSyncBlockNumber + 1;
             const nextBlockHash = await this.sdk.rpc.chain.getBlockHash(nextBlockIndex);
             if (!nextBlockHash) {
@@ -96,9 +98,13 @@ export class BlockSyncWorker {
             console.log("%d block is synchronized", nextBlockIndex);
             latestSyncBlockNumber = nextBlockIndex;
         }
+        if (isIndexingNewBlock) {
+            await this.delay(5000);
+        }
         await this.indexingPendingParcel();
         console.log("================ sync done ===================\n");
     }
+    private delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
     private indexingPendingParcel = async () => {
         console.log("========== indexing pending parcels ==========");
