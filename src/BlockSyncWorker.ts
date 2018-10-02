@@ -1,6 +1,6 @@
 import { ElasticSearchAgent } from "codechain-es";
 import { LogType } from "codechain-es/lib/actions/QueryLog";
-import { AssetMintTransactionDoc, BlockDoc, PaymentDoc } from "codechain-es/lib/types";
+import { AssetMintTransactionDoc, AssetTransferTransactionDoc, BlockDoc, PaymentDoc } from "codechain-es/lib/types";
 import { Type, TypeConverter } from "codechain-es/lib/utils";
 import { SDK } from "codechain-sdk";
 import { Block, H256 } from "codechain-sdk/lib/core/classes";
@@ -220,11 +220,7 @@ export class BlockSyncWorker {
             _.map(transactions, transaction => async () => await this.elasticSearchAgent.indexTransaction(transaction)),
             100
         );
-        const assetMintTransactions = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx));
-        for (const mintTx of assetMintTransactions) {
-            await this.handleAssetImage(mintTx as AssetMintTransactionDoc, false);
-        }
-
+        await this.handleAsset(blockDoc, false);
         await this.handleLogData(blockDoc, false);
         await this.handleBalance(blockDoc, false);
 
@@ -245,6 +241,7 @@ export class BlockSyncWorker {
             ),
             100
         );
+        await this.handleAsset(retractedBlock, true);
         await this.handleLogData(retractedBlock, true);
         await this.handleBalance(retractedBlock, true);
 
@@ -262,6 +259,99 @@ export class BlockSyncWorker {
             await this.elasticSearchAgent.decreaseLogCount(dateString, logType, count, value);
         } else {
             await this.elasticSearchAgent.increaseLogCount(dateString, logType, count, value);
+        }
+    };
+
+    private handleAsset = async (blockDoc: BlockDoc, isRetract: boolean) => {
+        const transactions = Type.getTransactionsByBlock(blockDoc);
+        for (const transaction of transactions) {
+            if (Type.isAssetMintTransactionDoc(transaction)) {
+                const mintTx = transaction as AssetMintTransactionDoc;
+                if (mintTx.data.output.owner !== "") {
+                    if (isRetract) {
+                        await this.elasticSearchAgent.removeAsset(
+                            mintTx.data.output.owner,
+                            new H256(mintTx.data.output.assetType),
+                            new H256(mintTx.data.hash),
+                            mintTx.data.transactionIndex
+                        );
+                    } else {
+                        const assetDoc = {
+                            assetType: mintTx.data.output.assetType,
+                            lockScriptHash: mintTx.data.output.lockScriptHash,
+                            parameters: mintTx.data.output.parameters,
+                            amount: mintTx.data.output.amount || 0,
+                            transactionHash: mintTx.data.hash,
+                            transactionOutputIndex: 0
+                        };
+                        await this.elasticSearchAgent.indexAsset(
+                            mintTx.data.output.owner,
+                            assetDoc,
+                            mintTx.data.blockNumber,
+                            mintTx.data.parcelIndex,
+                            mintTx.data.transactionIndex
+                        );
+                    }
+                }
+            } else if (Type.isAssetTransferTransactionDoc(transaction)) {
+                const transferTx = transaction as AssetTransferTransactionDoc;
+                const inputs = transferTx.data.inputs;
+                const outputs = transferTx.data.outputs;
+
+                for (const input of inputs) {
+                    if (input.prevOut.owner !== "") {
+                        if (isRetract) {
+                            await this.elasticSearchAgent.revivalAsset(
+                                input.prevOut.owner,
+                                new H256(input.prevOut.assetType),
+                                new H256(input.prevOut.transactionHash),
+                                input.prevOut.index
+                            );
+                        } else {
+                            await this.elasticSearchAgent.removeAsset(
+                                input.prevOut.owner,
+                                new H256(input.prevOut.assetType),
+                                new H256(input.prevOut.transactionHash),
+                                input.prevOut.index
+                            );
+                        }
+                    }
+                }
+
+                for (const [index, output] of outputs.entries()) {
+                    if (output.owner !== "") {
+                        if (isRetract) {
+                            await this.elasticSearchAgent.removeAsset(
+                                output.owner,
+                                new H256(output.assetType),
+                                new H256(transaction.data.hash),
+                                index
+                            );
+                        } else {
+                            const assetDoc = {
+                                assetType: output.assetType,
+                                lockScriptHash: output.lockScriptHash,
+                                parameters: output.parameters,
+                                amount: output.amount,
+                                transactionHash: transaction.data.hash,
+                                transactionOutputIndex: index
+                            };
+                            await this.elasticSearchAgent.indexAsset(
+                                output.owner,
+                                assetDoc,
+                                transaction.data.blockNumber,
+                                transaction.data.parcelIndex,
+                                transaction.data.transactionIndex
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        const assetMintTransactions = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx));
+        for (const mintTx of assetMintTransactions) {
+            await this.handleAssetImage(mintTx as AssetMintTransactionDoc, isRetract);
         }
     };
 
