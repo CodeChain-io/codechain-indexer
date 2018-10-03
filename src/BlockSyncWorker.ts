@@ -265,6 +265,9 @@ export class BlockSyncWorker {
     private handleAsset = async (blockDoc: BlockDoc, isRetract: boolean) => {
         const transactions = Type.getTransactionsByBlock(blockDoc);
         for (const transaction of transactions) {
+            if (!transaction.data.invoice) {
+                continue;
+            }
             if (Type.isAssetMintTransactionDoc(transaction)) {
                 const mintTx = transaction as AssetMintTransactionDoc;
                 if (mintTx.data.output.owner !== "") {
