@@ -18,19 +18,19 @@ export default {
     },
     genesisAddressList: {
         solo: [
-            "tccqzn9jjm3j6qg69smd7cn0eup4w7z2yu9my9a2k78",
-            "tccqzwvud8h4vv9c746rd7gzsxkyz6tm22p6c9gekrh",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqafj6hj",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquktnjcq",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcep35h6",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq5glh7xa",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs844cf8",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvr2m2dn",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgvqevzf",
-            "tccqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqya7lxnw"
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyca3rwt",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgfrhflv",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvxf40sk",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqszkma5z",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq5duemmc",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqcuzl32l",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqungah99",
+            "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqc2ul2h",
+            "tccq8vapdlstar6ghmqgczp6j2e83njsqq0tsvaxm9u",
+            "tccq9h7vnl68frvqapzv3tujrxtxtwqdnxw6yamrrgd"
         ],
-        husky: ["tccqqdu5w93amf8xuv3yayzvpfph964a5s2j56hx5pa"],
-        saluki: ["sccqpacwudq9pntwd9vt5ddhrhemr9q2ny5qy6a795m"]
+        husky: ["tccqynz79luhx4cfakvcqe29rwaajnkzz6aev5deztu"],
+        saluki: ["sccqytqv2vl2yutskhgrj4vrn4p4p2qfutfjgwtjzfj"]
     },
     cron: {
         blockWatch: "*/5 * * * * *"
