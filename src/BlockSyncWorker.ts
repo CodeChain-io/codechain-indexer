@@ -400,7 +400,7 @@ export class BlockSyncWorker {
             affectedAddresses.push(parcel.signer);
         }
         const paymentParcels = _.filter(blockDoc.parcels, parcel => Type.isPaymentDoc(parcel.action));
-        _.each(paymentParcels, parcel => async () => {
+        _.each(paymentParcels, parcel => {
             const paymentAction = parcel.action as PaymentDoc;
             if (paymentAction.invoice) {
                 affectedAddresses.push(paymentAction.receiver);
