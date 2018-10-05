@@ -13,8 +13,8 @@ export default {
     },
     miningReward: {
         solo: 0,
-        husky: 50000000000,
-        saluki: 50000000000
+        husky: 10000000000,
+        saluki: 1000000000
     },
     genesisAddressList: {
         solo: [
@@ -30,7 +30,7 @@ export default {
             "tccq9h7vnl68frvqapzv3tujrxtxtwqdnxw6yamrrgd"
         ],
         husky: ["tccqynz79luhx4cfakvcqe29rwaajnkzz6aev5deztu"],
-        saluki: ["sccqytqv2vl2yutskhgrj4vrn4p4p2qfutfjgwtjzfj"]
+        saluki: ["sccqx74ftz8ct6yks4mq3u06g2wt07zxfqrss777pj2"]
     },
     cron: {
         blockWatch: "*/5 * * * * *"
