@@ -6,8 +6,8 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
-    "codechain-es": "^0.1.1-alpha.2",
-    "codechain-sdk": "^0.4.0-rc0",
+    "codechain-es": "^0.1.1-alpha.3",
+    "codechain-sdk": "^0.4.0-rc3",
     "dotenv": "^6.0.0",
     "fmt": "^1.1.0",
     "lodash": "^4.17.10",
