@@ -16,11 +16,13 @@ export interface WorkerConfig {
         solo: number;
         husky: number;
         saluki: number;
+        corgi: number;
     };
     genesisAddressList: {
         solo: string[];
         husky: string[];
         saluki: string[];
+        corgi: string[];
     };
 }
 
