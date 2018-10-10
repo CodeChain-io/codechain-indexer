@@ -1,0 +1,40 @@
+version: "3"
+services:
+  codechain-indexer:
+    build: .
+    ports:
+      - "8081:8081"
+    depends_on:
+      - codechain
+      - elasticsearch
+    environment:
+      - CODECHAIN_HOST=http://codechain:8080
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - WAIT_COMMAND=[ $$(curl --write-out %{http_code} --silent --output /dev/null http://elasticsearch:9200/_cat/health?h=st) = 200 ]
+      - WAIT_SLEEP=2
+      - WAIT_LOOPS=10
+
+  codechain:
+    image: kodebox/codechain:80874e71eb5fd2b21d89efc4d71f6266a209626e
+    ports:
+      - "8080:8080"
+    command:
+      - -c=solo
+      - --jsonrpc-interface=0.0.0.0
+      - --db-path=codechaindata:/db
+      - --reseal-min-period=0
+    volumes:
+      - codechaindata:/db
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    environment:
+      - ES_HOSTS=0.0.0.0:9200
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+volumes:
+  ? codechaindata
+  ? esdata
+
+
