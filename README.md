@@ -14,10 +14,9 @@ A blockchain data indexing tool for CodeChain
 
 The software dependencies required to install and run CodeChain-indexer are:
 
-- [CodeChain](https://github.com/CodeChain-io/codechain) commit version [`008b03`](https://github.com/CodeChain-io/codechain/commit/008b036289c3c2f5981fa5bd7e0887453edba9bd)
+- Latest version of the [CodeChain](https://github.com/CodeChain-io/codechain)
 - ElasticSearch [`v6.2.4`](https://www.elastic.co/guide/en/beats/libbeat/6.2/elasticsearch-installation.html)
-- Nodejs v10.4.1
-- Yarn v1.9.2
+- Nodejs higher than version 8
 
 #### Download
 
@@ -43,15 +42,38 @@ yarn install
 - Get CodeChain ready with the CodeChain RPC server
 - Get ElasticSearch database ready for indexing block data
 
+#### Processor description
+
+- Indexer
+
+  - Client developed by react framework
+
+- Server
+
+  - Restful API server for getting data from DB
+
 ## Run
+
+### Indexer
 
 Run codechain-indexer to create indices on ElasticSearch
 
 ```
-yarn run start
+yarn run start-indexer
 
 // You can change the ElasticSearch and the CodeChain host URL using the environment variables.
 # CODECHAIN_CHAIN=huksy CODECHAIN_HOST=http://52.79.108.1:8080 ELASTICSEARCH_HOST=http://127.0.0.1:9200 yarn run start
+```
+
+### Server
+
+Run CodeChain-indexer server to supply the restful API
+
+```
+# yarn run start-server
+
+// You can change ElasticSearch and CodeChain host URL using an environment variables.
+# CODECHAIN_HOST=http://52.79.108.1:8080 ELASTICSEARCH_HOST=http://127.0.0.1:9200 yarn run start-server
 ```
 
 ## Tools
@@ -64,9 +86,19 @@ yarn run clear
 
 ## Custom Configuration
 
+#### Indexer
+
 |                      | Default               | Options             | Description |
 | -------------------- | --------------------- | ------------------- | ----------- |
 | CODECHAIN_HOST       | http://127.0.0.1:8080 |                     |             |
 | ELASTICSEARCH_HOST   | http://127.0.0.1:9200 |                     |             |
 | CODECHAIN_CHAIN      | solo                  | solo, husky, saluki |             |
-| CODECHAIN_NETWORK_ID | tc                    | tc, sc              |             |
+| CODECHAIN_NETWORK_ID | tc                    | tc, sc, wc          |             |
+
+#### Server
+
+|                    | Default               | Options | Description |
+| ------------------ | --------------------- | ------- | ----------- |
+| CODECHAIN_HOST     | http://127.0.0.1:8080 |         |             |
+| ELASTICSEARCH_HOST | http://127.0.0.1:9200 |         |             |
+| SERVER_PORT        | 8081                  |

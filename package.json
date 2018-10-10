@@ -8,7 +8,10 @@
     "buffer": "^5.2.1",
     "codechain-es": "^0.1.1-alpha.5",
     "codechain-sdk": "^0.4.0-rc3",
+    "concurrently": "^4.0.1",
+    "cors": "^2.8.4",
     "dotenv": "^6.0.0",
+    "express": "^4.16.3",
     "fmt": "^1.1.0",
     "lodash": "^4.17.10",
     "moment": "^2.22.2",
@@ -21,13 +24,18 @@
     "typescript": "^3.0.3"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "concurrently --kill-others \"yarn start-server\" \"yarn start-indexer\"",
+    "start-indexer": "ts-node src/indexer/index.ts",
+    "start-server": "ts-node src/server/index.ts",
     "clear": "ts-node scripts/clear.ts",
     "lint": "tslint -p . && prettier '{src, scripts}/**/*.{ts,js,json}' -l",
     "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.17.0",
+    "@types/cors": "^2.8.4",
     "@types/dotenv": "^4.0.3",
+    "@types/express": "^4.16.0",
     "@types/lodash": "^4.14.116",
     "@types/node-schedule": "^1.2.2",
     "@types/sharp": "^0.17.10",
