@@ -3,6 +3,7 @@ import { TransactionDoc } from "codechain-es/lib/types";
 import { Type } from "codechain-es/lib/utils";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
+import * as _ from "lodash";
 import { ServerContext } from "../ServerContext";
 
 function handle(context: ServerContext, router: Router) {
@@ -69,7 +70,7 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.get("/asset/image/:assetType", async (req, res, _) => {
+    router.get("/asset/image/:assetType", async (req, res, _N) => {
         const { assetType } = req.params;
         try {
             if (!Type.isH256String(assetType)) {
@@ -87,6 +88,88 @@ function handle(context: ServerContext, router: Router) {
                 "Content-Length": img.length
             });
             res.end(img);
+        } catch (e) {
+            res.status(404).send("Not found");
+        }
+    });
+
+    router.get("/utxo/:address", async (req, res, _N) => {
+        const { address } = req.params;
+        const { page, itemsPerPage } = req.query;
+        try {
+            const utxoList = await context.db.getUTXOList(address, page, itemsPerPage);
+            res.send(utxoList);
+        } catch (e) {
+            res.status(404).send("Not found");
+        }
+    });
+
+    router.get("/utxo/:address/:assetType", async (req, res, _N) => {
+        const { address, assetType } = req.params;
+        const { page, itemsPerPage, lastBlockNumber, lastParcelIndex, lastTransactionIndex } = req.query;
+        try {
+            let calculatedLastBlockNumber;
+            let calculatedLastParcelIndex;
+            let calculatedLastTransactionIndex;
+            if (lastBlockNumber && lastParcelIndex && lastTransactionIndex) {
+                calculatedLastBlockNumber = lastBlockNumber;
+                calculatedLastParcelIndex = lastParcelIndex;
+                calculatedLastTransactionIndex = lastTransactionIndex;
+            } else if (page === 1 || !page) {
+                calculatedLastBlockNumber = Number.MAX_VALUE;
+                calculatedLastParcelIndex = Number.MAX_VALUE;
+                calculatedLastTransactionIndex = Number.MAX_VALUE;
+            } else {
+                const beforePageAssetCount = (page - 1) * itemsPerPage;
+                let currentAssetCount = 0;
+                let lastBlockNumberCursor = Number.MAX_VALUE;
+                let lastParcelIndexCursor = Number.MAX_VALUE;
+                let lastTransactionIndexCursor = Number.MAX_VALUE;
+                while (beforePageAssetCount - currentAssetCount > 10000) {
+                    const cursorAsset = await context.db.getUTXOByAssetType(
+                        address,
+                        assetType,
+                        lastBlockNumberCursor,
+                        lastParcelIndexCursor,
+                        lastTransactionIndexCursor,
+                        10000
+                    );
+                    const lastCursorAsset = _.last(cursorAsset);
+                    if (lastCursorAsset) {
+                        lastBlockNumberCursor = lastCursorAsset.blockNumber;
+                        lastParcelIndexCursor = lastCursorAsset.parcelIndex;
+                        lastTransactionIndexCursor = lastCursorAsset.transactionIndex;
+                    }
+                    currentAssetCount += 10000;
+                }
+                const skipCount = beforePageAssetCount - currentAssetCount;
+                const skipAssets = await context.db.getUTXOByAssetType(
+                    address,
+                    assetType,
+                    lastBlockNumberCursor,
+                    lastParcelIndexCursor,
+                    lastTransactionIndexCursor,
+                    skipCount
+                );
+                const lastSkipAsset = _.last(skipAssets);
+                if (lastSkipAsset) {
+                    lastBlockNumberCursor = lastSkipAsset.blockNumber;
+                    lastParcelIndexCursor = lastSkipAsset.parcelIndex;
+                    lastTransactionIndexCursor = lastSkipAsset.transactionIndex;
+                }
+                calculatedLastBlockNumber = lastBlockNumberCursor;
+                calculatedLastParcelIndex = lastParcelIndexCursor;
+                calculatedLastTransactionIndex = lastTransactionIndexCursor;
+            }
+            const assets = await context.db.getUTXOByAssetType(
+                address,
+                assetType,
+                calculatedLastBlockNumber,
+                calculatedLastParcelIndex,
+                calculatedLastTransactionIndex,
+                itemsPerPage
+            );
+            res.send(assets);
         } catch (e) {
             res.status(404).send("Not found");
         }

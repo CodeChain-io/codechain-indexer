@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "description": "Data synchronizing tool between CodeChain and ElasticSearch",
   "repository": "https://github.com/CodeChain-io/codechain-indexer",
+  "license": "Apache-2.0",
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
-    "codechain-es": "^0.1.1-alpha.5",
+    "codechain-es": "^0.2.0-alpha.0",
     "codechain-sdk": "^0.4.0-rc3",
     "concurrently": "^4.0.1",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
+    "elasticsearch": "^15.1.1",
     "express": "^4.16.3",
     "fmt": "^1.1.0",
     "lodash": "^4.17.10",
@@ -28,6 +30,7 @@
     "start-indexer": "ts-node src/indexer/index.ts",
     "start-server": "ts-node src/server/index.ts",
     "clear": "ts-node scripts/clear.ts",
+    "test": "jest --env node",
     "lint": "tslint -p . && prettier '{src, scripts}/**/*.{ts,js,json}' -l",
     "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write"
   },
@@ -35,12 +38,30 @@
     "@types/body-parser": "^1.17.0",
     "@types/cors": "^2.8.4",
     "@types/dotenv": "^4.0.3",
+    "@types/elasticsearch": "^5.0.26",
     "@types/express": "^4.16.0",
+    "@types/jest": "^23.3.5",
     "@types/lodash": "^4.14.116",
     "@types/node-schedule": "^1.2.2",
     "@types/sharp": "^0.17.10",
+    "jest": "^23.6.0",
     "prettier": "^1.14.2",
+    "ts-jest": "^23.10.4",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }

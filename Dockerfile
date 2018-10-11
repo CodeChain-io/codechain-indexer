@@ -8,9 +8,15 @@ RUN apt-get update && apt-get install git
 # Install yarn
 RUN npm install yarn -g
 
-# Install codechain indexer
-COPY . /code
+
+# Copy package.json and lock file to install dependencies
+COPY package.json yarn.lock /code/
+
+# Install dependencies
 RUN yarn
+
+# Copy codechain indexer
+COPY . /code
 
 # Run server
 CMD sh -c "./wait_to_start.sh && yarn run start"

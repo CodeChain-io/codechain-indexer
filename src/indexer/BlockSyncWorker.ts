@@ -1,13 +1,14 @@
 import { ElasticSearchAgent } from "codechain-es";
 import { LogType } from "codechain-es/lib/actions/QueryLog";
 import { AssetMintTransactionDoc, AssetTransferTransactionDoc, BlockDoc, PaymentDoc } from "codechain-es/lib/types";
-import { Type, TypeConverter } from "codechain-es/lib/utils";
+import { Type } from "codechain-es/lib/utils";
 import { SDK } from "codechain-sdk";
 import { Block, H256 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as moment from "moment";
 import { Job, scheduleJob } from "node-schedule";
 import * as sharp from "sharp";
+import { TypeConverter } from "../es/utils/TypeConverter";
 import { WorkerConfig } from "./";
 const pLimit = require("p-limit");
 const request = require("request-promise-native");

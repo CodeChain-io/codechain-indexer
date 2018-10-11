@@ -12,7 +12,7 @@ services:
       - ELASTICSEARCH_HOST=http://elasticsearch:9200
       - WAIT_COMMAND=[ $$(curl --write-out %{http_code} --silent --output /dev/null http://elasticsearch:9200/_cat/health?h=st) = 200 ]
       - WAIT_SLEEP=2
-      - WAIT_LOOPS=10
+      - WAIT_LOOPS=20
 
   codechain:
     image: kodebox/codechain:80874e71eb5fd2b21d89efc4d71f6266a209626e
@@ -33,8 +33,11 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.2.4
+    ports:
+      - "5601:5601"
+
 volumes:
   ? codechaindata
   ? esdata
-
-
