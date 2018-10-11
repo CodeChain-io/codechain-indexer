@@ -10,6 +10,7 @@ before_install:
   - yarn install
 script:
   - yarn run lint
+  - yarn run test
 services:
   - docker
 cache: yarn
