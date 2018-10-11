@@ -128,7 +128,7 @@ function handle(context: ServerContext, router: Router) {
                 while (beforePageAssetCount - currentAssetCount > 10000) {
                     const cursorAsset = await context.db.getUTXOByAssetType(
                         address,
-                        assetType,
+                        new H256(assetType),
                         lastBlockNumberCursor,
                         lastParcelIndexCursor,
                         lastTransactionIndexCursor,
@@ -145,7 +145,7 @@ function handle(context: ServerContext, router: Router) {
                 const skipCount = beforePageAssetCount - currentAssetCount;
                 const skipAssets = await context.db.getUTXOByAssetType(
                     address,
-                    assetType,
+                    new H256(assetType),
                     lastBlockNumberCursor,
                     lastParcelIndexCursor,
                     lastTransactionIndexCursor,
@@ -163,7 +163,7 @@ function handle(context: ServerContext, router: Router) {
             }
             const assets = await context.db.getUTXOByAssetType(
                 address,
-                assetType,
+                new H256(assetType),
                 calculatedLastBlockNumber,
                 calculatedLastParcelIndex,
                 calculatedLastTransactionIndex,
