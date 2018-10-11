@@ -23,3 +23,5 @@ yarn-error.log*
 # Visual Studio Code - https://code.visualstudio.com/
 .settings/
 .vscode/
+
+kibana.yml
