@@ -9,7 +9,7 @@ import {
     PendingParcelDoc,
     PendingTransactionDoc,
     TransactionDoc
-} from "codechain-es/lib/types";
+} from "codechain-indexer-types/lib/types";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, CountResponse, DeleteDocumentResponse, SearchResponse } from "elasticsearch";
 import { Account, QueryAccount } from "./actions/QueryAccount";

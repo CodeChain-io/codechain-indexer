@@ -5,8 +5,8 @@ import {
     PendingParcelDoc,
     PendingTransactionDoc,
     TransactionDoc
-} from "codechain-es/lib/types";
-import { Type } from "codechain-es/lib/utils";
+} from "codechain-indexer-types/lib/types";
+import { Type } from "codechain-indexer-types/lib/utils";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, CountResponse, DeleteDocumentResponse, SearchResponse } from "elasticsearch";
 import * as _ from "lodash";

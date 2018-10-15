@@ -10,8 +10,8 @@ import {
     ParcelDoc,
     PendingParcelDoc,
     TransactionDoc
-} from "codechain-es/lib/types";
-import { Type } from "codechain-es/lib/utils";
+} from "codechain-indexer-types/lib/types";
+import { Type } from "codechain-indexer-types/lib/utils";
 import { SDK } from "codechain-sdk";
 import {
     Action,

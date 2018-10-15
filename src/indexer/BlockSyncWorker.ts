@@ -1,7 +1,12 @@
-import { ElasticSearchAgent } from "codechain-es";
-import { LogType } from "codechain-es/lib/actions/QueryLog";
-import { AssetMintTransactionDoc, AssetTransferTransactionDoc, BlockDoc, PaymentDoc } from "codechain-es/lib/types";
-import { Type } from "codechain-es/lib/utils";
+import { ElasticSearchAgent } from "codechain-indexer-types";
+import { LogType } from "codechain-indexer-types/lib/actions/QueryLog";
+import {
+    AssetMintTransactionDoc,
+    AssetTransferTransactionDoc,
+    BlockDoc,
+    PaymentDoc
+} from "codechain-indexer-types/lib/types";
+import { Type } from "codechain-indexer-types/lib/utils";
 import { SDK } from "codechain-sdk";
 import { Block, H256 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";

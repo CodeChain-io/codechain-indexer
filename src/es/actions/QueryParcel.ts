@@ -1,4 +1,4 @@
-import { ParcelDoc } from "codechain-es/lib/types";
+import { ParcelDoc } from "codechain-indexer-types/lib/types";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, CountResponse, SearchResponse } from "elasticsearch";
 import * as _ from "lodash";
