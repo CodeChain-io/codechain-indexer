@@ -13,7 +13,7 @@ import {
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, CountResponse, DeleteDocumentResponse, SearchResponse } from "elasticsearch";
 import { Account, QueryAccount } from "./actions/QueryAccount";
-import { AssetResponse, QueryAsset, UTXO } from "./actions/QueryAsset";
+import { AggsUTXO, QueryAsset, UTXO } from "./actions/QueryAsset";
 import { QueryBlock } from "./actions/QueryBlock";
 import { QueryImage } from "./actions/QueryImage";
 import { QueryIndex } from "./actions/QueryIndex";
@@ -151,15 +151,16 @@ export class ElasticSearchAgent
     public indexImage!: (assetType: H256, imageBlob: string) => Promise<any>;
     public searchImage!: (body: any) => Promise<SearchResponse<any>>;
     public removeImage!: (assetType: H256) => Promise<DeleteDocumentResponse>;
-    public getUTXOByAssetType!: (
+    public getUTXOListByAssetType!: (
         address: string,
         assetType: H256,
         lastBlockNumber?: number,
         lastParcelIndex?: number,
         lastTransactionIndex?: number,
         itemsPerPage?: number
-    ) => Promise<AssetResponse[]>;
-    public getUTXOList!: (address: string, page?: number, itemsPerPage?: number) => Promise<UTXO[]>;
+    ) => Promise<UTXO[]>;
+    public getAggsUTXOByAssetType!: (address: string, assetType: H256) => Promise<AggsUTXO | undefined>;
+    public getAggsUTXOList!: (address: string, page?: number, itemsPerPage?: number) => Promise<AggsUTXO[]>;
     public indexAsset!: (
         address: string,
         assetDoc: AssetDoc,

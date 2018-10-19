@@ -93,12 +93,26 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.get("/utxo/:address", async (req, res, _N) => {
+    router.get("/aggs-utxo/:address", async (req, res, _N) => {
         const { address } = req.params;
         const { page, itemsPerPage } = req.query;
         try {
-            const utxoList = await context.db.getUTXOList(address, page, itemsPerPage);
+            const utxoList = await context.db.getAggsUTXOList(address, page, itemsPerPage);
             res.send(utxoList);
+        } catch (e) {
+            res.status(404).send("Not found");
+        }
+    });
+
+    router.get("/aggs-utxo/:address/:assetType", async (req, res, _N) => {
+        const { address, assetType } = req.params;
+        try {
+            if (!Type.isH256String(assetType)) {
+                res.send(JSON.stringify(null));
+                return;
+            }
+            const utxo = await context.db.getAggsUTXOByAssetType(address, new H256(assetType));
+            utxo ? res.send(utxo) : res.send(JSON.stringify(null));
         } catch (e) {
             res.status(404).send("Not found");
         }
@@ -126,7 +140,7 @@ function handle(context: ServerContext, router: Router) {
                 let lastParcelIndexCursor = Number.MAX_VALUE;
                 let lastTransactionIndexCursor = Number.MAX_VALUE;
                 while (beforePageAssetCount - currentAssetCount > 10000) {
-                    const cursorAsset = await context.db.getUTXOByAssetType(
+                    const cursorAsset = await context.db.getUTXOListByAssetType(
                         address,
                         new H256(assetType),
                         lastBlockNumberCursor,
@@ -143,7 +157,7 @@ function handle(context: ServerContext, router: Router) {
                     currentAssetCount += 10000;
                 }
                 const skipCount = beforePageAssetCount - currentAssetCount;
-                const skipAssets = await context.db.getUTXOByAssetType(
+                const skipAssets = await context.db.getUTXOListByAssetType(
                     address,
                     new H256(assetType),
                     lastBlockNumberCursor,
@@ -161,7 +175,7 @@ function handle(context: ServerContext, router: Router) {
                 calculatedLastParcelIndex = lastParcelIndexCursor;
                 calculatedLastTransactionIndex = lastTransactionIndexCursor;
             }
-            const assets = await context.db.getUTXOByAssetType(
+            const assets = await context.db.getUTXOListByAssetType(
                 address,
                 new H256(assetType),
                 calculatedLastBlockNumber,

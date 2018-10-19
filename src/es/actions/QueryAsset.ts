@@ -5,14 +5,14 @@ import * as _ from "lodash";
 import { ElasticSearchAgent } from "..";
 import { BaseAction } from "./BaseAction";
 
-export interface AssetResponse {
+export interface UTXO {
     asset: AssetDoc;
     blockNumber: number;
     parcelIndex: number;
     transactionIndex: number;
 }
 
-export interface UTXO {
+export interface AggsUTXO {
     assetType: string;
     totalAssetQuantity: number;
     utxoQuantity: number;
@@ -22,15 +22,15 @@ export class QueryAsset implements BaseAction {
     public agent!: ElasticSearchAgent;
     public client!: Client;
 
-    public async getUTXOByAssetType(
+    public async getUTXOListByAssetType(
         address: string,
         assetType: H256,
         lastBlockNumber: number = Number.MAX_VALUE,
         lastParcelIndex: number = Number.MAX_VALUE,
         lastTransactionIndex: number = Number.MAX_VALUE,
         itemsPerPage: number = 25
-    ): Promise<AssetResponse[]> {
-        const response = await this.client.search<AssetResponse>({
+    ): Promise<UTXO[]> {
+        const response = await this.client.search<UTXO>({
             index: "asset",
             type: "_doc",
             body: {
@@ -80,8 +80,8 @@ export class QueryAsset implements BaseAction {
         });
     }
 
-    public async getUTXOList(address: string, page: number = 0, itemsPerPage: number = 25): Promise<UTXO[]> {
-        const response = await this.client.search<AssetResponse>({
+    public async getAggsUTXOList(address: string, page: number = 0, itemsPerPage: number = 25): Promise<AggsUTXO[]> {
+        const response = await this.client.search<UTXO>({
             index: "asset",
             type: "_doc",
             body: {
@@ -150,6 +150,86 @@ export class QueryAsset implements BaseAction {
                 utxoQuantity: bucket.doc_count
             };
         });
+    }
+
+    public async getAggsUTXOByAssetType(address: string, assetType: H256): Promise<AggsUTXO | undefined> {
+        const response = await this.client.search<UTXO>({
+            index: "asset",
+            type: "_doc",
+            body: {
+                query: {
+                    bool: {
+                        must: [
+                            {
+                                term: {
+                                    address: {
+                                        value: address
+                                    }
+                                }
+                            },
+                            {
+                                term: {
+                                    "asset.assetType": {
+                                        value: assetType.value
+                                    }
+                                }
+                            },
+                            {
+                                term: {
+                                    isRemoved: {
+                                        value: false
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                size: 0,
+                aggs: {
+                    asset_bucket: {
+                        composite: {
+                            sources: [
+                                {
+                                    type: {
+                                        terms: {
+                                            field: "asset.assetType"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        aggs: {
+                            sum_of_asset: {
+                                sum: {
+                                    field: "asset.amount"
+                                }
+                            },
+                            asset_bucket_sort: {
+                                bucket_sort: {
+                                    sort: [
+                                        {
+                                            sum_of_asset: {
+                                                order: "desc"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        if (response.aggregations.asset_bucket.buckets.length === 0) {
+            return undefined;
+        }
+
+        const bucket = response.aggregations.asset_bucket.buckets[0];
+        return {
+            assetType: bucket.key.type,
+            totalAssetQuantity: bucket.sum_of_asset.value,
+            utxoQuantity: bucket.doc_count
+        };
     }
 
     public async indexAsset(
