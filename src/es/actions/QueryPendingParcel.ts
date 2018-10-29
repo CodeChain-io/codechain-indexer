@@ -2,6 +2,7 @@ import {
     AssetMintTransactionDoc,
     AssetSchemeDoc,
     AssetTransactionGroupDoc,
+    AssetTransferTransactionDoc,
     PendingParcelDoc,
     PendingTransactionDoc,
     TransactionDoc
@@ -23,6 +24,110 @@ export class QueryPendingParcel implements BaseAction {
             query: {
                 bool: {
                     must: [{ term: { status: "pending" } }]
+                }
+            }
+        });
+        if (response.hits.total === 0) {
+            return [];
+        }
+        return _.map(response.hits.hits, hit => hit._source);
+    }
+
+    public async getPendingTransactionsByAddress(
+        address: string,
+        page: number = 1,
+        itemsPerPage: number = 25
+    ): Promise<PendingTransactionDoc[]> {
+        const query = [
+            { term: { status: "pending" } },
+            { term: { "parcel.action.action": "assetTransactionGroup" } },
+            {
+                bool: {
+                    should: [
+                        { term: { "parcel.action.transactions.data.inputs.prevOut.owner": address } },
+                        { term: { "parcel.action.transactions.data.burns.prevOut.owner": address } },
+                        { term: { "parcel.action.transactions.data.outputs.owner": address } },
+                        { term: { "parcel.action.transactions.data.output.owner": address } }
+                    ]
+                }
+            }
+        ];
+        const response = await this.searchPendinParcel({
+            sort: [{ timestamp: { order: "desc" } }],
+            from: (page - 1) * itemsPerPage,
+            size: itemsPerPage,
+            query: {
+                bool: {
+                    must: query
+                }
+            }
+        });
+        if (response.hits.total === 0) {
+            return [];
+        }
+        const pendingTransactionGroupDocList = _.chain(response.hits.hits)
+            .map(hit => hit._source as PendingParcelDoc)
+            .filter(PendingParcel => Type.isAssetTransactionGroupDoc(PendingParcel.parcel.action))
+            .value();
+
+        let addressTxs: any = [];
+        for (const pendingTransactionGroupDoc of pendingTransactionGroupDocList) {
+            const assetTxGroup = pendingTransactionGroupDoc.parcel.action as AssetTransactionGroupDoc;
+            const txs = _.chain(assetTxGroup.transactions)
+                .filter((transaction: TransactionDoc) => {
+                    if (Type.isAssetMintTransactionDoc(transaction)) {
+                        const mintTx = transaction as AssetMintTransactionDoc;
+                        if (mintTx.data.output.owner === address) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else if (Type.isAssetTransferTransactionDoc(transaction)) {
+                        const transferTx = transaction as AssetTransferTransactionDoc;
+                        if (_.find(transferTx.data.inputs, input => input.prevOut.owner === address)) {
+                            return true;
+                        } else if (_.find(transferTx.data.outputs, output => output.owner === address)) {
+                            return true;
+                        } else if (_.find(transferTx.data.burns, burn => burn.prevOut.owner === address)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    return false;
+                })
+                .map(tx => ({
+                    timestamp: pendingTransactionGroupDoc.timestamp,
+                    status: pendingTransactionGroupDoc.status,
+                    transaction: tx
+                }))
+                .value();
+            addressTxs = _.concat(addressTxs, txs);
+        }
+        return addressTxs;
+    }
+
+    public async getPendingPaymentParcelsByAddress(
+        address: string,
+        page: number = 1,
+        itemsPerPage: number = 25
+    ): Promise<PendingParcelDoc[]> {
+        const query = [
+            { term: { status: "pending" } },
+            { term: { "parcel.action.action": "payment" } },
+            {
+                bool: {
+                    should: [{ term: { "parcel.signer": address } }, { term: { "parcel.action.receiver": address } }]
+                }
+            }
+        ];
+        const response = await this.searchPendinParcel({
+            sort: [{ timestamp: { order: "desc" } }],
+            from: (page - 1) * itemsPerPage,
+            size: itemsPerPage,
+            query: {
+                bool: {
+                    must: query
                 }
             }
         });

@@ -61,13 +61,19 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
+    router.get("/parcels/pending/:address", async (req, res, next) => {
+        const { address } = req.params;
+        try {
+            const pendingParcels = await context.db.getPendingPaymentParcelsByAddress(address);
+            res.send(pendingParcels);
+        } catch (e) {
+            next(e);
+        }
+    });
+
     router.get("/parcel/:hash", async (req, res, next) => {
         const { hash } = req.params;
         try {
-            if (!Type.isH256String(hash)) {
-                res.send(JSON.stringify(null));
-                return;
-            }
             const parcel = await context.db.getParcel(new H256(hash));
             parcel ? res.send(parcel) : res.send(JSON.stringify(null));
         } catch (e) {

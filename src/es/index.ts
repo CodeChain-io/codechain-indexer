@@ -180,6 +180,16 @@ export class ElasticSearchAgent
         transactionHash: H256,
         transactionOutputIndex: number
     ) => Promise<DeleteDocumentResponse>;
+    public getPendingTransactionsByAddress!: (
+        address: string,
+        page?: number,
+        itemsPerPage?: number
+    ) => Promise<PendingTransactionDoc[]>;
+    public getPendingPaymentParcelsByAddress!: (
+        address: string,
+        page?: number,
+        itemsPerPage?: number
+    ) => Promise<PendingParcelDoc[]>;
     constructor(host: string) {
         this.client = new Client({
             host

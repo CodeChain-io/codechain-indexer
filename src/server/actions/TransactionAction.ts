@@ -105,6 +105,16 @@ function handle(context: ServerContext, router: Router) {
             next(e);
         }
     });
+
+    router.get("/txs/pending/:address", async (req, res, next) => {
+        const { address } = req.params;
+        try {
+            const pendingTxs = await context.db.getPendingTransactionsByAddress(address);
+            res.send(pendingTxs);
+        } catch (e) {
+            next(e);
+        }
+    });
 }
 
 export const TransactionAction = {
