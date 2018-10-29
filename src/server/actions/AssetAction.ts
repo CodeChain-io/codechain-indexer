@@ -139,11 +139,12 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/utxo/:address/:assetType", async (req, res, _N) => {
         const { address, assetType } = req.params;
-        const { page, itemsPerPage, lastBlockNumber, lastParcelIndex, lastTransactionIndex } = req.query;
+        const { page, itemsPerPage, lastBlockNumber, lastParcelIndex, lastTransactionIndex, isConfirmed } = req.query;
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
             let calculatedLastTransactionIndex;
+            const bestBlockNumber = await context.db.getLastBlockNumber();
             if (lastBlockNumber && lastParcelIndex && lastTransactionIndex) {
                 calculatedLastBlockNumber = lastBlockNumber;
                 calculatedLastParcelIndex = lastParcelIndex;
@@ -162,6 +163,10 @@ function handle(context: ServerContext, router: Router) {
                     const cursorAsset = await context.db.getUTXOListByAssetType(
                         address,
                         new H256(assetType),
+                        bestBlockNumber,
+                        // FIXME: Change the confirm threshold according to the consensus.
+                        5,
+                        isConfirmed === undefined || isConfirmed === "true",
                         lastBlockNumberCursor,
                         lastParcelIndexCursor,
                         lastTransactionIndexCursor,
@@ -179,6 +184,10 @@ function handle(context: ServerContext, router: Router) {
                 const skipAssets = await context.db.getUTXOListByAssetType(
                     address,
                     new H256(assetType),
+                    bestBlockNumber,
+                    // FIXME: Change the confirm threshold according to the consensus.
+                    5,
+                    isConfirmed === undefined || isConfirmed === "true",
                     lastBlockNumberCursor,
                     lastParcelIndexCursor,
                     lastTransactionIndexCursor,
@@ -197,6 +206,10 @@ function handle(context: ServerContext, router: Router) {
             const assets = await context.db.getUTXOListByAssetType(
                 address,
                 new H256(assetType),
+                bestBlockNumber,
+                // FIXME: Change the confirm threshold according to the consensus.
+                5,
+                isConfirmed === undefined || isConfirmed === "true",
                 calculatedLastBlockNumber,
                 calculatedLastParcelIndex,
                 calculatedLastTransactionIndex,

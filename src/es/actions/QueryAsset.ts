@@ -25,11 +25,28 @@ export class QueryAsset implements BaseAction {
     public async getUTXOListByAssetType(
         address: string,
         assetType: H256,
+        currentBestBlockNumber: number,
+        confirmThreshold: number,
+        isConfirmed: boolean,
         lastBlockNumber: number = Number.MAX_VALUE,
         lastParcelIndex: number = Number.MAX_VALUE,
         lastTransactionIndex: number = Number.MAX_VALUE,
         itemsPerPage: number = 25
     ): Promise<UTXO[]> {
+        let rangeOption;
+        if (isConfirmed) {
+            rangeOption = {
+                blockNumber: {
+                    lte: currentBestBlockNumber - confirmThreshold
+                }
+            };
+        } else {
+            rangeOption = {
+                blockNumber: {
+                    gt: currentBestBlockNumber - confirmThreshold
+                }
+            };
+        }
         const response = await this.client.search<UTXO>({
             index: "asset",
             type: "_doc",
@@ -64,6 +81,9 @@ export class QueryAsset implements BaseAction {
                                         value: false
                                     }
                                 }
+                            },
+                            {
+                                range: rangeOption
                             }
                         ]
                     }

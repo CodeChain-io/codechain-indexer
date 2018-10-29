@@ -154,6 +154,9 @@ export class ElasticSearchAgent
     public getUTXOListByAssetType!: (
         address: string,
         assetType: H256,
+        currentBestBlockNumber: number,
+        confirmThreshold: number,
+        isConfirmed: boolean,
         lastBlockNumber?: number,
         lastParcelIndex?: number,
         lastTransactionIndex?: number,
