@@ -95,9 +95,18 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/aggs-utxo/:address", async (req, res, _N) => {
         const { address } = req.params;
-        const { page, itemsPerPage } = req.query;
+        const { page, itemsPerPage, isConfirmed } = req.query;
         try {
-            const utxoList = await context.db.getAggsUTXOList(address, page, itemsPerPage);
+            const bestBlockNumber = await context.db.getLastBlockNumber();
+            const utxoList = await context.db.getAggsUTXOList(
+                address,
+                bestBlockNumber,
+                // FIXME: Change the confirm threshold according to the consensus.
+                5,
+                isConfirmed === undefined || isConfirmed === "true",
+                page,
+                itemsPerPage
+            );
             res.send(utxoList);
         } catch (e) {
             res.status(404).send("Not found");
@@ -106,12 +115,22 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/aggs-utxo/:address/:assetType", async (req, res, _N) => {
         const { address, assetType } = req.params;
+
+        const { isConfirmed } = req.query;
         try {
             if (!Type.isH256String(assetType)) {
                 res.send(JSON.stringify(null));
                 return;
             }
-            const utxo = await context.db.getAggsUTXOByAssetType(address, new H256(assetType));
+            const bestBlockNumber = await context.db.getLastBlockNumber();
+            const utxo = await context.db.getAggsUTXOByAssetType(
+                address,
+                new H256(assetType),
+                bestBlockNumber,
+                // FIXME: Change the confirm threshold according to the consensus.
+                5,
+                isConfirmed === undefined || isConfirmed === "true"
+            );
             utxo ? res.send(utxo) : res.send(JSON.stringify(null));
         } catch (e) {
             res.status(404).send("Not found");

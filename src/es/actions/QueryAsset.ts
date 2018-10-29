@@ -80,7 +80,28 @@ export class QueryAsset implements BaseAction {
         });
     }
 
-    public async getAggsUTXOList(address: string, page: number = 0, itemsPerPage: number = 25): Promise<AggsUTXO[]> {
+    public async getAggsUTXOList(
+        address: string,
+        currentBestBlockNumber: number,
+        confirmThreshold: number,
+        isConfirmed: boolean,
+        page: number = 0,
+        itemsPerPage: number = 25
+    ): Promise<AggsUTXO[]> {
+        let rangeOption;
+        if (isConfirmed) {
+            rangeOption = {
+                blockNumber: {
+                    lte: currentBestBlockNumber - confirmThreshold
+                }
+            };
+        } else {
+            rangeOption = {
+                blockNumber: {
+                    gt: currentBestBlockNumber - confirmThreshold
+                }
+            };
+        }
         const response = await this.client.search<UTXO>({
             index: "asset",
             type: "_doc",
@@ -101,6 +122,9 @@ export class QueryAsset implements BaseAction {
                                         value: false
                                     }
                                 }
+                            },
+                            {
+                                range: rangeOption
                             }
                         ]
                     }
@@ -152,7 +176,27 @@ export class QueryAsset implements BaseAction {
         });
     }
 
-    public async getAggsUTXOByAssetType(address: string, assetType: H256): Promise<AggsUTXO | undefined> {
+    public async getAggsUTXOByAssetType(
+        address: string,
+        assetType: H256,
+        currentBestBlockNumber: number,
+        confirmThreshold: number,
+        isConfirmed: boolean
+    ): Promise<AggsUTXO | undefined> {
+        let rangeOption;
+        if (isConfirmed) {
+            rangeOption = {
+                blockNumber: {
+                    lte: currentBestBlockNumber - confirmThreshold
+                }
+            };
+        } else {
+            rangeOption = {
+                blockNumber: {
+                    gt: currentBestBlockNumber - confirmThreshold
+                }
+            };
+        }
         const response = await this.client.search<UTXO>({
             index: "asset",
             type: "_doc",
@@ -180,6 +224,9 @@ export class QueryAsset implements BaseAction {
                                         value: false
                                     }
                                 }
+                            },
+                            {
+                                range: rangeOption
                             }
                         ]
                     }

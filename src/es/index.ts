@@ -159,8 +159,21 @@ export class ElasticSearchAgent
         lastTransactionIndex?: number,
         itemsPerPage?: number
     ) => Promise<UTXO[]>;
-    public getAggsUTXOByAssetType!: (address: string, assetType: H256) => Promise<AggsUTXO | undefined>;
-    public getAggsUTXOList!: (address: string, page?: number, itemsPerPage?: number) => Promise<AggsUTXO[]>;
+    public getAggsUTXOByAssetType!: (
+        address: string,
+        assetType: H256,
+        currentBestBlockNumber: number,
+        confirmThreshold: number,
+        isConfirmed?: boolean
+    ) => Promise<AggsUTXO | undefined>;
+    public getAggsUTXOList!: (
+        address: string,
+        currentBestBlockNumber: number,
+        confirmThreshold: number,
+        isConfirmed?: boolean,
+        page?: number,
+        itemsPerPage?: number
+    ) => Promise<AggsUTXO[]>;
     public indexAsset!: (
         address: string,
         assetDoc: AssetDoc,
