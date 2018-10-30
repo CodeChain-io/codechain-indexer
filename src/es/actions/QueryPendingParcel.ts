@@ -54,10 +54,12 @@ export class QueryPendingParcel implements BaseAction {
                 }
             }
         ];
+
+        const page = params && params.page != undefined ? params.page : 1;
         const response = await this.searchPendinParcel({
             sort: [{ timestamp: { order: "desc" } }],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
-            size: (params && params.itemsPerPage) || 25,
+            from: page * (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
                     must: query
@@ -127,8 +129,10 @@ export class QueryPendingParcel implements BaseAction {
         ];
         const response = await this.searchPendinParcel({
             sort: [{ timestamp: { order: "desc" } }],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
-            size: (params && params.itemsPerPage) || 25,
+            from:
+                ((params && params.page != undefined ? params.page : 1) - 1) *
+                (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
                     must: query
@@ -173,8 +177,10 @@ export class QueryPendingParcel implements BaseAction {
         }
         const response = await this.searchPendinParcel({
             sort: sortQuery,
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
-            size: (params && params.itemsPerPage) || 25,
+            from:
+                ((params && params.page != undefined ? params.page : 1) - 1) *
+                (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
                     must: query

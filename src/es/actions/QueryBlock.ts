@@ -85,8 +85,8 @@ export class QueryBlock implements BaseAction {
                     number: { order: "desc" }
                 }
             ],
-            search_after: [(params && params.lastBlockNumber) || Number.MAX_VALUE],
-            size: (params && params.itemsPerPage) || 25,
+            search_after: [params && params.lastBlockNumber != undefined ? params.lastBlockNumber : Number.MAX_VALUE],
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
                     must: [{ term: { isRetracted: false } }]
@@ -116,14 +116,16 @@ export class QueryBlock implements BaseAction {
             itemsPerPage?: number | null;
         } | null
     ): Promise<BlockDoc[]> {
+        const page = params && params.page != undefined ? params.page : 1;
+        const itemsPerPage = params && params.itemsPerPage != undefined ? params.itemsPerPage : 6;
         return this.searchBlock({
             sort: [
                 {
                     number: { order: "desc" }
                 }
             ],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
-            size: (params && params.itemsPerPage) || 6,
+            from: page * itemsPerPage,
+            size: itemsPerPage,
             query: {
                 bool: {
                     must: [{ term: { author: address } }, { term: { isRetracted: false } }]

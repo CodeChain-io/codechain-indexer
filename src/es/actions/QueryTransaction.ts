@@ -39,11 +39,11 @@ export class QueryTransaction implements BaseAction {
                 { "data.transactionIndex": { order: "desc" } }
             ],
             search_after: [
-                (params && params.lastBlockNumber) || Number.MAX_VALUE,
-                (params && params.lastParcelIndex) || Number.MAX_VALUE,
-                (params && params.lastTransactionIndex) || Number.MAX_VALUE
+                params && params.lastBlockNumber != undefined ? params.lastBlockNumber : Number.MAX_VALUE,
+                params && params.lastParcelIndex != undefined ? params.lastParcelIndex : Number.MAX_VALUE,
+                params && params.lastTransactionIndex != undefined ? params.lastTransactionIndex : Number.MAX_VALUE
             ],
-            size: (params && params.itemsPerPage) || 25,
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
                     must: [{ term: { isRetracted: false } }]
@@ -75,8 +75,10 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
-            size: (params && params.itemsPerPage) || 25,
+            from:
+                ((params && params.page != undefined ? params.page : 1) - 1) *
+                (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
                     must: [
@@ -156,8 +158,10 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
-            size: (params && params.itemsPerPage) || 6,
+            from:
+                ((params && params.page != undefined ? params.page : 1) - 1) *
+                (params && params.itemsPerPage != undefined ? params.itemsPerPage : 6),
+            size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 6,
             query: {
                 bool: {
                     must: [

@@ -50,11 +50,11 @@ export class QueryAsset implements BaseAction {
                     { parcelIndex: { order: "desc" } },
                     { transactionIndex: { order: "desc" } }
                 ],
-                size: (params && params.itemsPerPage) || 25,
+                size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
                 search_after: [
-                    (params && params.lastBlockNumber) || Number.MAX_VALUE,
-                    (params && params.lastParcelIndex) || Number.MAX_VALUE,
-                    (params && params.lastTransactionIndex) || Number.MAX_VALUE
+                    params && params.lastBlockNumber != undefined ? params.lastBlockNumber : Number.MAX_VALUE,
+                    params && params.lastParcelIndex != undefined ? params.lastParcelIndex : Number.MAX_VALUE,
+                    params && params.lastTransactionIndex != undefined ? params.lastTransactionIndex : Number.MAX_VALUE
                 ],
                 query: {
                     bool: {

@@ -31,13 +31,15 @@ export class QueryParcel implements BaseAction {
             itemsPerPage?: number | null;
         } | null
     ): Promise<ParcelDoc[]> {
+        const itemsPerPage = params && params.itemsPerPage != undefined ? params.itemsPerPage : 25;
+        const lastBlockNumber =
+            params && params.lastBlockNumber != undefined ? params.lastBlockNumber : Number.MAX_VALUE;
+        const lastParcelIndex =
+            params && params.lastParcelIndex != undefined ? params.lastParcelIndex : Number.MAX_VALUE;
         const response = await this.searchParcel({
             sort: [{ blockNumber: { order: "desc" } }, { parcelIndex: { order: "desc" } }],
-            search_after: [
-                (params && params.lastBlockNumber) || Number.MAX_VALUE,
-                (params && params.lastParcelIndex) || Number.MAX_VALUE
-            ],
-            size: (params && params.itemsPerPage) || 25,
+            search_after: [lastBlockNumber, lastParcelIndex],
+            size: itemsPerPage,
             query: {
                 bool: {
                     must: [{ term: { isRetracted: false } }]
@@ -63,10 +65,12 @@ export class QueryParcel implements BaseAction {
             itemsPerPage?: number | null;
         } | null
     ): Promise<ParcelDoc[]> {
+        const page = params && params.page != undefined ? params.page : 1;
+        const itemsPerPage = params && params.itemsPerPage != undefined ? params.itemsPerPage : 6;
         const response = await this.searchParcel({
             sort: [{ blockNumber: { order: "desc" } }, { parcelIndex: { order: "desc" } }],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
-            size: (params && params.itemsPerPage) || 6,
+            from: page * itemsPerPage,
+            size: itemsPerPage,
             query: {
                 bool: {
                     must: [

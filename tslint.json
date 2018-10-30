@@ -5,7 +5,8 @@
     "no-console": false,
     "object-literal-sort-keys": false,
     "no-var-requires": false,
-    "array-type": false
+    "array-type": false,
+    "triple-equals": [true, "allow-undefined-check"]
   },
   "jsRules": {
     "no-console": false,
