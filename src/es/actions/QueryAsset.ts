@@ -1,22 +1,9 @@
-import { AssetDoc } from "codechain-indexer-types/lib/types";
+import { AssetDoc, AssetSchemeDoc } from "codechain-indexer-types/lib/types";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, DeleteDocumentResponse } from "elasticsearch";
 import * as _ from "lodash";
 import { ElasticSearchAgent } from "..";
 import { BaseAction } from "./BaseAction";
-
-export interface UTXO {
-    asset: AssetDoc;
-    blockNumber: number;
-    parcelIndex: number;
-    transactionIndex: number;
-}
-
-export interface AggsUTXO {
-    assetType: string;
-    totalAssetQuantity: number;
-    utxoQuantity: number;
-}
 
 export class QueryAsset implements BaseAction {
     public agent!: ElasticSearchAgent;
@@ -34,7 +21,7 @@ export class QueryAsset implements BaseAction {
             lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
         } | null
-    ): Promise<UTXO[]> {
+    ): Promise<{ asset: AssetDoc; blockNumber: number; parcelIndex: number; transactionIndex: number }[]> {
         let rangeOption;
         if (isConfirmed) {
             rangeOption = {
@@ -49,7 +36,12 @@ export class QueryAsset implements BaseAction {
                 }
             };
         }
-        const response = await this.client.search<UTXO>({
+        const response = await this.client.search<{
+            asset: AssetDoc;
+            blockNumber: number;
+            parcelIndex: number;
+            transactionIndex: number;
+        }>({
             index: "asset",
             type: "_doc",
             body: {
@@ -115,7 +107,13 @@ export class QueryAsset implements BaseAction {
             page?: number | null;
             itemsPerPage?: number | null;
         } | null
-    ): Promise<AggsUTXO[]> {
+    ): Promise<
+        {
+            assetType: string;
+            totalAssetQuantity: number;
+            utxoQuantity: number;
+        }[]
+    > {
         let rangeOption;
         if (isConfirmed) {
             rangeOption = {
@@ -130,7 +128,12 @@ export class QueryAsset implements BaseAction {
                 }
             };
         }
-        const response = await this.client.search<UTXO>({
+        const response = await this.client.search<{
+            asset: AssetDoc;
+            blockNumber: number;
+            parcelIndex: number;
+            transactionIndex: number;
+        }>({
             index: "asset",
             type: "_doc",
             body: {
@@ -210,7 +213,14 @@ export class QueryAsset implements BaseAction {
         currentBestBlockNumber: number,
         confirmThreshold: number,
         isConfirmed: boolean
-    ): Promise<AggsUTXO | undefined> {
+    ): Promise<
+        | {
+              assetType: string;
+              totalAssetQuantity: number;
+              utxoQuantity: number;
+          }
+        | undefined
+    > {
         let rangeOption;
         if (isConfirmed) {
             rangeOption = {
@@ -225,7 +235,12 @@ export class QueryAsset implements BaseAction {
                 }
             };
         }
-        const response = await this.client.search<UTXO>({
+        const response = await this.client.search<{
+            asset: AssetDoc;
+            blockNumber: number;
+            parcelIndex: number;
+            transactionIndex: number;
+        }>({
             index: "asset",
             type: "_doc",
             body: {

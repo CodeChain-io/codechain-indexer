@@ -125,68 +125,6 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.get("/addr-asset-utxo/:address", async (req, res, next) => {
-        const { address } = req.params;
-        const { lastTransactionHash, itemsPerPage } = req.query;
-        try {
-            AssetTransferAddress.fromString(address);
-        } catch (e) {
-            res.send([]);
-            return;
-        }
-        try {
-            let utxoList: AssetDoc[] = [];
-            let lastSelectedTransactionHash = lastTransactionHash;
-            while (utxoList.length < itemsPerPage) {
-                let assets: AssetDoc[];
-                if (lastSelectedTransactionHash) {
-                    const transaction = await context.db.getTransaction(new H256(lastSelectedTransactionHash));
-                    if (!transaction) {
-                        throw new Error("Invalid lastTransactionHash");
-                    }
-                    assets = await context.db.getAssetsByAssetTransferAddress(address, {
-                        lastBlockNumber: transaction.data.blockNumber,
-                        lastParcelIndex: transaction.data.parcelIndex,
-                        lastTransactionIndex: transaction.data.transactionIndex,
-                        itemsPerPage
-                    });
-                } else {
-                    assets = await context.db.getAssetsByAssetTransferAddress(address, {
-                        itemsPerPage
-                    });
-                }
-                const lastAsset = _.last(assets);
-                if (!lastAsset) {
-                    break;
-                }
-                lastSelectedTransactionHash = lastAsset.transactionHash;
-                const utxoPromise = _.map(assets, async asset => {
-                    const getAssetResult = await context.codechainSdk.rpc.chain.getAsset(
-                        new H256(asset.transactionHash),
-                        asset.transactionOutputIndex
-                    );
-                    if (!getAssetResult) {
-                        return null;
-                    }
-                    return asset;
-                });
-                const utxoResult = await Promise.all(utxoPromise);
-                const validUTXOSet = _.compact(utxoResult);
-                utxoList = utxoList.concat(validUTXOSet);
-            }
-            const utxoResponsePromise = _.map(utxoList.slice(0, itemsPerPage), async utxo => {
-                return {
-                    asset: utxo,
-                    assetScheme: await context.db.getAssetScheme(new H256(utxo.assetType))
-                };
-            });
-            const utxoPresponse = await Promise.all(utxoResponsePromise);
-            res.send(utxoPresponse);
-        } catch (e) {
-            next(e);
-        }
-    });
-
     router.get("/addr-asset-txs/:address", async (req, res, next) => {
         const { address } = req.params;
         const { page, itemsPerPage } = req.query;

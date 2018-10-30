@@ -13,7 +13,7 @@ import {
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, CountResponse, DeleteDocumentResponse, SearchResponse } from "elasticsearch";
 import { Account, QueryAccount } from "./actions/QueryAccount";
-import { AggsUTXO, QueryAsset, UTXO } from "./actions/QueryAsset";
+import { QueryAsset } from "./actions/QueryAsset";
 import { QueryBlock } from "./actions/QueryBlock";
 import { QueryImage } from "./actions/QueryImage";
 import { QueryIndex } from "./actions/QueryIndex";
@@ -105,15 +105,6 @@ export class ElasticSearchAgent
             itemsPerPage?: number | null;
         } | null
     ) => Promise<AssetBundleDoc[]>;
-    public getAssetsByAssetTransferAddress!: (
-        address: string,
-        params?: {
-            lastBlockNumber?: number | null;
-            lastParcelIndex?: number | null;
-            lastTransactionIndex?: number | null;
-            itemsPerPage?: number | null;
-        } | null
-    ) => Promise<AssetDoc[]>;
     public getAssetScheme!: (assetType: H256) => Promise<AssetSchemeDoc | null>;
     public getAssetBundlesByAssetName!: (name: string) => Promise<AssetBundleDoc[]>;
     public searchTransaction!: (body: any) => Promise<SearchResponse<any>>;
@@ -189,14 +180,28 @@ export class ElasticSearchAgent
             lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
         } | null
-    ) => Promise<UTXO[]>;
+    ) => Promise<
+        {
+            asset: AssetDoc;
+            blockNumber: number;
+            parcelIndex: number;
+            transactionIndex: number;
+        }[]
+    >;
     public getAggsUTXOByAssetType!: (
         address: string,
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
         isConfirmed?: boolean
-    ) => Promise<AggsUTXO | undefined>;
+    ) => Promise<
+        | {
+              assetType: string;
+              totalAssetQuantity: number;
+              utxoQuantity: number;
+          }
+        | undefined
+    >;
     public getAggsUTXOList!: (
         address: string,
         currentBestBlockNumber: number,
@@ -206,7 +211,13 @@ export class ElasticSearchAgent
             page?: number | null;
             itemsPerPage?: number | null;
         } | null
-    ) => Promise<AggsUTXO[]>;
+    ) => Promise<
+        {
+            assetType: string;
+            totalAssetQuantity: number;
+            utxoQuantity: number;
+        }[]
+    >;
     public indexAsset!: (
         address: string,
         assetDoc: AssetDoc,

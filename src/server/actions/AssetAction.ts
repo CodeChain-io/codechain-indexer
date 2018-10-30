@@ -69,7 +69,7 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.get("/asset/image/:assetType", async (req, res, _N) => {
+    router.get("/asset/image/:assetType", async (req, res, next) => {
         const { assetType } = req.params;
         try {
             if (!Type.isH256String(assetType)) {
@@ -88,11 +88,11 @@ function handle(context: ServerContext, router: Router) {
             });
             res.end(img);
         } catch (e) {
-            res.status(404).send("Not found");
+            next(e);
         }
     });
 
-    router.get("/aggs-utxo/:address", async (req, res, _N) => {
+    router.get("/aggs-utxo/:address", async (req, res, next) => {
         const { address } = req.params;
         const { page, itemsPerPage, isConfirmed } = req.query;
         try {
@@ -108,13 +108,19 @@ function handle(context: ServerContext, router: Router) {
                     page
                 }
             );
-            res.send(utxoList);
+            const result = await Promise.all(
+                _.map(utxoList, async utxo => ({
+                    ...utxo,
+                    assetScheme: await context.db.getAssetScheme(new H256(utxo.assetType))
+                }))
+            );
+            res.send(result);
         } catch (e) {
-            res.status(404).send("Not found");
+            next(e);
         }
     });
 
-    router.get("/aggs-utxo/:address/:assetType", async (req, res, _N) => {
+    router.get("/aggs-utxo/:address/:assetType", async (req, res, next) => {
         const { address, assetType } = req.params;
 
         const { isConfirmed } = req.query;
@@ -132,13 +138,19 @@ function handle(context: ServerContext, router: Router) {
                 5,
                 isConfirmed === undefined || isConfirmed === "true"
             );
-            utxo ? res.send(utxo) : res.send(JSON.stringify(null));
+            if (utxo) {
+                const assetScheme = await context.db.getAssetScheme(new H256(utxo.assetType));
+                const response = { ...utxo, assetScheme };
+                res.send(response);
+            } else {
+                res.send(JSON.stringify(null));
+            }
         } catch (e) {
-            res.status(404).send("Not found");
+            next(e);
         }
     });
 
-    router.get("/utxo/:address/:assetType", async (req, res, _N) => {
+    router.get("/utxo/:address/:assetType", async (req, res, next) => {
         const { address, assetType } = req.params;
         const { page, itemsPerPage, lastBlockNumber, lastParcelIndex, lastTransactionIndex, isConfirmed } = req.query;
         try {
@@ -222,9 +234,16 @@ function handle(context: ServerContext, router: Router) {
                     itemsPerPage
                 }
             );
-            res.send(assets);
+
+            const result = await Promise.all(
+                _.map(assets, async asset => ({
+                    ...asset,
+                    assetScheme: await context.db.getAssetScheme(new H256(asset.asset.assetType))
+                }))
+            );
+            res.send(result);
         } catch (e) {
-            res.status(404).send("Not found");
+            next(e);
         }
     });
 }
