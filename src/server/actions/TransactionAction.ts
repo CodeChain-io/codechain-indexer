@@ -57,8 +57,8 @@ function handle(context: ServerContext, router: Router) {
                 const skipCount = beforePageTxCount - currentTxCount;
                 const skipTxs = await context.db.getTransactions({
                     lastBlockNumber: lastBlockNumberCursor,
-                    lastParcelIndex: lastBlockNumberCursor,
-                    lastTransactionIndex: lastBlockNumberCursor,
+                    lastParcelIndex: lastParcelIndexCursor,
+                    lastTransactionIndex: lastTransactionIndexCursor,
                     itemsPerPage: skipCount
                 });
                 const lastSkipTxs = _.last(skipTxs);
