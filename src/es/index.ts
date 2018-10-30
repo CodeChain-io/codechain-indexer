@@ -197,11 +197,7 @@ export class ElasticSearchAgent
         address: string,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean,
-        params?: {
-            page?: number | null;
-            itemsPerPage?: number | null;
-        } | null
+        isConfirmed: boolean
     ) => Promise<
         {
             assetType: string;

@@ -102,11 +102,7 @@ export class QueryAsset implements BaseAction {
         address: string,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean,
-        params?: {
-            page?: number | null;
-            itemsPerPage?: number | null;
-        } | null
+        isConfirmed: boolean
     ): Promise<
         {
             assetType: string;
@@ -164,6 +160,7 @@ export class QueryAsset implements BaseAction {
                 aggs: {
                     asset_bucket: {
                         composite: {
+                            size: 10000,
                             sources: [
                                 {
                                     type: {
@@ -188,10 +185,7 @@ export class QueryAsset implements BaseAction {
                                                 order: "desc"
                                             }
                                         }
-                                    ],
-                                    from:
-                                        (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
-                                    size: (params && params.itemsPerPage) || 25
+                                    ]
                                 }
                             }
                         }
@@ -279,6 +273,7 @@ export class QueryAsset implements BaseAction {
                 aggs: {
                     asset_bucket: {
                         composite: {
+                            size: 10000,
                             sources: [
                                 {
                                     type: {

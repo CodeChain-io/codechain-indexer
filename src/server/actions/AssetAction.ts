@@ -94,7 +94,7 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/aggs-utxo/:address", async (req, res, next) => {
         const { address } = req.params;
-        const { page, itemsPerPage, isConfirmed } = req.query;
+        const { isConfirmed } = req.query;
         try {
             const bestBlockNumber = await context.db.getLastBlockNumber();
             const utxoList = await context.db.getAggsUTXOList(
@@ -102,11 +102,7 @@ function handle(context: ServerContext, router: Router) {
                 bestBlockNumber,
                 // FIXME: Change the confirm threshold according to the consensus.
                 5,
-                isConfirmed === undefined || isConfirmed === "true",
-                {
-                    itemsPerPage,
-                    page
-                }
+                isConfirmed === undefined || isConfirmed === "true"
             );
             const result = await Promise.all(
                 _.map(utxoList, async utxo => ({
