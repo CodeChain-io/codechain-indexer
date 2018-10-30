@@ -32,10 +32,12 @@ export class QueryTransaction implements BaseAction {
     }
 
     public async getTransactions(
-        lastBlockNumber: number = Number.MAX_VALUE,
-        lastParcelIndex: number = Number.MAX_VALUE,
-        lastTransactionIndex: number = Number.MAX_VALUE,
-        itemsPerPage: number = 25
+        params?: {
+            lastBlockNumber?: number | null;
+            lastParcelIndex?: number | null;
+            lastTransactionIndex?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<TransactionDoc[]> {
         const response = await this.searchTransaction({
             sort: [
@@ -43,8 +45,12 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            search_after: [lastBlockNumber, lastParcelIndex, lastTransactionIndex],
-            size: itemsPerPage,
+            search_after: [
+                (params && params.lastBlockNumber) || Number.MAX_VALUE,
+                (params && params.lastParcelIndex) || Number.MAX_VALUE,
+                (params && params.lastTransactionIndex) || Number.MAX_VALUE
+            ],
+            size: (params && params.itemsPerPage) || 25,
             query: {
                 bool: {
                     must: [{ term: { isRetracted: false } }]
@@ -65,8 +71,10 @@ export class QueryTransaction implements BaseAction {
 
     public async getTransactionsByAssetType(
         assetType: H256,
-        page: number = 1,
-        itemsPerPage: number = 6
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<TransactionDoc[]> {
         const response = await this.searchTransaction({
             sort: [
@@ -74,8 +82,8 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
+            size: (params && params.itemsPerPage) || 25,
             query: {
                 bool: {
                     must: [
@@ -144,8 +152,10 @@ export class QueryTransaction implements BaseAction {
 
     public async getTransactionsByAssetTransferAddress(
         address: string,
-        page: number = 1,
-        itemsPerPage: number = 6
+        params?: {
+            page?: number | null;
+            itemsPerPage: number | null;
+        } | null
     ): Promise<TransactionDoc[]> {
         const response = await this.searchTransaction({
             sort: [
@@ -153,8 +163,8 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
+            size: (params && params.itemsPerPage) || 6,
             query: {
                 bool: {
                     must: [
@@ -217,8 +227,10 @@ export class QueryTransaction implements BaseAction {
 
     public async getAssetBundlesByPlatformAddress(
         address: string,
-        page: number = 1,
-        itemsPerPage: number = 6
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<AssetBundleDoc[]> {
         const response = await this.searchTransaction({
             sort: [
@@ -226,8 +238,8 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
+            size: (params && params.itemsPerPage) || 6,
             query: {
                 bool: {
                     must: [{ term: { isRetracted: false } }, { term: { "data.registrar": address } }]
@@ -267,10 +279,12 @@ export class QueryTransaction implements BaseAction {
 
     public async getAssetsByAssetTransferAddress(
         address: string,
-        lastBlockNumber: number = Number.MAX_VALUE,
-        lastParcelIndex: number = Number.MAX_VALUE,
-        lastTransactionIndex: number = Number.MAX_VALUE,
-        itemsPerPage: number = 6
+        params?: {
+            lastBlockNumber?: number | null;
+            lastParcelIndex?: number | null;
+            lastTransactionIndex?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<AssetDoc[]> {
         const response = await this.searchTransaction({
             sort: [
@@ -278,8 +292,12 @@ export class QueryTransaction implements BaseAction {
                 { "data.parcelIndex": { order: "desc" } },
                 { "data.transactionIndex": { order: "desc" } }
             ],
-            search_after: [lastBlockNumber, lastParcelIndex, lastTransactionIndex],
-            size: itemsPerPage,
+            search_after: [
+                (params && params.lastBlockNumber) || Number.MAX_VALUE,
+                (params && params.lastParcelIndex) || Number.MAX_VALUE,
+                (params && params.lastTransactionIndex) || Number.MAX_VALUE
+            ],
+            size: (params && params.itemsPerPage) || 6,
             query: {
                 bool: {
                     must: [

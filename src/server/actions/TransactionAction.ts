@@ -40,12 +40,12 @@ function handle(context: ServerContext, router: Router) {
                 let lastParcelIndexCursor = Number.MAX_VALUE;
                 let lastTransactionIndexCursor = Number.MAX_VALUE;
                 while (beforePageTxCount - currentTxCount > 10000) {
-                    const cursorTx = await context.db.getTransactions(
-                        lastBlockNumberCursor,
-                        lastParcelIndexCursor,
-                        lastTransactionIndexCursor,
-                        10000
-                    );
+                    const cursorTx = await context.db.getTransactions({
+                        lastBlockNumber: lastBlockNumberCursor,
+                        lastParcelIndex: lastParcelIndexCursor,
+                        lastTransactionIndex: lastTransactionIndexCursor,
+                        itemsPerPage: 10000
+                    });
                     const lastCursorTx = _.last(cursorTx);
                     if (lastCursorTx) {
                         lastBlockNumberCursor = lastCursorTx.data.blockNumber as number;
@@ -55,12 +55,12 @@ function handle(context: ServerContext, router: Router) {
                     currentTxCount += 10000;
                 }
                 const skipCount = beforePageTxCount - currentTxCount;
-                const skipTxs = await context.db.getTransactions(
-                    lastBlockNumberCursor,
-                    lastParcelIndexCursor,
-                    lastTransactionIndexCursor,
-                    skipCount
-                );
+                const skipTxs = await context.db.getTransactions({
+                    lastBlockNumber: lastBlockNumberCursor,
+                    lastParcelIndex: lastBlockNumberCursor,
+                    lastTransactionIndex: lastBlockNumberCursor,
+                    itemsPerPage: skipCount
+                });
                 const lastSkipTxs = _.last(skipTxs);
                 if (lastSkipTxs) {
                     lastBlockNumberCursor = lastSkipTxs.data.blockNumber as number;
@@ -71,12 +71,12 @@ function handle(context: ServerContext, router: Router) {
                 calculatedLastParcelIndex = lastParcelIndexCursor;
                 calculatedLastTransactionIndex = lastTransactionIndexCursor;
             }
-            const transactions = await context.db.getTransactions(
-                calculatedLastBlockNumber,
-                calculatedLastParcelIndex,
-                calculatedLastTransactionIndex,
+            const transactions = await context.db.getTransactions({
+                lastBlockNumber: calculatedLastBlockNumber,
+                lastParcelIndex: calculatedLastParcelIndex,
+                lastTransactionIndex: calculatedLastTransactionIndex,
                 itemsPerPage
-            );
+            });
             res.send(transactions);
         } catch (e) {
             next(e);

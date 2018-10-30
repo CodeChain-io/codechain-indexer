@@ -15,19 +15,17 @@ function handle(context: ServerContext, router: Router) {
     });
 
     router.get("/parcels/pending", async (req, res, next) => {
-        const { page, itemsPerPage, actionFilters, signerFiter, sorting, orderBy } = req.query;
-        const parsedActionFilters = actionFilters
-            ? actionFilters.split(",")
-            : ["payment", "assetTransactionGroup", "setRegularKey"];
+        const { page, itemsPerPage, actionFilters, signerFilter, sorting, orderBy } = req.query;
+        const parsedActionFilters = actionFilters && actionFilters.split(",");
         try {
-            const pendingParcels = await context.db.getCurrentPendingParcels(
+            const pendingParcels = await context.db.getCurrentPendingParcels({
                 page,
                 itemsPerPage,
-                parsedActionFilters,
-                signerFiter,
+                actionFilters: parsedActionFilters,
+                signerFilter,
                 sorting,
                 orderBy
-            );
+            });
             res.send(pendingParcels);
         } catch (e) {
             next(e);
@@ -35,12 +33,13 @@ function handle(context: ServerContext, router: Router) {
     });
 
     router.get("/parcels/pending/totalCount", async (req, res, next) => {
-        const { actionFilters, signerFiter } = req.query;
-        const parsedActionFilters = actionFilters
-            ? actionFilters.split(",")
-            : ["payment", "assetTransactionGroup", "setRegularKey"];
+        const { actionFilters, signerFilter } = req.query;
+        const parsedActionFilters = actionFilters && actionFilters.split(",");
         try {
-            const count = await context.db.getTotalPendingParcelCount(parsedActionFilters, signerFiter);
+            const count = await context.db.getTotalPendingParcelCount({
+                actionFilters: parsedActionFilters,
+                signerFilter
+            });
             res.send(JSON.stringify(count));
         } catch (e) {
             next(e);
@@ -98,11 +97,11 @@ function handle(context: ServerContext, router: Router) {
                 let lastBlockNumberCursor = Number.MAX_VALUE;
                 let lastParcelIndexCursor = Number.MAX_VALUE;
                 while (beforePageParcelCount - currentParcel > 10000) {
-                    const cursorParcel = await context.db.getParcels(
-                        lastBlockNumberCursor,
-                        lastParcelIndexCursor,
-                        10000
-                    );
+                    const cursorParcel = await context.db.getParcels({
+                        lastBlockNumber: lastBlockNumberCursor,
+                        lastParcelIndex: lastParcelIndexCursor,
+                        itemsPerPage: 10000
+                    });
                     const lastCursorParcel = _.last(cursorParcel);
                     if (lastCursorParcel) {
                         lastBlockNumberCursor = lastCursorParcel.blockNumber as number;
@@ -111,11 +110,11 @@ function handle(context: ServerContext, router: Router) {
                     currentParcel += 10000;
                 }
                 const skipCount = beforePageParcelCount - currentParcel;
-                const skipParcels = await context.db.getParcels(
-                    lastBlockNumberCursor,
-                    lastParcelIndexCursor,
-                    skipCount
-                );
+                const skipParcels = await context.db.getParcels({
+                    lastBlockNumber: lastBlockNumberCursor,
+                    lastParcelIndex: lastParcelIndexCursor,
+                    itemsPerPage: skipCount
+                });
                 const lastSkipParcels = _.last(skipParcels);
                 if (lastSkipParcels) {
                     lastBlockNumberCursor = lastSkipParcels.blockNumber as number;
@@ -124,11 +123,11 @@ function handle(context: ServerContext, router: Router) {
                 calculatedLastBlockNumber = lastBlockNumberCursor;
                 calculatedLastParcelIndex = lastParcelIndexCursor;
             }
-            const parcels = await context.db.getParcels(
-                calculatedLastBlockNumber,
-                calculatedLastParcelIndex,
+            const parcels = await context.db.getParcels({
+                lastBlockNumber: calculatedLastBlockNumber,
+                lastParcelIndex: calculatedLastParcelIndex,
                 itemsPerPage
-            );
+            });
             res.send(parcels);
         } catch (e) {
             next(e);

@@ -36,7 +36,7 @@ function handle(context: ServerContext, router: Router) {
             return;
         }
         try {
-            const blocks = await context.db.getBlocksByPlatformAddress(address, page, itemsPerPage);
+            const blocks = await context.db.getBlocksByPlatformAddress(address, { page, itemsPerPage });
             res.send(blocks);
         } catch (e) {
             next(e);
@@ -69,7 +69,7 @@ function handle(context: ServerContext, router: Router) {
             return;
         }
         try {
-            const parcels = await context.db.getParcelsByPlatformAddress(address, page, itemsPerPage);
+            const parcels = await context.db.getParcelsByPlatformAddress(address, { page, itemsPerPage });
             res.send(parcels);
         } catch (e) {
             next(e);
@@ -102,7 +102,7 @@ function handle(context: ServerContext, router: Router) {
             return;
         }
         try {
-            const assetBundles = await context.db.getAssetBundlesByPlatformAddress(address, page, itemsPerPage);
+            const assetBundles = await context.db.getAssetBundlesByPlatformAddress(address, { page, itemsPerPage });
             res.send(assetBundles);
         } catch (e) {
             next(e);
@@ -144,21 +144,16 @@ function handle(context: ServerContext, router: Router) {
                     if (!transaction) {
                         throw new Error("Invalid lastTransactionHash");
                     }
-                    assets = await context.db.getAssetsByAssetTransferAddress(
-                        address,
-                        transaction.data.blockNumber,
-                        transaction.data.parcelIndex,
-                        transaction.data.transactionIndex,
+                    assets = await context.db.getAssetsByAssetTransferAddress(address, {
+                        lastBlockNumber: transaction.data.blockNumber,
+                        lastParcelIndex: transaction.data.parcelIndex,
+                        lastTransactionIndex: transaction.data.transactionIndex,
                         itemsPerPage
-                    );
+                    });
                 } else {
-                    assets = await context.db.getAssetsByAssetTransferAddress(
-                        address,
-                        Number.MAX_VALUE,
-                        Number.MAX_VALUE,
-                        Number.MAX_VALUE,
+                    assets = await context.db.getAssetsByAssetTransferAddress(address, {
                         itemsPerPage
-                    );
+                    });
                 }
                 const lastAsset = _.last(assets);
                 if (!lastAsset) {
@@ -202,11 +197,10 @@ function handle(context: ServerContext, router: Router) {
             return;
         }
         try {
-            const transactions: TransactionDoc[] = await context.db.getTransactionsByAssetTransferAddress(
-                address,
+            const transactions: TransactionDoc[] = await context.db.getTransactionsByAssetTransferAddress(address, {
                 page,
                 itemsPerPage
-            );
+            });
             res.send(transactions);
         } catch (e) {
             next(e);

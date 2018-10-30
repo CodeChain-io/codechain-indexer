@@ -76,15 +76,17 @@ export class QueryBlock implements BaseAction {
         });
     }
 
-    public async getBlocks(lastBlockNumber: number = Number.MAX_VALUE, itemsPerPage: number = 25): Promise<BlockDoc[]> {
+    public async getBlocks(
+        params?: { lastBlockNumber?: number | null; itemsPerPage?: number | null } | null
+    ): Promise<BlockDoc[]> {
         return this.searchBlock({
             sort: [
                 {
                     number: { order: "desc" }
                 }
             ],
-            search_after: [lastBlockNumber],
-            size: itemsPerPage,
+            search_after: [(params && params.lastBlockNumber) || Number.MAX_VALUE],
+            size: (params && params.itemsPerPage) || 25,
             query: {
                 bool: {
                     must: [{ term: { isRetracted: false } }]
@@ -109,8 +111,10 @@ export class QueryBlock implements BaseAction {
 
     public async getBlocksByPlatformAddress(
         address: string,
-        page: number = 1,
-        itemsPerPage: number = 6
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<BlockDoc[]> {
         return this.searchBlock({
             sort: [
@@ -118,8 +122,8 @@ export class QueryBlock implements BaseAction {
                     number: { order: "desc" }
                 }
             ],
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
+            size: (params && params.itemsPerPage) || 6,
             query: {
                 bool: {
                     must: [{ term: { author: address } }, { term: { isRetracted: false } }]

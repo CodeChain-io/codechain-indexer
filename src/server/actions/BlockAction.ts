@@ -53,7 +53,10 @@ function handle(context: ServerContext, router: Router) {
                 let currentBlock = 0;
                 let lastBlockCursor = Number.MAX_VALUE;
                 while (beforePageBlockCount - currentBlock > 10000) {
-                    const cursorblocks = await context.db.getBlocks(lastBlockCursor, 10000);
+                    const cursorblocks = await context.db.getBlocks({
+                        lastBlockNumber: lastBlockCursor,
+                        itemsPerPage: 10000
+                    });
                     const lastCursorBlock = _.last(cursorblocks);
                     if (lastCursorBlock) {
                         lastBlockCursor = lastCursorBlock.number;
@@ -61,14 +64,17 @@ function handle(context: ServerContext, router: Router) {
                     currentBlock += 10000;
                 }
                 const skipCount = beforePageBlockCount - currentBlock;
-                const skipBlocks = await context.db.getBlocks(lastBlockCursor, skipCount);
+                const skipBlocks = await context.db.getBlocks({
+                    lastBlockNumber: lastBlockCursor,
+                    itemsPerPage: skipCount
+                });
                 const lastSkipBlock = _.last(skipBlocks);
                 if (lastSkipBlock) {
                     lastBlockCursor = lastSkipBlock.number;
                 }
                 calculatedLastBlockNumber = lastBlockCursor;
             }
-            const blocks = await context.db.getBlocks(calculatedLastBlockNumber, itemsPerPage);
+            const blocks = await context.db.getBlocks({ lastBlockNumber: calculatedLastBlockNumber, itemsPerPage });
             res.send(blocks);
         } catch (e) {
             next(e);

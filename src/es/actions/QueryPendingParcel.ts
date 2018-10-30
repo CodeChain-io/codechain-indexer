@@ -35,8 +35,10 @@ export class QueryPendingParcel implements BaseAction {
 
     public async getPendingTransactionsByAddress(
         address: string,
-        page: number = 1,
-        itemsPerPage: number = 25
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<PendingTransactionDoc[]> {
         const query = [
             { term: { status: "pending" } },
@@ -54,8 +56,8 @@ export class QueryPendingParcel implements BaseAction {
         ];
         const response = await this.searchPendinParcel({
             sort: [{ timestamp: { order: "desc" } }],
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
+            size: (params && params.itemsPerPage) || 25,
             query: {
                 bool: {
                     must: query
@@ -109,8 +111,10 @@ export class QueryPendingParcel implements BaseAction {
 
     public async getPendingPaymentParcelsByAddress(
         address: string,
-        page: number = 1,
-        itemsPerPage: number = 25
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<PendingParcelDoc[]> {
         const query = [
             { term: { status: "pending" } },
@@ -123,8 +127,8 @@ export class QueryPendingParcel implements BaseAction {
         ];
         const response = await this.searchPendinParcel({
             sort: [{ timestamp: { order: "desc" } }],
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
+            size: (params && params.itemsPerPage) || 25,
             query: {
                 bool: {
                     must: query
@@ -138,15 +142,18 @@ export class QueryPendingParcel implements BaseAction {
     }
 
     public async getCurrentPendingParcels(
-        page: number = 1,
-        itemsPerPage: number = 25,
-        actionFilters: string[],
-        signerFilter: string,
-        sorting: string = "pendingPeriod",
-        orderBy: string = "desc"
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+            actionFilters?: string[] | null;
+            signerFilter?: string | null;
+            sorting?: string | null;
+            orderBy?: string | null;
+        } | null
     ): Promise<PendingParcelDoc[]> {
         let sortQuery;
-        switch (sorting) {
+        const orderBy = (params && params.orderBy) || "desc";
+        switch ((params && params.sorting) || "pendingPeriod") {
             case "pendingPeriod":
                 sortQuery = [{ timestamp: { order: orderBy } }];
                 break;
@@ -157,20 +164,17 @@ export class QueryPendingParcel implements BaseAction {
                 sortQuery = [{ "parcel.fee": { order: orderBy } }, { timestamp: { order: "desc" } }];
                 break;
         }
-        let query;
-        if (signerFilter) {
-            query = [
-                { term: { status: "pending" } },
-                { terms: { "parcel.action.action": actionFilters } },
-                { term: { "parcel.signer": signerFilter } }
-            ];
-        } else {
-            query = [{ term: { status: "pending" } }, { terms: { "parcel.action.action": actionFilters } }];
+        const query: any = [{ term: { status: "pending" } }];
+        if (params && params.signerFilter) {
+            query.push({ term: { "parcel.signer": params.signerFilter } });
+        }
+        if (params && params.actionFilters) {
+            query.push({ terms: { "parcel.action.action": params.actionFilters } });
         }
         const response = await this.searchPendinParcel({
             sort: sortQuery,
-            from: (page - 1) * itemsPerPage,
-            size: itemsPerPage,
+            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
+            size: (params && params.itemsPerPage) || 25,
             query: {
                 bool: {
                     must: query
@@ -183,16 +187,15 @@ export class QueryPendingParcel implements BaseAction {
         return _.map(response.hits.hits, hit => hit._source);
     }
 
-    public async getTotalPendingParcelCount(actionFilters: string[], signerFilter?: string): Promise<number> {
-        let query;
-        if (signerFilter) {
-            query = [
-                { term: { status: "pending" } },
-                { terms: { "parcel.action.action": actionFilters } },
-                { term: { "parcel.signer": signerFilter } }
-            ];
-        } else {
-            query = [{ term: { status: "pending" } }, { terms: { "parcel.action.action": actionFilters } }];
+    public async getTotalPendingParcelCount(
+        params?: { signerFilter?: string | null; actionFilters?: string[] | null } | null
+    ): Promise<number> {
+        const query: any = [{ term: { status: "pending" } }];
+        if (params && params.signerFilter) {
+            query.push({ term: { "parcel.signer": params.signerFilter } });
+        }
+        if (params && params.actionFilters) {
+            query.push({ terms: { "parcel.action.action": params.actionFilters } });
         }
         const count = await this.countPendingParcel({
             query: {

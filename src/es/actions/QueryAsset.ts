@@ -28,10 +28,12 @@ export class QueryAsset implements BaseAction {
         currentBestBlockNumber: number,
         confirmThreshold: number,
         isConfirmed: boolean,
-        lastBlockNumber: number = Number.MAX_VALUE,
-        lastParcelIndex: number = Number.MAX_VALUE,
-        lastTransactionIndex: number = Number.MAX_VALUE,
-        itemsPerPage: number = 25
+        params?: {
+            lastBlockNumber?: number | null;
+            lastParcelIndex?: number | null;
+            lastTransactionIndex?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<UTXO[]> {
         let rangeOption;
         if (isConfirmed) {
@@ -56,8 +58,12 @@ export class QueryAsset implements BaseAction {
                     { parcelIndex: { order: "desc" } },
                     { transactionIndex: { order: "desc" } }
                 ],
-                size: itemsPerPage,
-                search_after: [lastBlockNumber, lastParcelIndex, lastTransactionIndex],
+                size: (params && params.itemsPerPage) || 25,
+                search_after: [
+                    (params && params.lastBlockNumber) || Number.MAX_VALUE,
+                    (params && params.lastParcelIndex) || Number.MAX_VALUE,
+                    (params && params.lastTransactionIndex) || Number.MAX_VALUE
+                ],
                 query: {
                     bool: {
                         must: [
@@ -105,8 +111,10 @@ export class QueryAsset implements BaseAction {
         currentBestBlockNumber: number,
         confirmThreshold: number,
         isConfirmed: boolean,
-        page: number = 0,
-        itemsPerPage: number = 25
+        params?: {
+            page?: number | null;
+            itemsPerPage?: number | null;
+        } | null
     ): Promise<AggsUTXO[]> {
         let rangeOption;
         if (isConfirmed) {
@@ -178,8 +186,8 @@ export class QueryAsset implements BaseAction {
                                             }
                                         }
                                     ],
-                                    from: page * itemsPerPage,
-                                    size: itemsPerPage
+                                    from: ((params && params.page) || 0) * ((params && params.itemsPerPage) || 25),
+                                    size: (params && params.itemsPerPage) || 25
                                 }
                             }
                         }

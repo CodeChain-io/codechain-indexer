@@ -11,11 +11,10 @@ function handle(context: ServerContext, router: Router) {
         const { assetType } = req.params;
         const { page, itemsPerPage } = req.query;
         try {
-            const txs: TransactionDoc[] = await context.db.getTransactionsByAssetType(
-                new H256(assetType),
+            const txs: TransactionDoc[] = await context.db.getTransactionsByAssetType(new H256(assetType), {
                 page,
                 itemsPerPage
-            );
+            });
             res.send(txs);
         } catch (e) {
             next(e);
@@ -104,8 +103,10 @@ function handle(context: ServerContext, router: Router) {
                 // FIXME: Change the confirm threshold according to the consensus.
                 5,
                 isConfirmed === undefined || isConfirmed === "true",
-                page,
-                itemsPerPage
+                {
+                    itemsPerPage,
+                    page
+                }
             );
             res.send(utxoList);
         } catch (e) {
@@ -167,10 +168,12 @@ function handle(context: ServerContext, router: Router) {
                         // FIXME: Change the confirm threshold according to the consensus.
                         5,
                         isConfirmed === undefined || isConfirmed === "true",
-                        lastBlockNumberCursor,
-                        lastParcelIndexCursor,
-                        lastTransactionIndexCursor,
-                        10000
+                        {
+                            lastBlockNumber: lastBlockNumberCursor,
+                            lastParcelIndex: lastParcelIndexCursor,
+                            lastTransactionIndex: lastTransactionIndexCursor,
+                            itemsPerPage: 10000
+                        }
                     );
                     const lastCursorAsset = _.last(cursorAsset);
                     if (lastCursorAsset) {
@@ -188,10 +191,12 @@ function handle(context: ServerContext, router: Router) {
                     // FIXME: Change the confirm threshold according to the consensus.
                     5,
                     isConfirmed === undefined || isConfirmed === "true",
-                    lastBlockNumberCursor,
-                    lastParcelIndexCursor,
-                    lastTransactionIndexCursor,
-                    skipCount
+                    {
+                        lastBlockNumber: lastBlockNumberCursor,
+                        lastParcelIndex: lastParcelIndexCursor,
+                        lastTransactionIndex: lastTransactionIndexCursor,
+                        itemsPerPage: skipCount
+                    }
                 );
                 const lastSkipAsset = _.last(skipAssets);
                 if (lastSkipAsset) {
@@ -210,10 +215,12 @@ function handle(context: ServerContext, router: Router) {
                 // FIXME: Change the confirm threshold according to the consensus.
                 5,
                 isConfirmed === undefined || isConfirmed === "true",
-                calculatedLastBlockNumber,
-                calculatedLastParcelIndex,
-                calculatedLastTransactionIndex,
-                itemsPerPage
+                {
+                    lastBlockNumber: calculatedLastBlockNumber,
+                    lastParcelIndex: calculatedLastParcelIndex,
+                    lastTransactionIndex: calculatedLastTransactionIndex,
+                    itemsPerPage
+                }
             );
             res.send(assets);
         } catch (e) {
