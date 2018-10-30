@@ -1,5 +1,5 @@
-import { AssetDoc, TransactionDoc } from "codechain-indexer-types/lib/types";
-import { AssetTransferAddress, H256, PlatformAddress } from "codechain-sdk/lib/core/classes";
+import { TransactionDoc } from "codechain-indexer-types/lib/types";
+import { AssetTransferAddress, PlatformAddress } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
 import * as _ from "lodash";
 import { ServerContext } from "../ServerContext";
@@ -86,39 +86,6 @@ function handle(context: ServerContext, router: Router) {
         }
         try {
             const count = await context.db.getTotalParcelCountByPlatformAddress(address);
-            res.send(JSON.stringify(count));
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    router.get("/addr-platform-assets/:address", async (req, res, next) => {
-        const { address } = req.params;
-        const { page, itemsPerPage } = req.query;
-        try {
-            PlatformAddress.fromString(address).getAccountId();
-        } catch (e) {
-            res.send(JSON.stringify([]));
-            return;
-        }
-        try {
-            const assetBundles = await context.db.getAssetBundlesByPlatformAddress(address, { page, itemsPerPage });
-            res.send(assetBundles);
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    router.get("/addr-platform-assets/:address/totalCount", async (req, res, next) => {
-        const { address } = req.params;
-        try {
-            PlatformAddress.fromString(address).getAccountId();
-        } catch (e) {
-            res.send(JSON.stringify(0));
-            return;
-        }
-        try {
-            const count = await context.db.getTotalAssetBundleCountByPlatformAddress(address);
             res.send(JSON.stringify(count));
         } catch (e) {
             next(e);

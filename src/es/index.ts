@@ -1,5 +1,4 @@
 import {
-    AssetBundleDoc,
     AssetDoc,
     AssetMintTransactionDoc,
     AssetSchemeDoc,
@@ -98,15 +97,8 @@ export class ElasticSearchAgent
             itemsPerPage: number | null;
         } | null
     ) => Promise<TransactionDoc[]>;
-    public getAssetBundlesByPlatformAddress!: (
-        address: string,
-        params?: {
-            page?: number | null;
-            itemsPerPage?: number | null;
-        } | null
-    ) => Promise<AssetBundleDoc[]>;
     public getAssetScheme!: (assetType: H256) => Promise<AssetSchemeDoc | null>;
-    public getAssetBundlesByAssetName!: (name: string) => Promise<AssetBundleDoc[]>;
+    public getAssetInfosByAssetName!: (name: string) => Promise<{ assetScheme: AssetSchemeDoc; assetType: string }[]>;
     public searchTransaction!: (body: any) => Promise<SearchResponse<any>>;
     public retractTransaction!: (transactionHash: H256) => Promise<void>;
     public indexTransaction!: (transactionDoc: TransactionDoc) => Promise<any>;
@@ -140,7 +132,6 @@ export class ElasticSearchAgent
     public getTotalParcelCountByPlatformAddress!: (address: string) => Promise<number>;
     public getTotalTransactionCountByAssetType!: (assetType: H256) => Promise<number>;
     public getTotalTxCountByAssetTransferAddress!: (address: string) => Promise<number>;
-    public getTotalAssetBundleCountByPlatformAddress!: (address: string) => Promise<number>;
     public getTotalBlockCountByPlatformAddress!: (address: string) => Promise<number>;
     public increaseLogCount!: (
         date: string,

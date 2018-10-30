@@ -1,11 +1,4 @@
-import {
-    AssetBundleDoc,
-    AssetDoc,
-    AssetMintTransactionDoc,
-    AssetSchemeDoc,
-    AssetTransferTransactionDoc,
-    TransactionDoc
-} from "codechain-indexer-types/lib/types";
+import { AssetSchemeDoc, TransactionDoc } from "codechain-indexer-types/lib/types";
 import { Type } from "codechain-indexer-types/lib/utils";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, CountResponse, SearchResponse } from "elasticsearch";
@@ -225,58 +218,6 @@ export class QueryTransaction implements BaseAction {
         return count.count;
     }
 
-    public async getAssetBundlesByPlatformAddress(
-        address: string,
-        params?: {
-            page?: number | null;
-            itemsPerPage?: number | null;
-        } | null
-    ): Promise<AssetBundleDoc[]> {
-        const response = await this.searchTransaction({
-            sort: [
-                { "data.blockNumber": { order: "desc" } },
-                { "data.parcelIndex": { order: "desc" } },
-                { "data.transactionIndex": { order: "desc" } }
-            ],
-            from: (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 6),
-            size: (params && params.itemsPerPage) || 6,
-            query: {
-                bool: {
-                    must: [{ term: { isRetracted: false } }, { term: { "data.registrar": address } }]
-                }
-            }
-        });
-        if (response.hits.total === 0) {
-            return [];
-        }
-        return _.map(response.hits.hits, hit => {
-            const tx = hit._source;
-            const assetScheme = Type.getAssetSchemeDoc(tx);
-            return {
-                assetScheme,
-                asset: {
-                    assetType: tx.data.output.assetType,
-                    lockScriptHash: tx.data.output.lockScriptHash,
-                    parameters: tx.data.output.parameters,
-                    amount: tx.data.output.amount || 0,
-                    transactionHash: tx.data.hash,
-                    transactionOutputIndex: 0
-                }
-            };
-        });
-    }
-
-    public async getTotalAssetBundleCountByPlatformAddress(address: string): Promise<number> {
-        const count = await this.countTransaction({
-            query: {
-                bool: {
-                    must: [{ term: { isRetracted: false } }, { term: { "data.registrar": address } }]
-                }
-            }
-        });
-        return count.count;
-    }
-
     public async getAssetScheme(assetType: H256): Promise<AssetSchemeDoc | null> {
         const response = await this.searchTransaction({
             sort: [
@@ -297,7 +238,7 @@ export class QueryTransaction implements BaseAction {
         return Type.getAssetSchemeDoc(response.hits.hits[0]._source);
     }
 
-    public async getAssetBundlesByAssetName(name: string): Promise<AssetBundleDoc[]> {
+    public async getAssetInfosByAssetName(name: string): Promise<{ assetScheme: AssetSchemeDoc; assetType: string }[]> {
         const response = await this.searchTransaction({
             sort: [
                 { "data.blockNumber": { order: "desc" } },
@@ -326,14 +267,7 @@ export class QueryTransaction implements BaseAction {
             const assetScheme = Type.getAssetSchemeDoc(tx);
             return {
                 assetScheme,
-                asset: {
-                    assetType: tx.data.output.assetType,
-                    lockScriptHash: tx.data.output.lockScriptHash,
-                    parameters: tx.data.output.parameters,
-                    amount: tx.data.output.amount || 0,
-                    transactionHash: tx.data.hash,
-                    transactionOutputIndex: 0
-                }
+                assetType: tx.data.output.assetType
             };
         });
     }

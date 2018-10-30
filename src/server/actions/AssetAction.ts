@@ -34,8 +34,8 @@ function handle(context: ServerContext, router: Router) {
     router.get("/search/asset/:assetName", async (req, res, next) => {
         const { assetName } = req.params;
         try {
-            const assetBundles = await context.db.getAssetBundlesByAssetName(assetName);
-            res.send(assetBundles);
+            const assetInfos = await context.db.getAssetInfosByAssetName(assetName);
+            res.send(assetInfos);
         } catch (e) {
             next(e);
         }

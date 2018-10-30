@@ -1,4 +1,4 @@
-import { AssetDoc, AssetSchemeDoc } from "codechain-indexer-types/lib/types";
+import { AssetDoc } from "codechain-indexer-types/lib/types";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Client, DeleteDocumentResponse } from "elasticsearch";
 import * as _ from "lodash";

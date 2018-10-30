@@ -684,9 +684,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codechain-indexer-types@^0.1.0-alpha.0:
-  version "0.1.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.1.0-alpha.0.tgz#26b4fb35d7b5a751dfee121369c0221587d1397b"
+codechain-indexer-types@^0.1.0-alpha.2:
+  version "0.1.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.1.0-alpha.2.tgz#ffdeab8765b96400f035e1e9eba46f95afd42958"
   dependencies:
     buffer "^5.2.1"
     codechain-sdk "^0.4.0-rc3"
