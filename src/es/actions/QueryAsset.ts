@@ -189,7 +189,8 @@ export class QueryAsset implements BaseAction {
                                             }
                                         }
                                     ],
-                                    from: ((params && params.page) || 0) * ((params && params.itemsPerPage) || 25),
+                                    from:
+                                        (((params && params.page) || 1) - 1) * ((params && params.itemsPerPage) || 25),
                                     size: (params && params.itemsPerPage) || 25
                                 }
                             }
