@@ -20,7 +20,11 @@ function handle(context: ServerContext, router: Router) {
     });
 
     router.get("/txs", async (req, res, next) => {
-        const { page, itemsPerPage, lastBlockNumber, lastParcelIndex, lastTransactionIndex } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
+        const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
+        const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;

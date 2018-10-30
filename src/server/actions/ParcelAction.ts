@@ -15,7 +15,9 @@ function handle(context: ServerContext, router: Router) {
     });
 
     router.get("/parcels/pending", async (req, res, next) => {
-        const { page, itemsPerPage, actionFilters, signerFilter, sorting, orderBy } = req.query;
+        const { actionFilters, signerFilter, sorting, orderBy } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const parsedActionFilters = actionFilters && actionFilters.split(",");
         try {
             const pendingParcels = await context.db.getCurrentPendingParcels({
@@ -81,7 +83,10 @@ function handle(context: ServerContext, router: Router) {
     });
 
     router.get("/parcels", async (req, res, next) => {
-        const { page, itemsPerPage, lastBlockNumber, lastParcelIndex } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
+        const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;

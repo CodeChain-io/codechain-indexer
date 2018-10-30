@@ -41,7 +41,9 @@ function handle(context: ServerContext, router: Router) {
     });
 
     router.get("/blocks", async (req, res, next) => {
-        const { page, itemsPerPage, lastBlockNumber } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
         try {
             let calculatedLastBlockNumber;
             if (lastBlockNumber) {

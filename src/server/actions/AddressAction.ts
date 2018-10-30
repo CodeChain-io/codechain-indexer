@@ -28,7 +28,8 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/addr-platform-blocks/:address", async (req, res, next) => {
         const { address } = req.params;
-        const { page, itemsPerPage } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         try {
             PlatformAddress.fromString(address).getAccountId();
         } catch (e) {
@@ -61,7 +62,8 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/addr-platform-parcels/:address", async (req, res, next) => {
         const { address } = req.params;
-        const { page, itemsPerPage } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         try {
             PlatformAddress.fromString(address).getAccountId();
         } catch (e) {
@@ -94,7 +96,8 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/addr-asset-txs/:address", async (req, res, next) => {
         const { address } = req.params;
-        const { page, itemsPerPage } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         try {
             AssetTransferAddress.fromString(address);
         } catch (e) {

@@ -9,7 +9,8 @@ import { ServerContext } from "../ServerContext";
 function handle(context: ServerContext, router: Router) {
     router.get("/asset-txs/:assetType", async (req, res, next) => {
         const { assetType } = req.params;
-        const { page, itemsPerPage } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         try {
             const txs: TransactionDoc[] = await context.db.getTransactionsByAssetType(new H256(assetType), {
                 page,
@@ -118,7 +119,6 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/aggs-utxo/:address/:assetType", async (req, res, next) => {
         const { address, assetType } = req.params;
-
         const { isConfirmed } = req.query;
         try {
             if (!Type.isH256String(assetType)) {
@@ -148,7 +148,12 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/utxo/:address/:assetType", async (req, res, next) => {
         const { address, assetType } = req.params;
-        const { page, itemsPerPage, lastBlockNumber, lastParcelIndex, lastTransactionIndex, isConfirmed } = req.query;
+        const { isConfirmed } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
+        const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
+        const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
