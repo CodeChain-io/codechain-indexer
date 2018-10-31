@@ -124,7 +124,7 @@ export class QueryBlock implements BaseAction {
                     number: { order: "desc" }
                 }
             ],
-            from: page * itemsPerPage,
+            from: (page - 1) * itemsPerPage,
             size: itemsPerPage,
             query: {
                 bool: {

@@ -58,7 +58,7 @@ export class QueryPendingParcel implements BaseAction {
         const page = params && params.page != undefined ? params.page : 1;
         const response = await this.searchPendinParcel({
             sort: [{ timestamp: { order: "desc" } }],
-            from: page * (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
+            from: (page - 1) * (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
             size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {

@@ -69,7 +69,7 @@ export class QueryParcel implements BaseAction {
         const itemsPerPage = params && params.itemsPerPage != undefined ? params.itemsPerPage : 6;
         const response = await this.searchParcel({
             sort: [{ blockNumber: { order: "desc" } }, { parcelIndex: { order: "desc" } }],
-            from: page * itemsPerPage,
+            from: (page - 1) * itemsPerPage,
             size: itemsPerPage,
             query: {
                 bool: {
