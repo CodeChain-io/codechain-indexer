@@ -95,15 +95,14 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/aggs-utxo/:address", async (req, res, next) => {
         const { address } = req.params;
-        const { isConfirmed } = req.query;
+        const { onlyConfirmed, confirmThreshold } = req.query;
         try {
             const bestBlockNumber = await context.db.getLastBlockNumber();
             const utxoList = await context.db.getAggsUTXOList(
                 address,
                 bestBlockNumber,
-                // FIXME: Change the confirm threshold according to the consensus.
-                5,
-                isConfirmed === undefined || isConfirmed === "true"
+                confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                onlyConfirmed === "true"
             );
             const result = await Promise.all(
                 _.map(utxoList, async utxo => ({
@@ -119,7 +118,7 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/aggs-utxo/:address/:assetType", async (req, res, next) => {
         const { address, assetType } = req.params;
-        const { isConfirmed } = req.query;
+        const { onlyConfirmed, confirmThreshold } = req.query;
         try {
             if (!Type.isH256String(assetType)) {
                 res.send(JSON.stringify(null));
@@ -130,9 +129,8 @@ function handle(context: ServerContext, router: Router) {
                 address,
                 new H256(assetType),
                 bestBlockNumber,
-                // FIXME: Change the confirm threshold according to the consensus.
-                5,
-                isConfirmed === undefined || isConfirmed === "true"
+                confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                onlyConfirmed === "true"
             );
             if (utxo) {
                 const assetScheme = await context.db.getAssetScheme(new H256(utxo.assetType));
@@ -148,7 +146,7 @@ function handle(context: ServerContext, router: Router) {
 
     router.get("/utxo/:address/:assetType", async (req, res, next) => {
         const { address, assetType } = req.params;
-        const { isConfirmed } = req.query;
+        const { onlyConfirmed, confirmThreshold } = req.query;
         const page = req.query.page && parseInt(req.query.page, 10);
         const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
@@ -178,9 +176,8 @@ function handle(context: ServerContext, router: Router) {
                         address,
                         new H256(assetType),
                         bestBlockNumber,
-                        // FIXME: Change the confirm threshold according to the consensus.
-                        5,
-                        isConfirmed === undefined || isConfirmed === "true",
+                        confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                        onlyConfirmed === "true",
                         {
                             lastBlockNumber: lastBlockNumberCursor,
                             lastParcelIndex: lastParcelIndexCursor,
@@ -201,9 +198,8 @@ function handle(context: ServerContext, router: Router) {
                     address,
                     new H256(assetType),
                     bestBlockNumber,
-                    // FIXME: Change the confirm threshold according to the consensus.
-                    5,
-                    isConfirmed === undefined || isConfirmed === "true",
+                    confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                    onlyConfirmed === "true",
                     {
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
@@ -225,9 +221,8 @@ function handle(context: ServerContext, router: Router) {
                 address,
                 new H256(assetType),
                 bestBlockNumber,
-                // FIXME: Change the confirm threshold according to the consensus.
-                5,
-                isConfirmed === undefined || isConfirmed === "true",
+                confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                onlyConfirmed === "true",
                 {
                     lastBlockNumber: calculatedLastBlockNumber,
                     lastParcelIndex: calculatedLastParcelIndex,

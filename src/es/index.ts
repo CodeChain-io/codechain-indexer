@@ -164,7 +164,7 @@ export class ElasticSearchAgent
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean,
+        onlyConfirmed: boolean,
         params?: {
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
@@ -184,7 +184,7 @@ export class ElasticSearchAgent
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed?: boolean
+        onlyConfirmed: boolean
     ) => Promise<
         | {
               assetType: string;
@@ -197,7 +197,7 @@ export class ElasticSearchAgent
         address: string,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean
+        onlyConfirmed: boolean
     ) => Promise<
         {
             assetType: string;

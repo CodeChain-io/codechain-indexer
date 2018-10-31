@@ -14,7 +14,7 @@ export class QueryAsset implements BaseAction {
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean,
+        onlyConfirmed: boolean,
         params?: {
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
@@ -22,19 +22,37 @@ export class QueryAsset implements BaseAction {
             itemsPerPage?: number | null;
         } | null
     ): Promise<{ asset: AssetDoc; blockNumber: number; parcelIndex: number; transactionIndex: number }[]> {
-        let rangeOption;
-        if (isConfirmed) {
-            rangeOption = {
-                blockNumber: {
-                    lte: currentBestBlockNumber - confirmThreshold
+        const mustQuery: any = [
+            {
+                term: {
+                    address: {
+                        value: address
+                    }
                 }
-            };
-        } else {
-            rangeOption = {
-                blockNumber: {
-                    gt: currentBestBlockNumber - confirmThreshold
+            },
+            {
+                term: {
+                    "asset.assetType": {
+                        value: assetType
+                    }
                 }
-            };
+            },
+            {
+                term: {
+                    isRemoved: {
+                        value: false
+                    }
+                }
+            }
+        ];
+        if (onlyConfirmed) {
+            mustQuery.push({
+                range: {
+                    blockNumber: {
+                        lte: currentBestBlockNumber - confirmThreshold
+                    }
+                }
+            });
         }
         const response = await this.client.search<{
             asset: AssetDoc;
@@ -58,32 +76,7 @@ export class QueryAsset implements BaseAction {
                 ],
                 query: {
                     bool: {
-                        must: [
-                            {
-                                term: {
-                                    address: {
-                                        value: address
-                                    }
-                                }
-                            },
-                            {
-                                term: {
-                                    "asset.assetType": {
-                                        value: assetType
-                                    }
-                                }
-                            },
-                            {
-                                term: {
-                                    isRemoved: {
-                                        value: false
-                                    }
-                                }
-                            },
-                            {
-                                range: rangeOption
-                            }
-                        ]
+                        must: mustQuery
                     }
                 }
             }
@@ -102,7 +95,7 @@ export class QueryAsset implements BaseAction {
         address: string,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean
+        onlyConfirmed: boolean
     ): Promise<
         {
             assetType: string;
@@ -110,19 +103,30 @@ export class QueryAsset implements BaseAction {
             utxoQuantity: number;
         }[]
     > {
-        let rangeOption;
-        if (isConfirmed) {
-            rangeOption = {
-                blockNumber: {
-                    lte: currentBestBlockNumber - confirmThreshold
+        const mustQuery: any = [
+            {
+                term: {
+                    address: {
+                        value: address
+                    }
                 }
-            };
-        } else {
-            rangeOption = {
-                blockNumber: {
-                    gt: currentBestBlockNumber - confirmThreshold
+            },
+            {
+                term: {
+                    isRemoved: {
+                        value: false
+                    }
                 }
-            };
+            }
+        ];
+        if (onlyConfirmed) {
+            mustQuery.push({
+                range: {
+                    blockNumber: {
+                        lte: currentBestBlockNumber - confirmThreshold
+                    }
+                }
+            });
         }
         const response = await this.client.search<{
             asset: AssetDoc;
@@ -135,25 +139,7 @@ export class QueryAsset implements BaseAction {
             body: {
                 query: {
                     bool: {
-                        must: [
-                            {
-                                term: {
-                                    address: {
-                                        value: address
-                                    }
-                                }
-                            },
-                            {
-                                term: {
-                                    isRemoved: {
-                                        value: false
-                                    }
-                                }
-                            },
-                            {
-                                range: rangeOption
-                            }
-                        ]
+                        must: mustQuery
                     }
                 },
                 size: 0,
@@ -207,7 +193,7 @@ export class QueryAsset implements BaseAction {
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
-        isConfirmed: boolean
+        onlyConfirmed: boolean
     ): Promise<
         | {
               assetType: string;
@@ -216,19 +202,37 @@ export class QueryAsset implements BaseAction {
           }
         | undefined
     > {
-        let rangeOption;
-        if (isConfirmed) {
-            rangeOption = {
-                blockNumber: {
-                    lte: currentBestBlockNumber - confirmThreshold
+        const mustQuery: any = [
+            {
+                term: {
+                    address: {
+                        value: address
+                    }
                 }
-            };
-        } else {
-            rangeOption = {
-                blockNumber: {
-                    gt: currentBestBlockNumber - confirmThreshold
+            },
+            {
+                term: {
+                    "asset.assetType": {
+                        value: assetType.value
+                    }
                 }
-            };
+            },
+            {
+                term: {
+                    isRemoved: {
+                        value: false
+                    }
+                }
+            }
+        ];
+        if (onlyConfirmed) {
+            mustQuery.push({
+                range: {
+                    blockNumber: {
+                        lte: currentBestBlockNumber - confirmThreshold
+                    }
+                }
+            });
         }
         const response = await this.client.search<{
             asset: AssetDoc;
@@ -241,32 +245,7 @@ export class QueryAsset implements BaseAction {
             body: {
                 query: {
                     bool: {
-                        must: [
-                            {
-                                term: {
-                                    address: {
-                                        value: address
-                                    }
-                                }
-                            },
-                            {
-                                term: {
-                                    "asset.assetType": {
-                                        value: assetType.value
-                                    }
-                                }
-                            },
-                            {
-                                term: {
-                                    isRemoved: {
-                                        value: false
-                                    }
-                                }
-                            },
-                            {
-                                range: rangeOption
-                            }
-                        ]
+                        must: mustQuery
                     }
                 },
                 size: 0,
