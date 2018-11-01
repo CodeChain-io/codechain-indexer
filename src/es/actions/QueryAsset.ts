@@ -49,7 +49,7 @@ export class QueryAsset implements BaseAction {
             mustQuery.push({
                 range: {
                     blockNumber: {
-                        lte: currentBestBlockNumber - confirmThreshold
+                        lt: currentBestBlockNumber - confirmThreshold
                     }
                 }
             });
@@ -123,7 +123,7 @@ export class QueryAsset implements BaseAction {
             mustQuery.push({
                 range: {
                     blockNumber: {
-                        lte: currentBestBlockNumber - confirmThreshold
+                        lt: currentBestBlockNumber - confirmThreshold
                     }
                 }
             });
@@ -229,7 +229,7 @@ export class QueryAsset implements BaseAction {
             mustQuery.push({
                 range: {
                     blockNumber: {
-                        lte: currentBestBlockNumber - confirmThreshold
+                        lt: currentBestBlockNumber - confirmThreshold
                     }
                 }
             });
