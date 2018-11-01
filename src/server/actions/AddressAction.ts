@@ -98,6 +98,8 @@ function handle(context: ServerContext, router: Router) {
         const { address } = req.params;
         const page = req.query.page && parseInt(req.query.page, 10);
         const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const onlyUnconfirmed = req.query.onlyUnconfirmed;
+        const confirmThreshold = req.query.confirmThreshold != undefined ? parseInt(req.query.confirmThreshold, 10) : 5;
         try {
             AssetTransferAddress.fromString(address);
         } catch (e) {
@@ -105,11 +107,28 @@ function handle(context: ServerContext, router: Router) {
             return;
         }
         try {
+            let currentBestBlockNumber = 0;
+            if (onlyUnconfirmed === "true") {
+                currentBestBlockNumber = await context.db.getLastBlockNumber();
+            }
             const transactions: TransactionDoc[] = await context.db.getTransactionsByAssetTransferAddress(address, {
                 page,
-                itemsPerPage
+                itemsPerPage,
+                onlyUnconfirmed: onlyUnconfirmed === "true",
+                currentBestBlockNumber,
+                confirmThreshold
             });
             res.send(transactions);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    router.get("/addr-asset-txs/pending/:address", async (req, res, next) => {
+        const { address } = req.params;
+        try {
+            const pendingTxs = await context.db.getPendingTransactionsByAddress(address);
+            res.send(pendingTxs);
         } catch (e) {
             next(e);
         }

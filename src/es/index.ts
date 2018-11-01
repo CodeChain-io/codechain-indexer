@@ -94,7 +94,10 @@ export class ElasticSearchAgent
         address: string,
         params?: {
             page?: number | null;
-            itemsPerPage: number | null;
+            itemsPerPage?: number | null;
+            onlyUnconfirmed?: boolean | null;
+            currentBestBlockNumber?: number | null;
+            confirmThreshold?: number | null;
         } | null
     ) => Promise<TransactionDoc[]>;
     public getAssetScheme!: (assetType: H256) => Promise<AssetSchemeDoc | null>;

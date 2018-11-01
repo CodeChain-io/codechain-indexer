@@ -149,9 +149,42 @@ export class QueryTransaction implements BaseAction {
         address: string,
         params?: {
             page?: number | null;
-            itemsPerPage: number | null;
+            itemsPerPage?: number | null;
+            onlyUnconfirmed?: boolean | null;
+            currentBestBlockNumber?: number | null;
+            confirmThreshold?: number | null;
         } | null
     ): Promise<TransactionDoc[]> {
+        const mustQuery: any = [
+            { term: { isRetracted: false } },
+            {
+                bool: {
+                    should: [
+                        { term: { "data.outputs.owner": address } },
+                        {
+                            term: {
+                                "data.inputs.prevOut.owner": address
+                            }
+                        },
+                        {
+                            term: {
+                                "data.burns.prevOut.owner": address
+                            }
+                        },
+                        { term: { "data.output.owner": address } }
+                    ]
+                }
+            }
+        ];
+        if (params && params.onlyUnconfirmed && params.currentBestBlockNumber && params.confirmThreshold) {
+            mustQuery.push({
+                range: {
+                    "data.blockNumber": {
+                        gte: params.currentBestBlockNumber - params.confirmThreshold
+                    }
+                }
+            });
+        }
         const response = await this.searchTransaction({
             sort: [
                 { "data.blockNumber": { order: "desc" } },
@@ -164,27 +197,7 @@ export class QueryTransaction implements BaseAction {
             size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 6,
             query: {
                 bool: {
-                    must: [
-                        { term: { isRetracted: false } },
-                        {
-                            bool: {
-                                should: [
-                                    { term: { "data.outputs.owner": address } },
-                                    {
-                                        term: {
-                                            "data.inputs.prevOut.owner": address
-                                        }
-                                    },
-                                    {
-                                        term: {
-                                            "data.burns.prevOut.owner": address
-                                        }
-                                    },
-                                    { term: { "data.output.owner": address } }
-                                ]
-                            }
-                        }
-                    ]
+                    must: mustQuery
                 }
             }
         });
