@@ -1,5 +1,3 @@
-import { ElasticSearchAgent } from "codechain-indexer-types";
-import { LogType } from "codechain-indexer-types/lib/actions/QueryLog";
 import {
     AssetMintTransactionDoc,
     AssetTransferTransactionDoc,
@@ -13,6 +11,8 @@ import * as _ from "lodash";
 import * as moment from "moment";
 import { Job, scheduleJob } from "node-schedule";
 import * as sharp from "sharp";
+import { ElasticSearchAgent } from "../es";
+import { LogType } from "../es/actions/QueryLog";
 import { TypeConverter } from "../es/utils/TypeConverter";
 import { WorkerConfig } from "./";
 const pLimit = require("p-limit");

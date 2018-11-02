@@ -10,7 +10,6 @@ export class QueryAsset implements BaseAction {
     public client!: Client;
 
     public async getUTXOListByAssetType(
-        address: string,
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
@@ -20,16 +19,10 @@ export class QueryAsset implements BaseAction {
             lastParcelIndex?: number | null;
             lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
+            address?: string | null;
         } | null
     ): Promise<{ asset: AssetDoc; blockNumber: number; parcelIndex: number; transactionIndex: number }[]> {
         const mustQuery: any = [
-            {
-                term: {
-                    address: {
-                        value: address
-                    }
-                }
-            },
             {
                 term: {
                     "asset.assetType": {
@@ -45,6 +38,15 @@ export class QueryAsset implements BaseAction {
                 }
             }
         ];
+        if (params && params.address) {
+            mustQuery.push({
+                term: {
+                    address: {
+                        value: params.address
+                    }
+                }
+            });
+        }
         if (onlyConfirmed) {
             mustQuery.push({
                 range: {

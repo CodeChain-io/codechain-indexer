@@ -163,7 +163,6 @@ export class ElasticSearchAgent
     public searchImage!: (body: any) => Promise<SearchResponse<any>>;
     public removeImage!: (assetType: H256) => Promise<DeleteDocumentResponse>;
     public getUTXOListByAssetType!: (
-        address: string,
         assetType: H256,
         currentBestBlockNumber: number,
         confirmThreshold: number,
@@ -173,6 +172,7 @@ export class ElasticSearchAgent
             lastParcelIndex?: number | null;
             lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
+            address?: string | null;
         } | null
     ) => Promise<
         {

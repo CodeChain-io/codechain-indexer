@@ -1,5 +1,5 @@
-import { LogType } from "codechain-indexer-types/lib/actions/QueryLog";
 import { Router } from "express";
+import { LogType } from "../../es/actions/QueryLog";
 import { ServerContext } from "../ServerContext";
 
 function handle(context: ServerContext, router: Router) {

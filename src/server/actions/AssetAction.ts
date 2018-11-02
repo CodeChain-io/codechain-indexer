@@ -144,7 +144,8 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.get("/utxo/:address/:assetType", async (req, res, next) => {
+    // FIXME: This is duplicated with "/utxo/:assetType" action
+    router.get("/utxo/:assetType/owner/:address", async (req, res, next) => {
         const { address, assetType } = req.params;
         const { onlyConfirmed, confirmThreshold } = req.query;
         const page = req.query.page && parseInt(req.query.page, 10);
@@ -173,7 +174,105 @@ function handle(context: ServerContext, router: Router) {
                 let lastTransactionIndexCursor = Number.MAX_VALUE;
                 while (beforePageAssetCount - currentAssetCount > 10000) {
                     const cursorAsset = await context.db.getUTXOListByAssetType(
-                        address,
+                        new H256(assetType),
+                        bestBlockNumber,
+                        confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                        onlyConfirmed === "true",
+                        {
+                            lastBlockNumber: lastBlockNumberCursor,
+                            lastParcelIndex: lastParcelIndexCursor,
+                            lastTransactionIndex: lastTransactionIndexCursor,
+                            itemsPerPage: 10000,
+                            address
+                        }
+                    );
+                    const lastCursorAsset = _.last(cursorAsset);
+                    if (lastCursorAsset) {
+                        lastBlockNumberCursor = lastCursorAsset.blockNumber;
+                        lastParcelIndexCursor = lastCursorAsset.parcelIndex;
+                        lastTransactionIndexCursor = lastCursorAsset.transactionIndex;
+                    }
+                    currentAssetCount += 10000;
+                }
+                const skipCount = beforePageAssetCount - currentAssetCount;
+                const skipAssets = await context.db.getUTXOListByAssetType(
+                    new H256(assetType),
+                    bestBlockNumber,
+                    confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                    onlyConfirmed === "true",
+                    {
+                        lastBlockNumber: lastBlockNumberCursor,
+                        lastParcelIndex: lastParcelIndexCursor,
+                        lastTransactionIndex: lastTransactionIndexCursor,
+                        itemsPerPage: skipCount,
+                        address
+                    }
+                );
+                const lastSkipAsset = _.last(skipAssets);
+                if (lastSkipAsset) {
+                    lastBlockNumberCursor = lastSkipAsset.blockNumber;
+                    lastParcelIndexCursor = lastSkipAsset.parcelIndex;
+                    lastTransactionIndexCursor = lastSkipAsset.transactionIndex;
+                }
+                calculatedLastBlockNumber = lastBlockNumberCursor;
+                calculatedLastParcelIndex = lastParcelIndexCursor;
+                calculatedLastTransactionIndex = lastTransactionIndexCursor;
+            }
+            const assets = await context.db.getUTXOListByAssetType(
+                new H256(assetType),
+                bestBlockNumber,
+                confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
+                onlyConfirmed === "true",
+                {
+                    lastBlockNumber: calculatedLastBlockNumber,
+                    lastParcelIndex: calculatedLastParcelIndex,
+                    lastTransactionIndex: calculatedLastTransactionIndex,
+                    itemsPerPage,
+                    address
+                }
+            );
+
+            const result = await Promise.all(
+                _.map(assets, async asset => ({
+                    ...asset,
+                    assetScheme: await context.db.getAssetScheme(new H256(asset.asset.assetType))
+                }))
+            );
+            res.send(result);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    router.get("/utxo/:assetType", async (req, res, next) => {
+        const { assetType } = req.params;
+        const { onlyConfirmed, confirmThreshold } = req.query;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
+        const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
+        const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
+        try {
+            let calculatedLastBlockNumber;
+            let calculatedLastParcelIndex;
+            let calculatedLastTransactionIndex;
+            const bestBlockNumber = await context.db.getLastBlockNumber();
+            if (lastBlockNumber && lastParcelIndex && lastTransactionIndex) {
+                calculatedLastBlockNumber = lastBlockNumber;
+                calculatedLastParcelIndex = lastParcelIndex;
+                calculatedLastTransactionIndex = lastTransactionIndex;
+            } else if (page === 1 || !page) {
+                calculatedLastBlockNumber = Number.MAX_VALUE;
+                calculatedLastParcelIndex = Number.MAX_VALUE;
+                calculatedLastTransactionIndex = Number.MAX_VALUE;
+            } else {
+                const beforePageAssetCount = (page - 1) * itemsPerPage;
+                let currentAssetCount = 0;
+                let lastBlockNumberCursor = Number.MAX_VALUE;
+                let lastParcelIndexCursor = Number.MAX_VALUE;
+                let lastTransactionIndexCursor = Number.MAX_VALUE;
+                while (beforePageAssetCount - currentAssetCount > 10000) {
+                    const cursorAsset = await context.db.getUTXOListByAssetType(
                         new H256(assetType),
                         bestBlockNumber,
                         confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
@@ -195,7 +294,6 @@ function handle(context: ServerContext, router: Router) {
                 }
                 const skipCount = beforePageAssetCount - currentAssetCount;
                 const skipAssets = await context.db.getUTXOListByAssetType(
-                    address,
                     new H256(assetType),
                     bestBlockNumber,
                     confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
@@ -218,7 +316,6 @@ function handle(context: ServerContext, router: Router) {
                 calculatedLastTransactionIndex = lastTransactionIndexCursor;
             }
             const assets = await context.db.getUTXOListByAssetType(
-                address,
                 new H256(assetType),
                 bestBlockNumber,
                 confirmThreshold != undefined ? parseInt(confirmThreshold, 10) : 5,
