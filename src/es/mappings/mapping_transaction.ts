@@ -1,4 +1,86 @@
 export const getMappingTransaction = () => {
+    const assetTransferInput = {
+        properties: {
+            unlockScript: {
+                properties: {
+                    data: {
+                        type: "long"
+                    },
+                    type: {
+                        type: "keyword"
+                    }
+                }
+            },
+            lockScript: {
+                properties: {
+                    data: {
+                        type: "long"
+                    },
+                    type: {
+                        type: "keyword"
+                    }
+                }
+            },
+            timelock: {
+                properties: {
+                    type: {
+                        type: "keyword"
+                    },
+                    value: {
+                        type: "long"
+                    }
+                }
+            },
+            prevOut: {
+                properties: {
+                    amount: {
+                        type: "keyword"
+                    },
+                    assetType: {
+                        type: "keyword"
+                    },
+                    assetScheme: {
+                        properties: {
+                            metadata: {
+                                type: "text"
+                            },
+                            registrar: {
+                                type: "keyword"
+                            },
+                            amount: {
+                                type: "keyword"
+                            },
+                            networkId: {
+                                type: "keyword"
+                            }
+                        }
+                    },
+                    index: {
+                        type: "long"
+                    },
+                    owner: {
+                        type: "keyword"
+                    },
+                    transactionHash: {
+                        type: "keyword"
+                    },
+                    lockScriptHash: {
+                        type: "keyword"
+                    },
+                    parameters: {
+                        properties: {
+                            data: {
+                                type: "long"
+                            },
+                            type: {
+                                type: "keyword"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
     return {
         properties: {
             data: {
@@ -7,6 +89,9 @@ export const getMappingTransaction = () => {
                         type: "keyword"
                     },
                     blockNumber: {
+                        type: "long"
+                    },
+                    shardId: {
                         type: "long"
                     },
                     invoice: {
@@ -18,143 +103,12 @@ export const getMappingTransaction = () => {
                     parcelIndex: {
                         type: "long"
                     },
-                    transactionIndex: {
-                        type: "long"
-                    },
                     hash: {
                         type: "keyword"
                     },
-                    inputs: {
-                        properties: {
-                            unlockScript: {
-                                properties: {
-                                    data: {
-                                        type: "long"
-                                    },
-                                    type: {
-                                        type: "keyword"
-                                    }
-                                }
-                            },
-                            lockScript: {
-                                properties: {
-                                    data: {
-                                        type: "long"
-                                    },
-                                    type: {
-                                        type: "keyword"
-                                    }
-                                }
-                            },
-                            prevOut: {
-                                properties: {
-                                    amount: {
-                                        type: "long"
-                                    },
-                                    assetType: {
-                                        type: "keyword"
-                                    },
-                                    assetScheme: {
-                                        properties: {
-                                            metadata: {
-                                                type: "text"
-                                            },
-                                            registrar: {
-                                                type: "keyword"
-                                            },
-                                            amount: {
-                                                type: "long"
-                                            },
-                                            networkId: {
-                                                type: "keyword"
-                                            }
-                                        }
-                                    },
-                                    index: {
-                                        type: "long"
-                                    },
-                                    owner: {
-                                        type: "keyword"
-                                    },
-                                    transactionHash: {
-                                        type: "keyword"
-                                    },
-                                    lockScriptHash: {
-                                        type: "keyword"
-                                    },
-                                    parameters: {
-                                        properties: {
-                                            data: {
-                                                type: "long"
-                                            },
-                                            type: {
-                                                type: "keyword"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    burns: {
-                        properties: {
-                            unlockScript: {
-                                properties: {
-                                    data: {
-                                        type: "long"
-                                    },
-                                    type: {
-                                        type: "keyword"
-                                    }
-                                }
-                            },
-                            lockScript: {
-                                properties: {
-                                    data: {
-                                        type: "long"
-                                    },
-                                    type: {
-                                        type: "keyword"
-                                    }
-                                }
-                            },
-                            prevOut: {
-                                properties: {
-                                    amount: {
-                                        type: "long"
-                                    },
-                                    assetType: {
-                                        type: "keyword"
-                                    },
-                                    assetScheme: {
-                                        properties: {
-                                            metadata: {
-                                                type: "text"
-                                            },
-                                            registrar: {
-                                                type: "keyword"
-                                            },
-                                            amount: {
-                                                type: "long"
-                                            },
-                                            networkId: {
-                                                type: "keyword"
-                                            }
-                                        }
-                                    },
-                                    index: {
-                                        type: "long"
-                                    },
-                                    owner: {
-                                        type: "keyword"
-                                    },
-                                    transactionHash: {
-                                        type: "keyword"
-                                    }
-                                }
-                            }
-                        }
-                    },
+                    input: assetTransferInput,
+                    inputs: assetTransferInput,
+                    burns: assetTransferInput,
                     metadata: {
                         type: "text"
                     },
@@ -164,12 +118,9 @@ export const getMappingTransaction = () => {
                     networkId: {
                         type: "keyword"
                     },
-                    nonce: {
-                        type: "long"
-                    },
                     output: {
                         properties: {
-                            owner: {
+                            recipient: {
                                 type: "keyword"
                             },
                             lockScriptHash: {
@@ -186,7 +137,7 @@ export const getMappingTransaction = () => {
                                 }
                             },
                             amount: {
-                                type: "long"
+                                type: "keyword"
                             },
                             assetType: {
                                 type: "keyword"
@@ -199,7 +150,7 @@ export const getMappingTransaction = () => {
                                 type: "keyword"
                             },
                             amount: {
-                                type: "long"
+                                type: "keyword"
                             },
                             assetType: {
                                 type: "keyword"
@@ -213,7 +164,7 @@ export const getMappingTransaction = () => {
                                         type: "keyword"
                                     },
                                     amount: {
-                                        type: "long"
+                                        type: "keyword"
                                     },
                                     networkId: {
                                         type: "keyword"

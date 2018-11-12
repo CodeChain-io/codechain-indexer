@@ -85,7 +85,6 @@ export class ElasticSearchAgent
         params?: {
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
-            lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
             address?: string | null;
             assetType?: H256 | null;
@@ -186,7 +185,6 @@ export class ElasticSearchAgent
         params?: {
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
-            lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
             address?: string | null;
         } | null
@@ -196,7 +194,6 @@ export class ElasticSearchAgent
             asset: AssetDoc;
             blockNumber: number;
             parcelIndex: number;
-            transactionIndex: number;
         }[]
     >;
     public getAggsUTXOByAssetType!: (
@@ -229,8 +226,7 @@ export class ElasticSearchAgent
         address: string,
         assetDoc: AssetDoc,
         blockNumber: number,
-        parcelIndex: number,
-        transactionIndex: number
+        parcelIndex: number
     ) => Promise<void>;
     public revivalAsset!: (
         address: string,

@@ -11,7 +11,22 @@ export const getMappingParcel = () => {
                     receiver: {
                         type: "keyword"
                     },
-                    transactions: getMappingTransaction(),
+                    amount: {
+                        type: "keyword"
+                    },
+                    shardId: {
+                        type: "long"
+                    },
+                    key: {
+                        type: "keyword"
+                    },
+                    owners: {
+                        type: "keyword"
+                    },
+                    users: {
+                        type: "keyword"
+                    },
+                    transaction: getMappingTransaction(),
                     value: {
                         type: "keyword"
                     },
@@ -47,7 +62,7 @@ export const getMappingParcel = () => {
             networkId: {
                 type: "keyword"
             },
-            nonce: {
+            seq: {
                 type: "keyword"
             },
             parcelIndex: {

@@ -48,10 +48,10 @@ function handle(context: ServerContext, router: Router) {
             next(e);
         }
     });
-    router.get("/log/assetTransactionGroupCount", async (req, res, next) => {
+    router.get("/log/assetTransactionCount", async (req, res, next) => {
         const { date } = req.query;
         try {
-            const count = await context.db.getLogCount(date, LogType.PARCEL_ASSET_TRANSACTION_GROUP_COUNT);
+            const count = await context.db.getLogCount(date, LogType.PARCEL_ASSET_TRANSACTION_COUNT);
             res.send(JSON.stringify(count));
         } catch (e) {
             next(e);
@@ -61,6 +61,24 @@ function handle(context: ServerContext, router: Router) {
         const { date } = req.query;
         try {
             const count = await context.db.getLogCount(date, LogType.PARCEL_SET_REGULAR_KEY_COUNT);
+            res.send(JSON.stringify(count));
+        } catch (e) {
+            next(e);
+        }
+    });
+    router.get("/log/setShardUserCount", async (req, res, next) => {
+        const { date } = req.query;
+        try {
+            const count = await context.db.getLogCount(date, LogType.PARCEL_SET_SHARD_USER_COUNT);
+            res.send(JSON.stringify(count));
+        } catch (e) {
+            next(e);
+        }
+    });
+    router.get("/log/setShardOwnerCount", async (req, res, next) => {
+        const { date } = req.query;
+        try {
+            const count = await context.db.getLogCount(date, LogType.PARCEL_SET_SHARD_OWNER_COUNT);
             res.send(JSON.stringify(count));
         } catch (e) {
             next(e);

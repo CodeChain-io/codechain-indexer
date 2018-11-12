@@ -3,6 +3,8 @@ import { Buffer } from "buffer";
 
 import {
     ActionDoc,
+    AssetComposeTransactionDoc,
+    AssetDecomposeTransactionDoc,
     AssetSchemeDoc,
     AssetTransferInputDoc,
     AssetTransferOutputDoc,
@@ -15,9 +17,11 @@ import { Type } from "codechain-indexer-types/lib/utils";
 import { SDK } from "codechain-sdk";
 import {
     Action,
+    AssetComposeTransaction,
+    AssetDecomposeTransaction,
     AssetMintTransaction,
     AssetScheme,
-    AssetTransactionGroup,
+    AssetTransaction,
     AssetTransferAddress,
     AssetTransferInput,
     AssetTransferOutput,
@@ -30,6 +34,8 @@ import {
     Payment,
     PlatformAddress,
     SetRegularKey,
+    SetShardOwners,
+    SetShardUsers,
     SignedParcel,
     Transaction,
     U256
@@ -58,8 +64,8 @@ export class TypeConverter {
         if (!transaction) {
             const pendingParcels = await this.sdk.rpc.chain.getPendingParcels();
             const pendingTransactions = _.chain(pendingParcels)
-                .filter(parcel => parcel.unsigned.action instanceof AssetTransactionGroup)
-                .flatMap(parcel => (parcel.unsigned.action as AssetTransactionGroup).transactions)
+                .filter(parcel => parcel.unsigned.action instanceof AssetTransaction)
+                .map(parcel => (parcel.unsigned.action as AssetTransaction).transaction)
                 .value();
             transaction = _.find(
                 pendingTransactions,
@@ -82,17 +88,19 @@ export class TypeConverter {
             lockScriptHash = transaction.outputs[assetTransferInput.prevOut.index].lockScriptHash.value;
             parameters = transaction.outputs[assetTransferInput.prevOut.index].parameters;
         }
+
         return {
             prevOut: {
                 transactionHash: assetTransferInput.prevOut.transactionHash.value,
                 index: assetTransferInput.prevOut.index,
                 assetType: assetTransferInput.prevOut.assetType.value,
                 assetScheme,
-                amount: assetTransferInput.prevOut.amount,
+                amount: assetTransferInput.prevOut.amount.toString(10),
                 owner,
                 lockScriptHash,
                 parameters
             },
+            timelock: assetTransferInput.timelock,
             lockScript: Buffer.from(assetTransferInput.lockScript),
             unlockScript: Buffer.from(assetTransferInput.unlockScript)
         };
@@ -108,18 +116,16 @@ export class TypeConverter {
             parameters: _.map(assetTransferOutput.parameters, p => Buffer.from(p)),
             assetType: assetTransferOutput.assetType.value,
             assetScheme,
-            amount: assetTransferOutput.amount
+            amount: assetTransferOutput.amount.toString(10)
         };
     };
 
     public fromTransaction = async (
         transaction: Transaction,
         timestamp: number,
-        parcel: SignedParcel,
-        transactionIndex: number
+        parcel: SignedParcel
     ): Promise<TransactionDoc> => {
         const parcelInvoice = await this.sdk.rpc.chain.getParcelInvoice(parcel.hash());
-        const transactionInvoice = parcelInvoice ? (parcelInvoice as Invoice[])[transactionIndex] : undefined;
         if (transaction instanceof AssetMintTransaction) {
             const metadata = Type.getMetadata(transaction.metadata);
             return {
@@ -128,73 +134,104 @@ export class TypeConverter {
                     output: {
                         lockScriptHash: transaction.output.lockScriptHash.value,
                         parameters: _.map(transaction.output.parameters, p => Buffer.from(p)),
-                        amount: transaction.output.amount,
+                        amount: transaction.output.amount && transaction.output.amount.toString(10),
                         assetType: transaction.getAssetSchemeAddress().value,
-                        owner: this.getOwner(transaction.output.lockScriptHash, transaction.output.parameters)
+                        recipient: this.getOwner(transaction.output.lockScriptHash, transaction.output.parameters)
                     },
                     networkId: transaction.networkId,
+                    shardId: transaction.shardId,
                     metadata: transaction.metadata,
-                    registrar: transaction.registrar ? transaction.registrar.value : "",
-                    nonce: transaction.nonce,
+                    registrar: transaction.registrar && transaction.registrar.value,
                     hash: transaction.hash().value,
                     timestamp,
                     assetName: metadata.name || "",
-                    parcelHash: parcel ? parcel.hash().value : "",
-                    blockNumber: parcel ? parcel.blockNumber || 0 : 0,
-                    parcelIndex: parcel ? parcel.parcelIndex || 0 : 0,
-                    transactionIndex,
-                    invoice: transactionInvoice ? transactionInvoice.success : undefined,
-                    errorType: transactionInvoice
-                        ? transactionInvoice.error
-                            ? transactionInvoice.error.type
-                            : ""
-                        : undefined
+                    parcelHash: parcel && parcel.hash().value,
+                    blockNumber: (parcel && parcel.blockNumber) || 0,
+                    parcelIndex: (parcel && parcel.parcelIndex) || 0,
+                    invoice: parcelInvoice && parcelInvoice.success,
+                    errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
                 },
                 isRetracted: false
             };
         } else if (transaction instanceof AssetTransferTransaction) {
-            const transactionJson = transaction.toJSON();
             const burns = await Promise.all(_.map(transaction.burns, burn => this.fromAssetTransferInput(burn)));
             const inputs = await Promise.all(_.map(transaction.inputs, input => this.fromAssetTransferInput(input)));
             const outputs = await Promise.all(
                 _.map(transaction.outputs, output => this.fromAssetTransferOutput(output))
             );
             return {
-                type: transactionJson.type,
+                type: transaction.type,
                 data: {
-                    networkId: transactionJson.data.networkId,
+                    networkId: transaction.networkId,
                     burns,
                     inputs,
                     outputs,
-                    nonce: transactionJson.data.nonce,
                     hash: transaction.hash().value,
                     timestamp,
-                    parcelHash: parcel ? parcel.hash().value : "",
-                    blockNumber: parcel ? parcel.blockNumber || 0 : 0,
-                    parcelIndex: parcel ? parcel.parcelIndex || 0 : 0,
-                    transactionIndex,
-                    invoice: transactionInvoice ? transactionInvoice.success : undefined,
-                    errorType: transactionInvoice
-                        ? transactionInvoice.error
-                            ? transactionInvoice.error.type
-                            : ""
-                        : undefined
+                    parcelHash: parcel && parcel.hash().value,
+                    blockNumber: (parcel && parcel.blockNumber) || 0,
+                    parcelIndex: (parcel && parcel.parcelIndex) || 0,
+                    invoice: parcelInvoice && parcelInvoice.success,
+                    errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
                 },
                 isRetracted: false
             };
+        } else if (transaction instanceof AssetComposeTransaction) {
+            const inputs = await Promise.all(_.map(transaction.inputs, input => this.fromAssetTransferInput(input)));
+            return {
+                type: transaction.type,
+                data: {
+                    networkId: transaction.networkId,
+                    shardId: transaction.shardId,
+                    metadata: transaction.metadata,
+                    registrar: transaction.registrar,
+                    output: {
+                        lockScriptHash: transaction.output.lockScriptHash.value,
+                        parameters: _.map(transaction.output.parameters, p => Buffer.from(p)),
+                        amount: transaction.output.amount && transaction.output.amount.toString(10),
+                        assetType: transaction.getAssetSchemeAddress().value,
+                        recipient: this.getOwner(transaction.output.lockScriptHash, transaction.output.parameters)
+                    },
+                    inputs,
+                    hash: transaction.hash().value,
+                    timestamp,
+                    parcelHash: parcel && parcel.hash().value,
+                    blockNumber: (parcel && parcel.blockNumber) || 0,
+                    parcelIndex: (parcel && parcel.parcelIndex) || 0,
+                    invoice: parcelInvoice && parcelInvoice.success,
+                    errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
+                }
+            } as AssetComposeTransactionDoc;
+        } else if (transaction instanceof AssetDecomposeTransaction) {
+            const outputs = await Promise.all(
+                _.map(transaction.outputs, output => this.fromAssetTransferOutput(output))
+            );
+            return {
+                type: transaction.type,
+                data: {
+                    input: await this.fromAssetTransferInput(transaction.input),
+                    outputs,
+                    networkId: transaction.networkId,
+                    hash: transaction.hash().value,
+                    timestamp,
+                    parcelHash: parcel && parcel.hash().value,
+                    blockNumber: (parcel && parcel.blockNumber) || 0,
+                    parcelIndex: (parcel && parcel.parcelIndex) || 0,
+                    invoice: parcelInvoice && parcelInvoice.success,
+                    errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
+                }
+            } as AssetDecomposeTransactionDoc;
         }
-        throw new Error("Unexpected transaction");
+        throw new Error(`Unexpected transaction : ${transaction}`);
     };
 
     public fromAction = async (action: Action, timestamp: number, parcel: SignedParcel): Promise<ActionDoc> => {
-        if (action instanceof AssetTransactionGroup) {
+        if (action instanceof AssetTransaction) {
             const actionJson = action.toJSON();
-            const transactionDocs = await Promise.all(
-                _.map(action.transactions, (transaction, i) => this.fromTransaction(transaction, timestamp, parcel, i))
-            );
+            const transactionDoc = await this.fromTransaction(action.transaction, timestamp, parcel);
             return {
                 action: actionJson.action,
-                transactions: transactionDocs
+                transaction: transactionDoc
             };
         } else if (action instanceof SetRegularKey) {
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
@@ -202,8 +239,8 @@ export class TypeConverter {
             return {
                 action: actionJson.action,
                 key: actionJson.key,
-                invoice: parcelInvoice ? parcelInvoice.success : undefined,
-                errorType: parcelInvoice ? (parcelInvoice.error ? parcelInvoice.error.type : "") : undefined
+                invoice: parcelInvoice && parcelInvoice.success,
+                errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
             };
         } else if (action instanceof Payment) {
             const actionJson = action.toJSON();
@@ -212,19 +249,39 @@ export class TypeConverter {
                 action: actionJson.action,
                 receiver: actionJson.receiver,
                 amount: actionJson.amount,
-                invoice: parcelInvoice ? parcelInvoice.success : undefined,
-                errorType: parcelInvoice ? (parcelInvoice.error ? parcelInvoice.error.type : "") : undefined
+                invoice: parcelInvoice && parcelInvoice.success,
+                errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
             };
         } else if (action instanceof CreateShard) {
             const actionJson = action.toJSON();
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
             return {
                 action: actionJson.action,
-                invoice: parcelInvoice ? parcelInvoice.success : undefined,
-                errorType: parcelInvoice ? (parcelInvoice.error ? parcelInvoice.error.type : "") : undefined
+                invoice: parcelInvoice && parcelInvoice.success,
+                errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
+            };
+        } else if (action instanceof SetShardOwners) {
+            const actionJson = action.toJSON();
+            const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
+            return {
+                action: actionJson.action,
+                shardId: action.shardId,
+                owners: _.map(action.owners, owner => owner.value),
+                invoice: parcelInvoice && parcelInvoice.success,
+                errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
+            };
+        } else if (action instanceof SetShardUsers) {
+            const actionJson = action.toJSON();
+            const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
+            return {
+                action: actionJson.action,
+                shardId: action.shardId,
+                users: _.map(action.users, user => user.value),
+                invoice: parcelInvoice && parcelInvoice.success,
+                errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
             };
         }
-        throw new Error("Unexpected action");
+        throw new Error(`Unexpected action : ${action}`);
     };
 
     public fromParcel = async (parcel: SignedParcel, timestamp: number): Promise<ParcelDoc> => {
@@ -240,18 +297,14 @@ export class TypeConverter {
             blockNumber: parcel.blockNumber,
             blockHash: parcel.hash().value,
             parcelIndex: parcel.parcelIndex,
-            nonce: parcel.unsigned.nonce ? parcel.unsigned.nonce.value.toString(10) : "0",
-            fee: parcel.unsigned.fee ? parcel.unsigned.fee.value.toString(10) : "0",
+            seq: (parcel.unsigned.seq && parcel.unsigned.seq.value.toString(10)) || "0",
+            fee: (parcel.unsigned.fee && parcel.unsigned.fee.value.toString(10)) || "0",
             networkId: parcel.unsigned.networkId,
             signer: owner.value,
             sig: parcel.toJSON().sig,
             hash: parcel.hash().value,
             action,
             timestamp,
-            countOfTransaction:
-                parcel.unsigned.action instanceof AssetTransactionGroup
-                    ? parcel.unsigned.action.transactions.length
-                    : 0,
             isRetracted: false
         };
     };
@@ -296,9 +349,10 @@ export class TypeConverter {
     private fromAssetScheme = (assetScheme: AssetScheme): AssetSchemeDoc => {
         return {
             metadata: assetScheme.metadata,
-            registrar: assetScheme.registrar ? assetScheme.registrar.value : "",
-            amount: assetScheme.amount,
-            networkId: assetScheme.networkId
+            registrar: assetScheme.registrar && assetScheme.registrar.value,
+            amount: assetScheme.amount.toString(10),
+            networkId: assetScheme.networkId,
+            shardId: assetScheme.shardId
         };
     };
 
@@ -326,18 +380,18 @@ export class TypeConverter {
             return this.fromAssetScheme(assetScheme);
         }
         const pendingParcels = await this.sdk.rpc.chain.getPendingParcels();
-        const pendingMintTransactions = _.chain(pendingParcels)
-            .filter(parcel => parcel.unsigned.action instanceof AssetTransactionGroup)
-            .flatMap(parcel => (parcel.unsigned.action as AssetTransactionGroup).transactions)
-            .filter(transaction => transaction instanceof AssetMintTransaction)
-            .map(tx => tx as AssetMintTransaction)
+        const pendingMintComposeTransactions = _.chain(pendingParcels)
+            .filter(parcel => parcel.unsigned.action instanceof AssetTransaction)
+            .map(parcel => (parcel.unsigned.action as AssetTransaction).transaction)
+            .filter(tx => tx instanceof AssetMintTransaction || tx instanceof AssetComposeTransaction)
+            .map(tx => tx as AssetMintTransaction | AssetComposeTransaction)
             .value();
-        const mintTransaction = _.find(
-            pendingMintTransactions,
-            (tx: AssetMintTransaction) => tx.getAssetSchemeAddress().value === assetType.value
+        const pendingMintComposeTransaction = _.find(
+            pendingMintComposeTransactions,
+            (tx: AssetMintTransaction | AssetComposeTransaction) => tx.getAssetSchemeAddress().value === assetType.value
         );
-        if (mintTransaction) {
-            return this.fromAssetScheme(mintTransaction.getAssetScheme());
+        if (pendingMintComposeTransaction) {
+            return this.fromAssetScheme(pendingMintComposeTransaction.getAssetScheme());
         }
         throw new Error("Invalid asset type");
     };

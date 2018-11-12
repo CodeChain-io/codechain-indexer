@@ -1,4 +1,6 @@
 import {
+    AssetComposeTransactionDoc,
+    AssetDecomposeTransactionDoc,
     AssetDoc,
     AssetMintTransactionDoc,
     AssetTransferTransactionDoc,
@@ -60,14 +62,18 @@ export class BlockSyncWorker {
             const serRegularKeyParcelCount = _.filter(blockDoc.parcels, p => Type.isSetRegularKeyDoc(p.action)).length;
             await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_REGULAR_KEY_COUNT, serRegularKeyParcelCount);
             const assetTransactionGroupParcelCount = _.filter(blockDoc.parcels, p =>
-                Type.isAssetTransactionGroupDoc(p.action)
+                Type.isAssetTransactionDoc(p.action)
             ).length;
             await this.queryLog(
                 isRetract,
                 dateString,
-                LogType.PARCEL_ASSET_TRANSACTION_GROUP_COUNT,
+                LogType.PARCEL_ASSET_TRANSACTION_COUNT,
                 assetTransactionGroupParcelCount
             );
+            const setShardOwnerParcelCount = _.filter(blockDoc.parcels, p => Type.isSetShardOwnersDoc(p.action)).length;
+            await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_SHARD_OWNER_COUNT, setShardOwnerParcelCount);
+            const setShardUserParcelCount = _.filter(blockDoc.parcels, p => Type.isSetShardUsersDoc(p.action)).length;
+            await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_SHARD_USER_COUNT, setShardUserParcelCount);
         }
         const transactions = Type.getTransactionsByBlock(blockDoc);
         const txCount = transactions.length;
@@ -169,9 +175,17 @@ export class BlockSyncWorker {
                 if (blockedParcel) {
                     return this.elasticSearchAgent.removePendingParcel(new H256(removedPendingParcel.parcel.hash));
                 } else {
-                    const mintTxs = Type.getMintTransactionsByParcel(removedPendingParcel.parcel);
-                    for (const mintTx of mintTxs) {
-                        await this.handleAssetImage(mintTx as AssetMintTransactionDoc, true);
+                    const mintTx = Type.getMintTransactionByParcel(removedPendingParcel.parcel);
+                    if (mintTx) {
+                        await this.handleAssetImage(new H256(mintTx.data.output.assetType), mintTx.data.metadata, true);
+                    }
+                    const composeTx = Type.getComposeTransactionByParcel(removedPendingParcel.parcel);
+                    if (composeTx) {
+                        await this.handleAssetImage(
+                            new H256(composeTx.data.output.assetType),
+                            composeTx.data.metadata,
+                            true
+                        );
                     }
                     return this.elasticSearchAgent.deadPendingParcel(new H256(removedPendingParcel.parcel.hash));
                 }
@@ -188,9 +202,17 @@ export class BlockSyncWorker {
         await this.runWithLimit(
             _.map(newPendingParcels, pendingParcel => async () => {
                 const pendingParcelDoc = await this.typeConverter.fromPendingParcel(pendingParcel);
-                const mintTxs = Type.getMintTransactionsByParcel(pendingParcelDoc.parcel);
-                for (const mintTx of mintTxs) {
-                    await this.handleAssetImage(mintTx as AssetMintTransactionDoc, false);
+                const mintTx = Type.getMintTransactionByParcel(pendingParcelDoc.parcel);
+                if (mintTx) {
+                    await this.handleAssetImage(new H256(mintTx.data.output.assetType), mintTx.data.metadata, false);
+                }
+                const composeTx = Type.getComposeTransactionByParcel(pendingParcelDoc.parcel);
+                if (composeTx) {
+                    await this.handleAssetImage(
+                        new H256(composeTx.data.output.assetType),
+                        composeTx.data.metadata,
+                        false
+                    );
                 }
                 return this.elasticSearchAgent.indexPendingParcel(pendingParcelDoc);
             }),
@@ -206,9 +228,17 @@ export class BlockSyncWorker {
         await this.runWithLimit(
             _.map(revivalPendingParcels, revivalPendingParcel => async () => {
                 const pendingParcelDoc = await this.typeConverter.fromPendingParcel(revivalPendingParcel);
-                const mintTxs = Type.getMintTransactionsByParcel(pendingParcelDoc.parcel);
-                for (const mintTx of mintTxs) {
-                    await this.handleAssetImage(mintTx as AssetMintTransactionDoc, true);
+                const mintTx = Type.getMintTransactionByParcel(pendingParcelDoc.parcel);
+                if (mintTx) {
+                    await this.handleAssetImage(new H256(mintTx.data.output.assetType), mintTx.data.metadata, true);
+                }
+                const composeTx = Type.getComposeTransactionByParcel(pendingParcelDoc.parcel);
+                if (composeTx) {
+                    await this.handleAssetImage(
+                        new H256(composeTx.data.output.assetType),
+                        composeTx.data.metadata,
+                        true
+                    );
                 }
                 return this.elasticSearchAgent.revialPendingParcel(new H256(pendingParcelDoc.parcel.hash));
             }),
@@ -315,29 +345,28 @@ export class BlockSyncWorker {
             }
             if (Type.isAssetMintTransactionDoc(transaction)) {
                 const mintTx = transaction as AssetMintTransactionDoc;
-                if (mintTx.data.output.owner !== "") {
+                if (mintTx.data.output.recipient) {
                     if (isRetract) {
                         await this.elasticSearchAgent.removeAsset(
-                            mintTx.data.output.owner,
+                            mintTx.data.output.recipient,
                             new H256(mintTx.data.output.assetType),
                             new H256(mintTx.data.hash),
-                            mintTx.data.transactionIndex
+                            0
                         );
                     } else {
                         const assetDoc = {
                             assetType: mintTx.data.output.assetType,
                             lockScriptHash: mintTx.data.output.lockScriptHash,
                             parameters: mintTx.data.output.parameters,
-                            amount: mintTx.data.output.amount || 0,
+                            amount: mintTx.data.output.amount || "0",
                             transactionHash: mintTx.data.hash,
                             transactionOutputIndex: 0
                         };
                         await this.elasticSearchAgent.indexAsset(
-                            mintTx.data.output.owner,
+                            mintTx.data.output.recipient,
                             assetDoc,
                             mintTx.data.blockNumber,
-                            mintTx.data.parcelIndex,
-                            mintTx.data.transactionIndex
+                            mintTx.data.parcelIndex
                         );
                     }
                 }
@@ -347,7 +376,7 @@ export class BlockSyncWorker {
                 const outputs = transferTx.data.outputs;
 
                 for (const input of inputs) {
-                    if (input.prevOut.owner !== "") {
+                    if (input.prevOut.owner) {
                         if (isRetract) {
                             await this.elasticSearchAgent.revivalAsset(
                                 input.prevOut.owner,
@@ -367,7 +396,7 @@ export class BlockSyncWorker {
                 }
 
                 for (const [index, output] of outputs.entries()) {
-                    if (output.owner !== "") {
+                    if (output.owner) {
                         if (isRetract) {
                             await this.elasticSearchAgent.removeAsset(
                                 output.owner,
@@ -388,8 +417,106 @@ export class BlockSyncWorker {
                                 output.owner,
                                 assetDoc,
                                 transaction.data.blockNumber,
-                                transaction.data.parcelIndex,
-                                transaction.data.transactionIndex
+                                transaction.data.parcelIndex
+                            );
+                        }
+                    }
+                }
+            } else if (Type.isAssetComposeTransactionDoc(transaction)) {
+                const composeTx = transaction as AssetComposeTransactionDoc;
+                const inputs = composeTx.data.inputs;
+                const output = composeTx.data.output;
+
+                for (const input of inputs) {
+                    if (input.prevOut.owner) {
+                        if (isRetract) {
+                            await this.elasticSearchAgent.revivalAsset(
+                                input.prevOut.owner,
+                                new H256(input.prevOut.assetType),
+                                new H256(input.prevOut.transactionHash),
+                                input.prevOut.index
+                            );
+                        } else {
+                            await this.elasticSearchAgent.removeAsset(
+                                input.prevOut.owner,
+                                new H256(input.prevOut.assetType),
+                                new H256(input.prevOut.transactionHash),
+                                input.prevOut.index
+                            );
+                        }
+                    }
+                }
+
+                if (output.recipient) {
+                    if (isRetract) {
+                        await this.elasticSearchAgent.removeAsset(
+                            output.recipient,
+                            new H256(output.assetType),
+                            new H256(transaction.data.hash),
+                            0
+                        );
+                    } else {
+                        const assetDoc = {
+                            assetType: output.assetType,
+                            lockScriptHash: output.lockScriptHash,
+                            parameters: output.parameters,
+                            amount: output.amount || "0",
+                            transactionHash: transaction.data.hash,
+                            transactionOutputIndex: 0
+                        };
+                        await this.elasticSearchAgent.indexAsset(
+                            output.recipient,
+                            assetDoc,
+                            transaction.data.blockNumber,
+                            transaction.data.parcelIndex
+                        );
+                    }
+                }
+            } else if (Type.isAssetDecomposeTransactionDoc(transaction)) {
+                const decomposeTx = transaction as AssetDecomposeTransactionDoc;
+                const input = decomposeTx.data.input;
+                const outputs = decomposeTx.data.outputs;
+
+                if (input.prevOut.owner) {
+                    if (isRetract) {
+                        await this.elasticSearchAgent.revivalAsset(
+                            input.prevOut.owner,
+                            new H256(input.prevOut.assetType),
+                            new H256(input.prevOut.transactionHash),
+                            input.prevOut.index
+                        );
+                    } else {
+                        await this.elasticSearchAgent.removeAsset(
+                            input.prevOut.owner,
+                            new H256(input.prevOut.assetType),
+                            new H256(input.prevOut.transactionHash),
+                            input.prevOut.index
+                        );
+                    }
+                }
+                for (const [index, output] of outputs.entries()) {
+                    if (output.owner) {
+                        if (isRetract) {
+                            await this.elasticSearchAgent.removeAsset(
+                                output.owner,
+                                new H256(output.assetType),
+                                new H256(transaction.data.hash),
+                                index
+                            );
+                        } else {
+                            const assetDoc = {
+                                assetType: output.assetType,
+                                lockScriptHash: output.lockScriptHash,
+                                parameters: output.parameters,
+                                amount: output.amount,
+                                transactionHash: transaction.data.hash,
+                                transactionOutputIndex: index
+                            };
+                            await this.elasticSearchAgent.indexAsset(
+                                output.owner,
+                                assetDoc,
+                                transaction.data.blockNumber,
+                                transaction.data.parcelIndex
                             );
                         }
                     }
@@ -398,8 +525,15 @@ export class BlockSyncWorker {
         }
 
         const assetMintTransactions = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx));
-        for (const mintTx of assetMintTransactions) {
-            await this.handleAssetImage(mintTx as AssetMintTransactionDoc, isRetract);
+        for (const tx of assetMintTransactions) {
+            const mintTx = tx as AssetMintTransactionDoc;
+            await this.handleAssetImage(new H256(mintTx.data.output.assetType), mintTx.data.metadata, isRetract);
+        }
+
+        const assetComposeTransactions = _.filter(transactions, tx => Type.isAssetComposeTransactionDoc(tx));
+        for (const tx of assetComposeTransactions) {
+            const composeTx = tx as AssetComposeTransactionDoc;
+            await this.handleAssetImage(new H256(composeTx.data.output.assetType), composeTx.data.metadata, isRetract);
         }
     };
 
@@ -415,7 +549,6 @@ export class BlockSyncWorker {
         for (const snapshotRequest of currentSnapshots) {
             let lastBlockNumberCursor = Number.MAX_VALUE;
             let lastParcelIndexCursor = Number.MAX_VALUE;
-            let lastTransactionIndexCursor = Number.MAX_VALUE;
             let retValues: {
                 address: string;
                 asset: AssetDoc;
@@ -430,7 +563,6 @@ export class BlockSyncWorker {
                     {
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
-                        lastTransactionIndex: lastTransactionIndexCursor,
                         itemsPerPage: 10000
                     }
                 );
@@ -441,7 +573,6 @@ export class BlockSyncWorker {
                 const lastUTXO = _.last(utxoReturns);
                 lastBlockNumberCursor = lastUTXO!.blockNumber;
                 lastParcelIndexCursor = lastUTXO!.parcelIndex;
-                lastTransactionIndexCursor = lastUTXO!.transactionIndex;
             }
             await this.elasticSearchAgent.updateSnapshotRequestStatus(snapshotRequest.snapshotId, "done");
             await this.elasticSearchAgent.indexSnapshotUTXOList(snapshotRequest.snapshotId, retValues, blockDoc.number);
@@ -485,15 +616,14 @@ export class BlockSyncWorker {
         );
     };
 
-    private handleAssetImage = async (assetMintTx: AssetMintTransactionDoc, isRetract: boolean) => {
-        const metadata = Type.getMetadata(assetMintTx.data.metadata);
+    private handleAssetImage = async (assetType: H256, metadataOrigin: any, isRetract: boolean) => {
+        const metadata = Type.getMetadata(metadataOrigin);
         if (!metadata || !metadata.icon_url) {
             return;
         }
         const iconUrl = metadata.icon_url;
-        const assetType = assetMintTx.data.output.assetType;
         if (!isRetract) {
-            const isExists = await this.elasticSearchAgent.getAssetImageBlob(new H256(assetType));
+            const isExists = await this.elasticSearchAgent.getAssetImageBlob(assetType);
             if (!isExists) {
                 let imageDataBuffer;
                 try {
@@ -508,11 +638,11 @@ export class BlockSyncWorker {
                     // nothing
                 }
                 if (imageDataBuffer) {
-                    await this.elasticSearchAgent.indexImage(new H256(assetType), imageDataBuffer.toString("base64"));
+                    await this.elasticSearchAgent.indexImage(assetType, imageDataBuffer.toString("base64"));
                 }
             }
         } else {
-            await this.elasticSearchAgent.removeImage(new H256(assetType));
+            await this.elasticSearchAgent.removeImage(assetType);
         }
     };
 

@@ -28,7 +28,6 @@ export class QueryTransaction implements BaseAction {
         params?: {
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
-            lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
             address?: string | null;
             assetType?: H256 | null;
@@ -94,15 +93,10 @@ export class QueryTransaction implements BaseAction {
         }
 
         const response = await this.searchTransaction({
-            sort: [
-                { "data.blockNumber": { order: "desc" } },
-                { "data.parcelIndex": { order: "desc" } },
-                { "data.transactionIndex": { order: "desc" } }
-            ],
+            sort: [{ "data.blockNumber": { order: "desc" } }, { "data.parcelIndex": { order: "desc" } }],
             search_after: [
                 params && params.lastBlockNumber != undefined ? params.lastBlockNumber : Number.MAX_VALUE,
-                params && params.lastParcelIndex != undefined ? params.lastParcelIndex : Number.MAX_VALUE,
-                params && params.lastTransactionIndex != undefined ? params.lastTransactionIndex : Number.MAX_VALUE
+                params && params.lastParcelIndex != undefined ? params.lastParcelIndex : Number.MAX_VALUE
             ],
             size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
@@ -184,11 +178,7 @@ export class QueryTransaction implements BaseAction {
         } | null
     ): Promise<TransactionDoc[]> {
         const response = await this.searchTransaction({
-            sort: [
-                { "data.blockNumber": { order: "desc" } },
-                { "data.parcelIndex": { order: "desc" } },
-                { "data.transactionIndex": { order: "desc" } }
-            ],
+            sort: [{ "data.blockNumber": { order: "desc" } }, { "data.parcelIndex": { order: "desc" } }],
             from:
                 ((params && params.page != undefined ? params.page : 1) - 1) *
                 (params && params.itemsPerPage != undefined ? params.itemsPerPage : 25),
@@ -285,7 +275,7 @@ export class QueryTransaction implements BaseAction {
                                 "data.burns.prevOut.owner": address
                             }
                         },
-                        { term: { "data.output.owner": address } }
+                        { term: { "data.output.recipient": address } }
                     ]
                 }
             }
@@ -300,11 +290,7 @@ export class QueryTransaction implements BaseAction {
             });
         }
         const response = await this.searchTransaction({
-            sort: [
-                { "data.blockNumber": { order: "desc" } },
-                { "data.parcelIndex": { order: "desc" } },
-                { "data.transactionIndex": { order: "desc" } }
-            ],
+            sort: [{ "data.blockNumber": { order: "desc" } }, { "data.parcelIndex": { order: "desc" } }],
             from:
                 ((params && params.page != undefined ? params.page : 1) - 1) *
                 (params && params.itemsPerPage != undefined ? params.itemsPerPage : 6),
@@ -338,7 +324,7 @@ export class QueryTransaction implements BaseAction {
                                             "data.burns.prevOut.owner": address
                                         }
                                     },
-                                    { term: { "data.output.owner": address } }
+                                    { term: { "data.output.recipient": address } }
                                 ]
                             }
                         }
@@ -351,11 +337,7 @@ export class QueryTransaction implements BaseAction {
 
     public async getAssetScheme(assetType: H256): Promise<AssetSchemeDoc | null> {
         const response = await this.searchTransaction({
-            sort: [
-                { "data.blockNumber": { order: "desc" } },
-                { "data.parcelIndex": { order: "desc" } },
-                { "data.transactionIndex": { order: "desc" } }
-            ],
+            sort: [{ "data.blockNumber": { order: "desc" } }, { "data.parcelIndex": { order: "desc" } }],
             size: 1,
             query: {
                 bool: {
@@ -371,11 +353,7 @@ export class QueryTransaction implements BaseAction {
 
     public async getAssetInfosByAssetName(name: string): Promise<{ assetScheme: AssetSchemeDoc; assetType: string }[]> {
         const response = await this.searchTransaction({
-            sort: [
-                { "data.blockNumber": { order: "desc" } },
-                { "data.parcelIndex": { order: "desc" } },
-                { "data.transactionIndex": { order: "desc" } }
-            ],
+            sort: [{ "data.blockNumber": { order: "desc" } }, { "data.parcelIndex": { order: "desc" } }],
             size: 10,
             query: {
                 bool: {

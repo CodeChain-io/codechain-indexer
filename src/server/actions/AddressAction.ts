@@ -15,10 +15,10 @@ function handle(context: ServerContext, router: Router) {
         }
         try {
             const balance = await context.db.getAccount(address);
-            const nonce = await context.codechainSdk.rpc.chain.getNonce(address);
+            const seq = await context.codechainSdk.rpc.chain.getSeq(address);
             const account = {
                 balance: balance ? balance.balance : 0,
-                nonce: nonce.value
+                seq: seq ? seq.value.toString(10) : 0
             };
             res.send(account);
         } catch (e) {

@@ -1,8 +1,7 @@
 import {
     AssetMintTransactionDoc,
     AssetSchemeDoc,
-    AssetTransactionGroupDoc,
-    AssetTransferTransactionDoc,
+    AssetTransactionDoc,
     PendingParcelDoc,
     PendingTransactionDoc,
     TransactionDoc
@@ -42,14 +41,15 @@ export class QueryPendingParcel implements BaseAction {
     ): Promise<PendingTransactionDoc[]> {
         const query = [
             { term: { status: "pending" } },
-            { term: { "parcel.action.action": "assetTransactionGroup" } },
+            { term: { "parcel.action.action": "assetTransaction" } },
             {
                 bool: {
                     should: [
                         { term: { "parcel.action.transactions.data.inputs.prevOut.owner": address } },
+                        { term: { "parcel.action.transactions.data.input.prevOut.owner": address } },
                         { term: { "parcel.action.transactions.data.burns.prevOut.owner": address } },
                         { term: { "parcel.action.transactions.data.outputs.owner": address } },
-                        { term: { "parcel.action.transactions.data.output.owner": address } }
+                        { term: { "parcel.action.transactions.data.output.recipient": address } }
                     ]
                 }
             }
@@ -71,42 +71,31 @@ export class QueryPendingParcel implements BaseAction {
         }
         const pendingTransactionGroupDocList = _.chain(response.hits.hits)
             .map(hit => hit._source as PendingParcelDoc)
-            .filter(PendingParcel => Type.isAssetTransactionGroupDoc(PendingParcel.parcel.action))
+            .filter(PendingParcel => Type.isAssetTransactionDoc(PendingParcel.parcel.action))
             .value();
-
-        let addressTxs: any = [];
+        const addressTxs: any = [];
         for (const pendingTransactionGroupDoc of pendingTransactionGroupDocList) {
-            const assetTxGroup = pendingTransactionGroupDoc.parcel.action as AssetTransactionGroupDoc;
-            const txs = _.chain(assetTxGroup.transactions)
-                .filter((transaction: TransactionDoc) => {
-                    if (Type.isAssetMintTransactionDoc(transaction)) {
-                        const mintTx = transaction as AssetMintTransactionDoc;
-                        if (mintTx.data.output.owner === address) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else if (Type.isAssetTransferTransactionDoc(transaction)) {
-                        const transferTx = transaction as AssetTransferTransactionDoc;
-                        if (_.find(transferTx.data.inputs, input => input.prevOut.owner === address)) {
-                            return true;
-                        } else if (_.find(transferTx.data.outputs, output => output.owner === address)) {
-                            return true;
-                        } else if (_.find(transferTx.data.burns, burn => burn.prevOut.owner === address)) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    }
-                    return false;
-                })
-                .map(tx => ({
+            const assetTxGroup = pendingTransactionGroupDoc.parcel.action as AssetTransactionDoc;
+            const transaction = assetTxGroup.transaction;
+            if (
+                (Type.isAssetMintTransactionDoc(transaction) && transaction.data.output.recipient === address) ||
+                (Type.isAssetTransferTransactionDoc(transaction) &&
+                    (_.find(transaction.data.inputs, input => input.prevOut.owner === address) ||
+                        _.find(transaction.data.outputs, output => output.owner === address) ||
+                        _.find(transaction.data.burns, burn => burn.prevOut.owner === address))) ||
+                (Type.isAssetComposeTransactionDoc(transaction) &&
+                    (_.find(transaction.data.inputs, input => input.prevOut.owner === address) ||
+                        transaction.data.output.recipient === address)) ||
+                (Type.isAssetDecomposeTransactionDoc(transaction) &&
+                    (transaction.data.input.prevOut.owner === address ||
+                        _.find(transaction.data.outputs, output => output.owner === address)))
+            ) {
+                addressTxs.push({
                     timestamp: pendingTransactionGroupDoc.timestamp,
                     status: pendingTransactionGroupDoc.status,
-                    transaction: tx
-                }))
-                .value();
-            addressTxs = _.concat(addressTxs, txs);
+                    transaction
+                });
+            }
         }
         return addressTxs;
     }
@@ -252,8 +241,8 @@ export class QueryPendingParcel implements BaseAction {
         const transactionDoc = _.chain(response.hits.hits)
             .flatMap(hit => hit._source as PendingParcelDoc)
             .map(PendingParcel => PendingParcel.parcel)
-            .filter(parcel => Type.isAssetTransactionGroupDoc(parcel.action))
-            .flatMap(parcel => (parcel.action as AssetTransactionGroupDoc).transactions)
+            .filter(parcel => Type.isAssetTransactionDoc(parcel.action))
+            .map(parcel => (parcel.action as AssetTransactionDoc).transaction)
             .filter((transaction: TransactionDoc) => transaction.data.hash === hash.value)
             .value();
         return {
@@ -285,8 +274,8 @@ export class QueryPendingParcel implements BaseAction {
         const transactionDoc = _.chain(response.hits.hits)
             .flatMap(hit => hit._source as PendingParcelDoc)
             .map(PendingParcel => PendingParcel.parcel)
-            .filter(parcel => Type.isAssetTransactionGroupDoc(parcel.action))
-            .flatMap(parcel => (parcel.action as AssetTransactionGroupDoc).transactions)
+            .filter(parcel => Type.isAssetTransactionDoc(parcel.action))
+            .map(parcel => (parcel.action as AssetTransactionDoc).transaction)
             .filter(transaction => Type.isAssetMintTransactionDoc(transaction))
             .filter((transaction: AssetMintTransactionDoc) => transaction.data.output.assetType === assetType.value)
             .value();

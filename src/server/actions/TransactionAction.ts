@@ -24,7 +24,6 @@ function handle(context: ServerContext, router: Router) {
         const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
         const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
-        const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
         const address: string | null | undefined = req.query.address;
         const assetType: string | null | undefined = req.query.assetType;
         const onlyUnconfirmed = req.query.onlyUnconfirmed;
@@ -36,26 +35,21 @@ function handle(context: ServerContext, router: Router) {
             }
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
-            let calculatedLastTransactionIndex;
-            if (lastBlockNumber && lastParcelIndex && lastTransactionIndex) {
+            if (lastBlockNumber && lastParcelIndex) {
                 calculatedLastBlockNumber = lastBlockNumber;
                 calculatedLastParcelIndex = lastParcelIndex;
-                calculatedLastTransactionIndex = lastTransactionIndex;
             } else if (page === 1 || !page) {
                 calculatedLastBlockNumber = Number.MAX_VALUE;
                 calculatedLastParcelIndex = Number.MAX_VALUE;
-                calculatedLastTransactionIndex = Number.MAX_VALUE;
             } else {
                 const beforePageTxCount = (page - 1) * itemsPerPage;
                 let currentTxCount = 0;
                 let lastBlockNumberCursor = Number.MAX_VALUE;
                 let lastParcelIndexCursor = Number.MAX_VALUE;
-                let lastTransactionIndexCursor = Number.MAX_VALUE;
                 while (beforePageTxCount - currentTxCount > 10000) {
                     const cursorTx = await context.db.getTransactions({
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
-                        lastTransactionIndex: lastTransactionIndexCursor,
                         itemsPerPage: 10000,
                         assetType: assetType ? new H256(assetType) : null,
                         address,
@@ -67,7 +61,6 @@ function handle(context: ServerContext, router: Router) {
                     if (lastCursorTx) {
                         lastBlockNumberCursor = lastCursorTx.data.blockNumber as number;
                         lastParcelIndexCursor = lastCursorTx.data.parcelIndex as number;
-                        lastTransactionIndexCursor = lastCursorTx.data.transactionIndex as number;
                     }
                     currentTxCount += 10000;
                 }
@@ -75,7 +68,6 @@ function handle(context: ServerContext, router: Router) {
                 const skipTxs = await context.db.getTransactions({
                     lastBlockNumber: lastBlockNumberCursor,
                     lastParcelIndex: lastParcelIndexCursor,
-                    lastTransactionIndex: lastTransactionIndexCursor,
                     itemsPerPage: skipCount,
                     assetType: assetType ? new H256(assetType) : null,
                     address,
@@ -87,16 +79,13 @@ function handle(context: ServerContext, router: Router) {
                 if (lastSkipTxs) {
                     lastBlockNumberCursor = lastSkipTxs.data.blockNumber as number;
                     lastParcelIndexCursor = lastSkipTxs.data.parcelIndex as number;
-                    lastTransactionIndexCursor = lastSkipTxs.data.transactionIndex as number;
                 }
                 calculatedLastBlockNumber = lastBlockNumberCursor;
                 calculatedLastParcelIndex = lastParcelIndexCursor;
-                calculatedLastTransactionIndex = lastTransactionIndexCursor;
             }
             const transactions = await context.db.getTransactions({
                 lastBlockNumber: calculatedLastBlockNumber,
                 lastParcelIndex: calculatedLastParcelIndex,
-                lastTransactionIndex: calculatedLastTransactionIndex,
                 itemsPerPage,
                 assetType: assetType ? new H256(assetType) : null,
                 address,

@@ -39,9 +39,6 @@ export const getAssetMapping = () => {
             parcelIndex: {
                 type: "long"
             },
-            transactionIndex: {
-                type: "long"
-            },
             isRemoved: {
                 type: "boolean"
             }

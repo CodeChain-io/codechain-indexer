@@ -142,26 +142,21 @@ function handle(context: ServerContext, router: Router) {
         const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
         const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
-        const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
-            let calculatedLastTransactionIndex;
             const bestBlockNumber = await context.db.getLastBlockNumber();
-            if (lastBlockNumber && lastParcelIndex && lastTransactionIndex) {
+            if (lastBlockNumber && lastParcelIndex) {
                 calculatedLastBlockNumber = lastBlockNumber;
                 calculatedLastParcelIndex = lastParcelIndex;
-                calculatedLastTransactionIndex = lastTransactionIndex;
             } else if (page === 1 || !page) {
                 calculatedLastBlockNumber = Number.MAX_VALUE;
                 calculatedLastParcelIndex = Number.MAX_VALUE;
-                calculatedLastTransactionIndex = Number.MAX_VALUE;
             } else {
                 const beforePageAssetCount = (page - 1) * itemsPerPage;
                 let currentAssetCount = 0;
                 let lastBlockNumberCursor = Number.MAX_VALUE;
                 let lastParcelIndexCursor = Number.MAX_VALUE;
-                let lastTransactionIndexCursor = Number.MAX_VALUE;
                 while (beforePageAssetCount - currentAssetCount > 10000) {
                     const cursorAsset = await context.db.getUTXOListByAssetType(
                         new H256(assetType),
@@ -171,7 +166,6 @@ function handle(context: ServerContext, router: Router) {
                         {
                             lastBlockNumber: lastBlockNumberCursor,
                             lastParcelIndex: lastParcelIndexCursor,
-                            lastTransactionIndex: lastTransactionIndexCursor,
                             itemsPerPage: 10000,
                             address
                         }
@@ -180,7 +174,6 @@ function handle(context: ServerContext, router: Router) {
                     if (lastCursorAsset) {
                         lastBlockNumberCursor = lastCursorAsset.blockNumber;
                         lastParcelIndexCursor = lastCursorAsset.parcelIndex;
-                        lastTransactionIndexCursor = lastCursorAsset.transactionIndex;
                     }
                     currentAssetCount += 10000;
                 }
@@ -193,7 +186,6 @@ function handle(context: ServerContext, router: Router) {
                     {
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
-                        lastTransactionIndex: lastTransactionIndexCursor,
                         itemsPerPage: skipCount,
                         address
                     }
@@ -202,11 +194,9 @@ function handle(context: ServerContext, router: Router) {
                 if (lastSkipAsset) {
                     lastBlockNumberCursor = lastSkipAsset.blockNumber;
                     lastParcelIndexCursor = lastSkipAsset.parcelIndex;
-                    lastTransactionIndexCursor = lastSkipAsset.transactionIndex;
                 }
                 calculatedLastBlockNumber = lastBlockNumberCursor;
                 calculatedLastParcelIndex = lastParcelIndexCursor;
-                calculatedLastTransactionIndex = lastTransactionIndexCursor;
             }
             const assets = await context.db.getUTXOListByAssetType(
                 new H256(assetType),
@@ -216,7 +206,6 @@ function handle(context: ServerContext, router: Router) {
                 {
                     lastBlockNumber: calculatedLastBlockNumber,
                     lastParcelIndex: calculatedLastParcelIndex,
-                    lastTransactionIndex: calculatedLastTransactionIndex,
                     itemsPerPage,
                     address
                 }
@@ -241,26 +230,21 @@ function handle(context: ServerContext, router: Router) {
         const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
         const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
-        const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
-            let calculatedLastTransactionIndex;
             const bestBlockNumber = await context.db.getLastBlockNumber();
-            if (lastBlockNumber && lastParcelIndex && lastTransactionIndex) {
+            if (lastBlockNumber && lastParcelIndex) {
                 calculatedLastBlockNumber = lastBlockNumber;
                 calculatedLastParcelIndex = lastParcelIndex;
-                calculatedLastTransactionIndex = lastTransactionIndex;
             } else if (page === 1 || !page) {
                 calculatedLastBlockNumber = Number.MAX_VALUE;
                 calculatedLastParcelIndex = Number.MAX_VALUE;
-                calculatedLastTransactionIndex = Number.MAX_VALUE;
             } else {
                 const beforePageAssetCount = (page - 1) * itemsPerPage;
                 let currentAssetCount = 0;
                 let lastBlockNumberCursor = Number.MAX_VALUE;
                 let lastParcelIndexCursor = Number.MAX_VALUE;
-                let lastTransactionIndexCursor = Number.MAX_VALUE;
                 while (beforePageAssetCount - currentAssetCount > 10000) {
                     const cursorAsset = await context.db.getUTXOListByAssetType(
                         new H256(assetType),
@@ -270,7 +254,6 @@ function handle(context: ServerContext, router: Router) {
                         {
                             lastBlockNumber: lastBlockNumberCursor,
                             lastParcelIndex: lastParcelIndexCursor,
-                            lastTransactionIndex: lastTransactionIndexCursor,
                             itemsPerPage: 10000
                         }
                     );
@@ -278,7 +261,6 @@ function handle(context: ServerContext, router: Router) {
                     if (lastCursorAsset) {
                         lastBlockNumberCursor = lastCursorAsset.blockNumber;
                         lastParcelIndexCursor = lastCursorAsset.parcelIndex;
-                        lastTransactionIndexCursor = lastCursorAsset.transactionIndex;
                     }
                     currentAssetCount += 10000;
                 }
@@ -291,7 +273,6 @@ function handle(context: ServerContext, router: Router) {
                     {
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
-                        lastTransactionIndex: lastTransactionIndexCursor,
                         itemsPerPage: skipCount
                     }
                 );
@@ -299,11 +280,9 @@ function handle(context: ServerContext, router: Router) {
                 if (lastSkipAsset) {
                     lastBlockNumberCursor = lastSkipAsset.blockNumber;
                     lastParcelIndexCursor = lastSkipAsset.parcelIndex;
-                    lastTransactionIndexCursor = lastSkipAsset.transactionIndex;
                 }
                 calculatedLastBlockNumber = lastBlockNumberCursor;
                 calculatedLastParcelIndex = lastParcelIndexCursor;
-                calculatedLastTransactionIndex = lastTransactionIndexCursor;
             }
             const assets = await context.db.getUTXOListByAssetType(
                 new H256(assetType),
@@ -313,7 +292,6 @@ function handle(context: ServerContext, router: Router) {
                 {
                     lastBlockNumber: calculatedLastBlockNumber,
                     lastParcelIndex: calculatedLastParcelIndex,
-                    lastTransactionIndex: calculatedLastTransactionIndex,
                     itemsPerPage
                 }
             );

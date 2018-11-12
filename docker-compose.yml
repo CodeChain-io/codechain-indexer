@@ -15,7 +15,7 @@ services:
       - WAIT_LOOPS=20
 
   codechain:
-    image: kodebox/codechain:80874e71eb5fd2b21d89efc4d71f6266a209626e
+    image: kodebox/codechain:4cea6ae32a2ac46c3a0ec877c383b36826c9d26f
     ports:
       - "8080:8080"
     command:
@@ -27,14 +27,14 @@ services:
       - codechaindata:/db
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.3
     environment:
       - ES_HOSTS=0.0.0.0:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:6.2.4
+    image: docker.elastic.co/kibana/kibana-oss:6.4.3
     ports:
       - "5601:5601"
 

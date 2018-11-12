@@ -15,7 +15,7 @@ A blockchain data indexing tool for CodeChain
 The software dependencies required to install and run CodeChain-indexer are:
 
 - Latest version of the [CodeChain](https://github.com/CodeChain-io/codechain)
-- ElasticSearch [`v6.2.4`](https://www.elastic.co/guide/en/beats/libbeat/6.2/elasticsearch-installation.html)
+- ElasticSearch [`v6.4.3`](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
 - Nodejs higher than version 8
 
 #### Download
