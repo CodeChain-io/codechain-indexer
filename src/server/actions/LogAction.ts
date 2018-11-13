@@ -102,6 +102,24 @@ function handle(context: ServerContext, router: Router) {
             next(e);
         }
     });
+    router.get("/log/composeTxCount", async (req, res, next) => {
+        const { date } = req.query;
+        try {
+            const count = await context.db.getLogCount(date, LogType.TX_ASSET_COMPOSE_COUNT);
+            res.send(JSON.stringify(count));
+        } catch (e) {
+            next(e);
+        }
+    });
+    router.get("/log/decomposeTxCount", async (req, res, next) => {
+        const { date } = req.query;
+        try {
+            const count = await context.db.getLogCount(date, LogType.TX_ASSET_DECOMPOSE_COUNT);
+            res.send(JSON.stringify(count));
+        } catch (e) {
+            next(e);
+        }
+    });
 }
 
 export const LogAction = {

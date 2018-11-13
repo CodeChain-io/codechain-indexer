@@ -83,6 +83,10 @@ export class BlockSyncWorker {
             await this.queryLog(isRetract, dateString, LogType.TX_ASSET_MINT_COUNT, assetMintTxCount);
             const assetTransferTxCount = _.filter(transactions, tx => Type.isAssetTransferTransactionDoc(tx)).length;
             await this.queryLog(isRetract, dateString, LogType.TX_ASSET_TRANSFER_COUNT, assetTransferTxCount);
+            const assetComposeTxCount = _.filter(transactions, tx => Type.isAssetComposeTransactionDoc(tx)).length;
+            await this.queryLog(isRetract, dateString, LogType.TX_ASSET_COMPOSE_COUNT, assetComposeTxCount);
+            const assetDecomposeTxCount = _.filter(transactions, tx => Type.isAssetDecomposeTransactionDoc(tx)).length;
+            await this.queryLog(isRetract, dateString, LogType.TX_ASSET_DECOMPOSE_COUNT, assetDecomposeTxCount);
         }
     };
 
