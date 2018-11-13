@@ -33,7 +33,11 @@ export class BlockSyncWorker {
     constructor(config: WorkerConfig) {
         this.config = config;
         this.elasticSearchAgent = new ElasticSearchAgent(config.elasticSearch.host);
-        this.typeConverter = new TypeConverter(config.codeChain.host, config.codeChain.networkId);
+        this.typeConverter = new TypeConverter(
+            config.codeChain.host,
+            config.elasticSearch.host,
+            config.codeChain.networkId
+        );
         this.sdk = new SDK({ server: config.codeChain.host, networkId: config.codeChain.networkId });
         this.jobIsRunning = false;
     }

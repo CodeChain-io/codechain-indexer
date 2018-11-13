@@ -711,9 +711,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codechain-indexer-types@^0.2.0-alpha.6:
-  version "0.2.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.2.0-alpha.6.tgz#7f334aa46d7cc575751aa39f3a941e6b5251865a"
+codechain-indexer-types@^0.2.0-alpha.8:
+  version "0.2.0-alpha.8"
+  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.2.0-alpha.8.tgz#f49d6a72fec397115100ba47a2d4ff9d18e11804"
   dependencies:
     buffer "^5.2.1"
     lodash "^4.17.10"
@@ -757,9 +757,13 @@ codechain-primitives@^0.4.1:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-"codechain-sdk@https://github.com/CodeChain-io/codechain-sdk-js#2fa5e3d0879f840657d54c5739a8c212c3c31a01":
+"codechain-sdk@https://github.com/CodeChain-io/codechain-sdk-js#a621a73a0f9e0de5bc1c3c030b7aa367e6562986":
   version "0.5.1"
+<<<<<<< HEAD
   resolved "https://github.com/CodeChain-io/codechain-sdk-js#2fa5e3d0879f840657d54c5739a8c212c3c31a01"
+=======
+  resolved "https://github.com/CodeChain-io/codechain-sdk-js#a621a73a0f9e0de5bc1c3c030b7aa367e6562986"
+>>>>>>> Fix compile errors
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.5.4"

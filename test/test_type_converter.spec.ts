@@ -50,7 +50,7 @@ const blockJson = {
 describe("type-converter", () => {
     let typeConverter: TypeConverter;
     beforeAll(async () => {
-        typeConverter = new TypeConverter("http://127.0.0.1:8080");
+        typeConverter = new TypeConverter("http://127.0.0.1:8080", "http://127.0.0.1:5601");
     });
 
     test("from block", async () => {

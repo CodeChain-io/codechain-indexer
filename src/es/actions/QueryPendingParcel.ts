@@ -1,4 +1,5 @@
 import {
+    AssetComposeTransactionDoc,
     AssetMintTransactionDoc,
     AssetSchemeDoc,
     AssetTransactionDoc,
@@ -276,10 +277,17 @@ export class QueryPendingParcel implements BaseAction {
             .map(PendingParcel => PendingParcel.parcel)
             .filter(parcel => Type.isAssetTransactionDoc(parcel.action))
             .map(parcel => (parcel.action as AssetTransactionDoc).transaction)
-            .filter(transaction => Type.isAssetMintTransactionDoc(transaction))
-            .filter((transaction: AssetMintTransactionDoc) => transaction.data.output.assetType === assetType.value)
+            .filter(
+                transaction =>
+                    Type.isAssetMintTransactionDoc(transaction) || Type.isAssetComposeTransactionDoc(transaction)
+            )
+            .filter(
+                (transaction: AssetMintTransactionDoc | AssetComposeTransactionDoc) =>
+                    transaction.data.output.assetType === assetType.value
+            )
+            .map(transaction => transaction as AssetMintTransactionDoc | AssetComposeTransactionDoc)
             .value();
-        return Type.getAssetSchemeDoc(transactionDoc[0] as AssetMintTransactionDoc);
+        return Type.getAssetSchemeDoc(transactionDoc[0]);
     }
 
     public async getDeadPendingParcels(): Promise<PendingParcelDoc[]> {

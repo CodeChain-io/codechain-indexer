@@ -7,8 +7,8 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
-    "codechain-indexer-types": "^0.2.0-alpha.6",
-    "codechain-sdk": "https://github.com/CodeChain-io/codechain-sdk-js#2fa5e3d0879f840657d54c5739a8c212c3c31a01",
+    "codechain-indexer-types": "^0.2.0-alpha.8",
+    "codechain-sdk": "https://github.com/CodeChain-io/codechain-sdk-js#a621a73a0f9e0de5bc1c3c030b7aa367e6562986",
     "concurrently": "^4.0.1",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",

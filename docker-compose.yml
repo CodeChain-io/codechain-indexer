@@ -15,7 +15,7 @@ services:
       - WAIT_LOOPS=20
 
   codechain:
-    image: kodebox/codechain:4cea6ae32a2ac46c3a0ec877c383b36826c9d26f
+    image: kodebox/codechain:25b8af1dd5945c9a71ce4523375a391ee390e547
     ports:
       - "8080:8080"
     command:

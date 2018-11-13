@@ -41,15 +41,18 @@ import {
     U256
 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
+import { ElasticSearchAgent } from "..";
 
 export class TypeConverter {
     private P2PKH = "5f5960a7bca6ceeeb0c97bc717562914e7a1de04";
     private P2PKHBURN = "37572bdcc22d39a59c0d12d301f6271ba3fdd451";
     private sdk: SDK;
+    private db: ElasticSearchAgent;
     private networkId: string;
 
-    public constructor(codechainHost: string, networkId: string = "tc") {
+    public constructor(codechainHost: string, elasticsearchHost: string, networkId: string = "tc") {
         this.sdk = new SDK({ server: codechainHost, options: { networkId } });
+        this.db = new ElasticSearchAgent(elasticsearchHost);
         this.networkId = networkId;
     }
 
@@ -129,7 +132,7 @@ export class TypeConverter {
         if (transaction instanceof AssetMintTransaction) {
             const metadata = Type.getMetadata(transaction.metadata);
             return {
-                type: transaction.type,
+                type: "assetMint",
                 data: {
                     output: {
                         lockScriptHash: transaction.output.lockScriptHash.value,
@@ -160,7 +163,7 @@ export class TypeConverter {
                 _.map(transaction.outputs, output => this.fromAssetTransferOutput(output))
             );
             return {
-                type: transaction.type,
+                type: "assetTransfer",
                 data: {
                     networkId: transaction.networkId,
                     burns,
@@ -179,7 +182,7 @@ export class TypeConverter {
         } else if (transaction instanceof AssetComposeTransaction) {
             const inputs = await Promise.all(_.map(transaction.inputs, input => this.fromAssetTransferInput(input)));
             return {
-                type: transaction.type,
+                type: "assetCompose",
                 data: {
                     networkId: transaction.networkId,
                     shardId: transaction.shardId,
@@ -200,14 +203,15 @@ export class TypeConverter {
                     parcelIndex: (parcel && parcel.parcelIndex) || 0,
                     invoice: parcelInvoice && parcelInvoice.success,
                     errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
-                }
+                },
+                isRetracted: false
             } as AssetComposeTransactionDoc;
         } else if (transaction instanceof AssetDecomposeTransaction) {
             const outputs = await Promise.all(
                 _.map(transaction.outputs, output => this.fromAssetTransferOutput(output))
             );
             return {
-                type: transaction.type,
+                type: "assetDecompose",
                 data: {
                     input: await this.fromAssetTransferInput(transaction.input),
                     outputs,
@@ -219,7 +223,8 @@ export class TypeConverter {
                     parcelIndex: (parcel && parcel.parcelIndex) || 0,
                     invoice: parcelInvoice && parcelInvoice.success,
                     errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
-                }
+                },
+                isRetracted: false
             } as AssetDecomposeTransactionDoc;
         }
         throw new Error(`Unexpected transaction : ${transaction}`);
@@ -227,17 +232,16 @@ export class TypeConverter {
 
     public fromAction = async (action: Action, timestamp: number, parcel: SignedParcel): Promise<ActionDoc> => {
         if (action instanceof AssetTransaction) {
-            const actionJson = action.toJSON();
             const transactionDoc = await this.fromTransaction(action.transaction, timestamp, parcel);
             return {
-                action: actionJson.action,
+                action: "assetTransaction",
                 transaction: transactionDoc
             };
         } else if (action instanceof SetRegularKey) {
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
             const actionJson = action.toJSON();
             return {
-                action: actionJson.action,
+                action: "setRegularKey",
                 key: actionJson.key,
                 invoice: parcelInvoice && parcelInvoice.success,
                 errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
@@ -246,35 +250,32 @@ export class TypeConverter {
             const actionJson = action.toJSON();
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
             return {
-                action: actionJson.action,
+                action: "payment",
                 receiver: actionJson.receiver,
-                amount: actionJson.amount,
+                amount: actionJson.amount as string,
                 invoice: parcelInvoice && parcelInvoice.success,
                 errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
             };
         } else if (action instanceof CreateShard) {
-            const actionJson = action.toJSON();
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
             return {
-                action: actionJson.action,
+                action: "createShard",
                 invoice: parcelInvoice && parcelInvoice.success,
                 errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
             };
         } else if (action instanceof SetShardOwners) {
-            const actionJson = action.toJSON();
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
             return {
-                action: actionJson.action,
+                action: "setShardOwners",
                 shardId: action.shardId,
                 owners: _.map(action.owners, owner => owner.value),
                 invoice: parcelInvoice && parcelInvoice.success,
                 errorType: parcelInvoice && parcelInvoice.error && parcelInvoice.error.type
             };
         } else if (action instanceof SetShardUsers) {
-            const actionJson = action.toJSON();
             const parcelInvoice = (await this.sdk.rpc.chain.getParcelInvoice(parcel.hash())) as Invoice;
             return {
-                action: actionJson.action,
+                action: "setShardUsers",
                 shardId: action.shardId,
                 users: _.map(action.users, user => user.value),
                 invoice: parcelInvoice && parcelInvoice.success,
@@ -375,9 +376,32 @@ export class TypeConverter {
     };
 
     private getAssetScheme = async (assetType: H256): Promise<AssetSchemeDoc> => {
-        const assetScheme = await this.sdk.rpc.chain.getAssetSchemeByType(assetType);
+        const assetScheme = await this.db.getAssetScheme(assetType);
         if (assetScheme) {
-            return this.fromAssetScheme(assetScheme);
+            return assetScheme;
+        }
+        const currentBlockNumber = await this.sdk.rpc.chain.getBestBlockNumber();
+        const currentBlock = await this.sdk.rpc.chain.getBlock(currentBlockNumber);
+        if (currentBlock) {
+            const txs = _.chain(currentBlock.parcels)
+                .filter(parcel => parcel.unsigned.action instanceof AssetTransaction)
+                .map(parcel => (parcel.unsigned.action as AssetTransaction).transaction)
+                .value();
+            const mintComposeTxs = _.filter(
+                txs,
+                tx => tx instanceof AssetMintTransaction || tx instanceof AssetComposeTransaction
+            );
+            const foundMintComposeTx = _.find(
+                mintComposeTxs,
+                tx =>
+                    (tx as AssetMintTransaction | AssetComposeTransaction).getAssetSchemeAddress().value ===
+                    assetType.value
+            );
+            if (foundMintComposeTx) {
+                return this.fromAssetScheme(
+                    (foundMintComposeTx as AssetMintTransaction | AssetComposeTransaction).getAssetScheme()
+                );
+            }
         }
         const pendingParcels = await this.sdk.rpc.chain.getPendingParcels();
         const pendingMintComposeTransactions = _.chain(pendingParcels)
@@ -393,6 +417,6 @@ export class TypeConverter {
         if (pendingMintComposeTransaction) {
             return this.fromAssetScheme(pendingMintComposeTransaction.getAssetScheme());
         }
-        throw new Error("Invalid asset type");
+        throw new Error(`Invalid asset type : ${assetType.value}`);
     };
 }
