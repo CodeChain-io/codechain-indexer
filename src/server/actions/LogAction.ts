@@ -84,6 +84,15 @@ function handle(context: ServerContext, router: Router) {
             next(e);
         }
     });
+    router.get("/log/createShardCount", async (req, res, next) => {
+        const { date } = req.query;
+        try {
+            const count = await context.db.getLogCount(date, LogType.PARCEL_CREATE_SHARD_COUNT);
+            res.send(JSON.stringify(count));
+        } catch (e) {
+            next(e);
+        }
+    });
     router.get("/log/mintTxCount", async (req, res, next) => {
         const { date } = req.query;
         try {

@@ -74,6 +74,8 @@ export class BlockSyncWorker {
             await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_SHARD_OWNER_COUNT, setShardOwnerParcelCount);
             const setShardUserParcelCount = _.filter(blockDoc.parcels, p => Type.isSetShardUsersDoc(p.action)).length;
             await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_SHARD_USER_COUNT, setShardUserParcelCount);
+            const createShardParcelCount = _.filter(blockDoc.parcels, p => Type.isCreateShardDoc(p.action)).length;
+            await this.queryLog(isRetract, dateString, LogType.PARCEL_CREATE_SHARD_COUNT, createShardParcelCount);
         }
         const transactions = Type.getTransactionsByBlock(blockDoc);
         const txCount = transactions.length;
