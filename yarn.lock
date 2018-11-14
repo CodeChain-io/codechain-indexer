@@ -759,11 +759,7 @@ codechain-primitives@^0.4.1:
 
 "codechain-sdk@https://github.com/CodeChain-io/codechain-sdk-js#a621a73a0f9e0de5bc1c3c030b7aa367e6562986":
   version "0.5.1"
-<<<<<<< HEAD
-  resolved "https://github.com/CodeChain-io/codechain-sdk-js#2fa5e3d0879f840657d54c5739a8c212c3c31a01"
-=======
   resolved "https://github.com/CodeChain-io/codechain-sdk-js#a621a73a0f9e0de5bc1c3c030b7aa367e6562986"
->>>>>>> Fix compile errors
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.5.4"

@@ -128,6 +128,11 @@ export class QueryTransaction implements BaseAction {
                         },
                         {
                             term: {
+                                "data.input.prevOut.owner": address
+                            }
+                        },
+                        {
+                            term: {
                                 "data.burns.prevOut.owner": address
                             }
                         },
@@ -197,12 +202,22 @@ export class QueryTransaction implements BaseAction {
                                     },
                                     {
                                         term: {
+                                            "data.input.prevOut.assetType": assetType.value
+                                        }
+                                    },
+                                    {
+                                        term: {
                                             "data.burns.prevOut.assetType": assetType.value
                                         }
                                     },
                                     {
                                         term: {
                                             "data.output.assetType": assetType.value
+                                        }
+                                    },
+                                    {
+                                        term: {
+                                            "data.outputs.assetType": assetType.value
                                         }
                                     }
                                 ]
@@ -231,12 +246,22 @@ export class QueryTransaction implements BaseAction {
                                     },
                                     {
                                         term: {
+                                            "data.input.prevOut.assetType": assetType.value
+                                        }
+                                    },
+                                    {
+                                        term: {
                                             "data.burns.prevOut.assetType": assetType.value
                                         }
                                     },
                                     {
                                         term: {
                                             "data.output.assetType": assetType.value
+                                        }
+                                    },
+                                    {
+                                        term: {
+                                            "data.outputs.assetType": assetType.value
                                         }
                                     }
                                 ]
@@ -317,6 +342,11 @@ export class QueryTransaction implements BaseAction {
                                     {
                                         term: {
                                             "data.inputs.prevOut.owner": address
+                                        }
+                                    },
+                                    {
+                                        term: {
+                                            "data.input.prevOut.owner": address
                                         }
                                     },
                                     {

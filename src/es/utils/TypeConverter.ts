@@ -90,6 +90,17 @@ export class TypeConverter {
             );
             lockScriptHash = transaction.outputs[assetTransferInput.prevOut.index].lockScriptHash.value;
             parameters = transaction.outputs[assetTransferInput.prevOut.index].parameters;
+        } else if (transaction instanceof AssetComposeTransaction) {
+            owner = this.getOwner(transaction.output.lockScriptHash, transaction.output.parameters);
+            lockScriptHash = transaction.output.lockScriptHash.value;
+            parameters = transaction.output.parameters;
+        } else if (transaction instanceof AssetDecomposeTransaction) {
+            owner = this.getOwner(
+                transaction.outputs[assetTransferInput.prevOut.index].lockScriptHash,
+                transaction.outputs[assetTransferInput.prevOut.index].parameters
+            );
+            lockScriptHash = transaction.outputs[assetTransferInput.prevOut.index].lockScriptHash.value;
+            parameters = transaction.outputs[assetTransferInput.prevOut.index].parameters;
         }
 
         return {
