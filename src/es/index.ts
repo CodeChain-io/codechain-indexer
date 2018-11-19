@@ -19,6 +19,7 @@ import { QueryIndex } from "./actions/QueryIndex";
 import { LogData, LogType, QueryLog } from "./actions/QueryLog";
 import { QueryParcel } from "./actions/QueryParcel";
 import { QueryPendingParcel } from "./actions/QueryPendingParcel";
+import { QuerySnapshot } from "./actions/QuerySnapshot";
 import { QueryTransaction } from "./actions/QueryTransaction";
 
 export class ElasticSearchAgent
@@ -31,7 +32,8 @@ export class ElasticSearchAgent
         QueryLog,
         QueryAccount,
         QueryImage,
-        QueryAsset {
+        QueryAsset,
+        QuerySnapshot {
     public client: Client;
     public agent: ElasticSearchAgent;
     public getBlockByHash!: (hash: H256) => Promise<BlockDoc | null>;
@@ -176,6 +178,7 @@ export class ElasticSearchAgent
         } | null
     ) => Promise<
         {
+            address: string;
             asset: AssetDoc;
             blockNumber: number;
             parcelIndex: number;
@@ -241,6 +244,18 @@ export class ElasticSearchAgent
             itemsPerPage?: number | null;
         } | null
     ) => Promise<PendingParcelDoc[]>;
+    public getSnapshotRequests!: () => Promise<{ blockNumber: number; assetType: string }[]>;
+    public getSnapshotUTXOList!: (
+        assetType: H256,
+        blockNumber: number
+    ) => Promise<{ address: string; asset: AssetDoc }[]>;
+    public hasSnapshotRequest!: (assetType: H256, blockNumber: number) => Promise<boolean>;
+    public indexSnapshotRequest!: (assetType: H256, blockNumber: number) => Promise<any>;
+    public indexSnapshotUTXOList!: (
+        utxoList: { address: string; asset: AssetDoc }[],
+        assetType: H256,
+        blockNumber: number
+    ) => Promise<void>;
     constructor(host: string) {
         this.client = new Client({
             host
@@ -264,7 +279,8 @@ applyMixins(ElasticSearchAgent, [
     QueryLog,
     QueryAccount,
     QueryImage,
-    QueryAsset
+    QueryAsset,
+    QuerySnapshot
 ]);
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
     baseCtors.forEach(baseCtor => {

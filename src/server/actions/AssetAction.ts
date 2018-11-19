@@ -328,6 +328,47 @@ function handle(context: ServerContext, router: Router) {
             next(e);
         }
     });
+
+    router.post("/utxo-snapshot/asset/:assetType/block/:blockNumberString", async (req, res, next) => {
+        const { assetType, blockNumberString } = req.params;
+        try {
+            const blockNumber = parseInt(blockNumberString, 10);
+            await context.db.indexSnapshotRequest(new H256(assetType), blockNumber);
+            res.send(null);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    router.get("/utxo-snapshot/asset/:assetType/block/:blockNumberString", async (req, res, next) => {
+        const { assetType, blockNumberString } = req.params;
+        try {
+            const blockNumber = parseInt(blockNumberString, 10);
+            const hasSnapshotRequest = await context.db.hasSnapshotRequest(new H256(assetType), blockNumber);
+            if (!hasSnapshotRequest) {
+                next(new Error("There is no snapshot"));
+                return;
+            }
+            const bestBlockNumber = await context.db.getLastBlockNumber();
+            if (bestBlockNumber < blockNumber) {
+                next(new Error("There is no snapshot"));
+                return;
+            }
+            const snapshotRequests = await context.db.getSnapshotUTXOList(new H256(assetType), blockNumber);
+            res.send(snapshotRequests);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    router.get("/utxo-snapshot/requests", async (_R, res, next) => {
+        try {
+            const snapshotRequests = await context.db.getSnapshotRequests();
+            res.send(snapshotRequests);
+        } catch (e) {
+            next(e);
+        }
+    });
 }
 
 export const AssetAction = {

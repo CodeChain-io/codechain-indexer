@@ -1,4 +1,5 @@
 import {
+    AssetDoc,
     AssetMintTransactionDoc,
     AssetTransferTransactionDoc,
     BlockDoc,
@@ -229,6 +230,7 @@ export class BlockSyncWorker {
             100
         );
         await this.handleAsset(blockDoc, false);
+        await this.handleAssetSnapshot(blockDoc);
         await this.handleLogData(blockDoc, false);
         await this.handleBalance(blockDoc, false);
 
@@ -364,6 +366,53 @@ export class BlockSyncWorker {
         for (const mintTx of assetMintTransactions) {
             await this.handleAssetImage(mintTx as AssetMintTransactionDoc, isRetract);
         }
+    };
+
+    private handleAssetSnapshot = async (blockDoc: BlockDoc) => {
+        const snapshotRequests = await this.elasticSearchAgent.getSnapshotRequests();
+        const snapshotRequest = _.find(snapshotRequests, r => r.blockNumber === blockDoc.number);
+        if (!snapshotRequest) {
+            return;
+        }
+
+        let lastBlockNumberCursor = Number.MAX_VALUE;
+        let lastParcelIndexCursor = Number.MAX_VALUE;
+        let lastTransactionIndexCursor = Number.MAX_VALUE;
+        let retValues: {
+            address: string;
+            asset: AssetDoc;
+        }[] = [];
+        while (true) {
+            // FIXME : Remove an unnecessary parameters
+            const utxoReturns = await this.elasticSearchAgent.getUTXOListByAssetType(
+                new H256(snapshotRequest.assetType),
+                0,
+                0,
+                false,
+                {
+                    lastBlockNumber: lastBlockNumberCursor,
+                    lastParcelIndex: lastParcelIndexCursor,
+                    lastTransactionIndex: lastTransactionIndexCursor,
+                    itemsPerPage: 10000
+                }
+            );
+            retValues = retValues.concat(utxoReturns);
+            if (utxoReturns.length < 10000) {
+                break;
+            }
+            const lastUTXO = _.last(utxoReturns);
+            lastBlockNumberCursor = lastUTXO!.blockNumber;
+            lastParcelIndexCursor = lastUTXO!.parcelIndex;
+            lastTransactionIndexCursor = lastUTXO!.transactionIndex;
+        }
+        if (retValues.length === 0) {
+            return;
+        }
+        await this.elasticSearchAgent.indexSnapshotUTXOList(
+            retValues,
+            new H256(snapshotRequest.assetType),
+            snapshotRequest.blockNumber
+        );
     };
 
     private handleLogData = async (blockDoc: BlockDoc, isRetract: boolean) => {

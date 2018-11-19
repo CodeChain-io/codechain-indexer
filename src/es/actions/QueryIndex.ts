@@ -7,7 +7,9 @@ import { getMappingImageBlob } from "../mappings/mapping_image_blob";
 import { getMappingLog } from "../mappings/mapping_log";
 import { getMappingParcel } from "../mappings/mapping_parcel";
 import { getMappingPendingParcel } from "../mappings/mapping_pending_parcel";
+import { getSnapshotRequestMapping } from "../mappings/mapping_snapshot_request";
 import { getMappingTransaction } from "../mappings/mapping_transaction";
+import { getUTXOSnapshotMapping } from "../mappings/mapping_utxo_snapshot";
 import { BaseAction } from "./BaseAction";
 
 export class QueryIndex implements BaseAction {
@@ -38,6 +40,12 @@ export class QueryIndex implements BaseAction {
         });
         const isMappingAssetExisted = await this.client.indices.exists({
             index: "asset"
+        });
+        const isMappingSnapshotRequestExisted = await this.client.indices.exists({
+            index: "snapshot_request"
+        });
+        const isMappingUTXOSnapshotExisted = await this.client.indices.exists({
+            index: "utxo_snapshot"
         });
         if (!isMappingBlockExisted) {
             await this.client.indices.create({
@@ -117,6 +125,26 @@ export class QueryIndex implements BaseAction {
                 index: "asset",
                 type: "_doc",
                 body: getAssetMapping()
+            });
+        }
+        if (!isMappingSnapshotRequestExisted) {
+            await this.client.indices.create({
+                index: "snapshot_request"
+            });
+            await this.client.indices.putMapping({
+                index: "snapshot_request",
+                type: "_doc",
+                body: getSnapshotRequestMapping()
+            });
+        }
+        if (!isMappingUTXOSnapshotExisted) {
+            await this.client.indices.create({
+                index: "utxo_snapshot"
+            });
+            await this.client.indices.putMapping({
+                index: "utxo_snapshot",
+                type: "_doc",
+                body: getUTXOSnapshotMapping()
             });
         }
     }

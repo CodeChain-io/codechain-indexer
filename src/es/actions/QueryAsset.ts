@@ -21,7 +21,9 @@ export class QueryAsset implements BaseAction {
             itemsPerPage?: number | null;
             address?: string | null;
         } | null
-    ): Promise<{ asset: AssetDoc; blockNumber: number; parcelIndex: number; transactionIndex: number }[]> {
+    ): Promise<
+        { address: string; asset: AssetDoc; blockNumber: number; parcelIndex: number; transactionIndex: number }[]
+    > {
         const mustQuery: any = [
             {
                 term: {
@@ -57,6 +59,7 @@ export class QueryAsset implements BaseAction {
             });
         }
         const response = await this.client.search<{
+            address: string;
             asset: AssetDoc;
             blockNumber: number;
             parcelIndex: number;
@@ -85,6 +88,7 @@ export class QueryAsset implements BaseAction {
         });
         return _.map(response.hits.hits, hit => {
             return {
+                address: hit._source.address,
                 asset: hit._source.asset,
                 blockNumber: hit._source.blockNumber,
                 parcelIndex: hit._source.parcelIndex,
