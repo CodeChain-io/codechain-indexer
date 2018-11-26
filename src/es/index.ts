@@ -244,18 +244,32 @@ export class ElasticSearchAgent
             itemsPerPage?: number | null;
         } | null
     ) => Promise<PendingParcelDoc[]>;
-    public getSnapshotRequests!: () => Promise<{ blockNumber: number; assetType: string }[]>;
+    public getSnapshotRequests!: () => Promise<{ snapshotId: string; date: Date; assetType: string }[]>;
     public getSnapshotUTXOList!: (
-        assetType: H256,
-        blockNumber: number
-    ) => Promise<{ address: string; asset: AssetDoc }[]>;
-    public hasSnapshotRequest!: (assetType: H256, blockNumber: number) => Promise<boolean>;
-    public indexSnapshotRequest!: (assetType: H256, blockNumber: number) => Promise<any>;
+        snapshotId: string
+    ) => Promise<{
+        utxoList: {
+            address: string;
+            asset: AssetDoc;
+        }[];
+        blockNumber: number;
+    } | null>;
+    public indexSnapshotRequest!: (snapshotId: string, assetType: H256, timestamp: number) => Promise<any>;
+    public updateSnapshotRequestStatus!: (snapshotId: string, status: "wait" | "done") => Promise<any>;
     public indexSnapshotUTXOList!: (
-        utxoList: { address: string; asset: AssetDoc }[],
-        assetType: H256,
+        snapshotId: string,
+        utxoList: {
+            address: string;
+            asset: AssetDoc;
+        }[],
         blockNumber: number
     ) => Promise<void>;
+    public getSnapshotUTXOByBlockNumber!: (
+        blockNumber: number
+    ) => Promise<{
+        source: { utxoList: { address: string; asset: AssetDoc }[]; blockNumber: number };
+        id: string;
+    } | null>;
     constructor(host: string) {
         this.client = new Client({
             host

@@ -1,10 +1,13 @@
 export const getSnapshotRequestMapping = () => {
     return {
         properties: {
-            blockNumber: {
+            timestamp: {
                 type: "long"
             },
             assetType: {
+                type: "keyword"
+            },
+            status: {
                 type: "keyword"
             }
         }

@@ -4,6 +4,7 @@ import { Type } from "codechain-indexer-types/lib/utils";
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
 import * as _ from "lodash";
+import moment = require("moment");
 import { ServerContext } from "../ServerContext";
 
 function handle(context: ServerContext, router: Router) {
@@ -329,33 +330,25 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.post("/utxo-snapshot/asset/:assetType/block/:blockNumberString", async (req, res, next) => {
-        const { assetType, blockNumberString } = req.params;
+    router.post("/utxo-snapshot/asset/:assetType/date/:date", async (req, res, next) => {
+        const { assetType, date } = req.params;
         try {
-            const blockNumber = parseInt(blockNumberString, 10);
-            await context.db.indexSnapshotRequest(new H256(assetType), blockNumber);
-            res.send(null);
-        } catch (e) {
-            next(e);
-        }
-    });
+            if (!moment(date).isValid()) {
+                next(new Error("invalid date format"));
+                return;
+            }
 
-    router.get("/utxo-snapshot/asset/:assetType/block/:blockNumberString", async (req, res, next) => {
-        const { assetType, blockNumberString } = req.params;
-        try {
-            const blockNumber = parseInt(blockNumberString, 10);
-            const hasSnapshotRequest = await context.db.hasSnapshotRequest(new H256(assetType), blockNumber);
-            if (!hasSnapshotRequest) {
-                next(new Error("There is no snapshot"));
+            const unixTimestamp = moment(date).unix();
+            const bestBlockNumber = await context.codechainSdk.rpc.chain.getBestBlockNumber();
+            const getBestBlock = await context.codechainSdk.rpc.chain.getBlock(bestBlockNumber);
+            if (getBestBlock && getBestBlock.timestamp > unixTimestamp) {
+                next(new Error("invalid date"));
                 return;
             }
-            const bestBlockNumber = await context.db.getLastBlockNumber();
-            if (bestBlockNumber < blockNumber) {
-                next(new Error("There is no snapshot"));
-                return;
-            }
-            const snapshotRequests = await context.db.getSnapshotUTXOList(new H256(assetType), blockNumber);
-            res.send(snapshotRequests);
+
+            const snapshotId = `assetType-${unixTimestamp}`;
+            await context.db.indexSnapshotRequest(snapshotId, new H256(assetType), unixTimestamp);
+            res.send({ snapshotId });
         } catch (e) {
             next(e);
         }
@@ -365,6 +358,20 @@ function handle(context: ServerContext, router: Router) {
         try {
             const snapshotRequests = await context.db.getSnapshotRequests();
             res.send(snapshotRequests);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    router.get("/utxo-snapshot/:snapshotId", async (req, res, next) => {
+        const { snapshotId } = req.params;
+        try {
+            const snapshotResponse = await context.db.getSnapshotUTXOList(snapshotId);
+            if (!snapshotResponse) {
+                next(new Error("There is no snapshot"));
+                return;
+            }
+            res.send(snapshotResponse);
         } catch (e) {
             next(e);
         }

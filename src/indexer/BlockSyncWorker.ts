@@ -45,6 +45,40 @@ export class BlockSyncWorker {
             this.watchJob.cancel(false);
         }
     }
+    public handleLogData = async (blockDoc: BlockDoc, isRetract: boolean) => {
+        const dateString = moment
+            .unix(blockDoc.timestamp)
+            .utc()
+            .format("YYYY-MM-DD");
+        await this.queryLog(isRetract, dateString, LogType.BLOCK_COUNT, 1);
+        await this.queryLog(isRetract, dateString, LogType.BLOCK_MINING_COUNT, 1, blockDoc.author);
+        const parcelCount = blockDoc.parcels.length;
+        if (parcelCount > 0) {
+            await this.queryLog(isRetract, dateString, LogType.PARCEL_COUNT, parcelCount);
+            const paymentParcelCount = _.filter(blockDoc.parcels, p => Type.isPaymentDoc(p.action)).length;
+            await this.queryLog(isRetract, dateString, LogType.PARCEL_PAYMENT_COUNT, paymentParcelCount);
+            const serRegularKeyParcelCount = _.filter(blockDoc.parcels, p => Type.isSetRegularKeyDoc(p.action)).length;
+            await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_REGULAR_KEY_COUNT, serRegularKeyParcelCount);
+            const assetTransactionGroupParcelCount = _.filter(blockDoc.parcels, p =>
+                Type.isAssetTransactionGroupDoc(p.action)
+            ).length;
+            await this.queryLog(
+                isRetract,
+                dateString,
+                LogType.PARCEL_ASSET_TRANSACTION_GROUP_COUNT,
+                assetTransactionGroupParcelCount
+            );
+        }
+        const transactions = Type.getTransactionsByBlock(blockDoc);
+        const txCount = transactions.length;
+        if (txCount > 0) {
+            await this.queryLog(isRetract, dateString, LogType.TX_COUNT, txCount);
+            const assetMintTxCount = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx)).length;
+            await this.queryLog(isRetract, dateString, LogType.TX_ASSET_MINT_COUNT, assetMintTxCount);
+            const assetTransferTxCount = _.filter(transactions, tx => Type.isAssetTransferTransactionDoc(tx)).length;
+            await this.queryLog(isRetract, dateString, LogType.TX_ASSET_TRANSFER_COUNT, assetTransferTxCount);
+        }
+    };
 
     private async startSync() {
         try {
@@ -252,6 +286,7 @@ export class BlockSyncWorker {
             100
         );
         await this.handleAsset(retractedBlock, true);
+        await this.handleRetractAssetSnapshot(retractedBlock);
         await this.handleLogData(retractedBlock, true);
         await this.handleBalance(retractedBlock, true);
 
@@ -370,84 +405,55 @@ export class BlockSyncWorker {
 
     private handleAssetSnapshot = async (blockDoc: BlockDoc) => {
         const snapshotRequests = await this.elasticSearchAgent.getSnapshotRequests();
-        const snapshotRequest = _.find(snapshotRequests, r => r.blockNumber === blockDoc.number);
-        if (!snapshotRequest) {
+        const currentSnapshots = _.filter(snapshotRequests, r => {
+            return r.date.getTime() / 1000 < blockDoc.timestamp;
+        });
+        if (currentSnapshots.length === 0) {
             return;
         }
 
-        let lastBlockNumberCursor = Number.MAX_VALUE;
-        let lastParcelIndexCursor = Number.MAX_VALUE;
-        let lastTransactionIndexCursor = Number.MAX_VALUE;
-        let retValues: {
-            address: string;
-            asset: AssetDoc;
-        }[] = [];
-        while (true) {
-            // FIXME : Remove an unnecessary parameters
-            const utxoReturns = await this.elasticSearchAgent.getUTXOListByAssetType(
-                new H256(snapshotRequest.assetType),
-                0,
-                0,
-                false,
-                {
-                    lastBlockNumber: lastBlockNumberCursor,
-                    lastParcelIndex: lastParcelIndexCursor,
-                    lastTransactionIndex: lastTransactionIndexCursor,
-                    itemsPerPage: 10000
+        for (const snapshotRequest of currentSnapshots) {
+            let lastBlockNumberCursor = Number.MAX_VALUE;
+            let lastParcelIndexCursor = Number.MAX_VALUE;
+            let lastTransactionIndexCursor = Number.MAX_VALUE;
+            let retValues: {
+                address: string;
+                asset: AssetDoc;
+            }[] = [];
+            while (true) {
+                // FIXME : Remove an unnecessary parameters
+                const utxoReturns = await this.elasticSearchAgent.getUTXOListByAssetType(
+                    new H256(snapshotRequest.assetType),
+                    0,
+                    0,
+                    false,
+                    {
+                        lastBlockNumber: lastBlockNumberCursor,
+                        lastParcelIndex: lastParcelIndexCursor,
+                        lastTransactionIndex: lastTransactionIndexCursor,
+                        itemsPerPage: 10000
+                    }
+                );
+                retValues = retValues.concat(utxoReturns);
+                if (utxoReturns.length < 10000) {
+                    break;
                 }
-            );
-            retValues = retValues.concat(utxoReturns);
-            if (utxoReturns.length < 10000) {
-                break;
+                const lastUTXO = _.last(utxoReturns);
+                lastBlockNumberCursor = lastUTXO!.blockNumber;
+                lastParcelIndexCursor = lastUTXO!.parcelIndex;
+                lastTransactionIndexCursor = lastUTXO!.transactionIndex;
             }
-            const lastUTXO = _.last(utxoReturns);
-            lastBlockNumberCursor = lastUTXO!.blockNumber;
-            lastParcelIndexCursor = lastUTXO!.parcelIndex;
-            lastTransactionIndexCursor = lastUTXO!.transactionIndex;
+            await this.elasticSearchAgent.updateSnapshotRequestStatus(snapshotRequest.snapshotId, "done");
+            await this.elasticSearchAgent.indexSnapshotUTXOList(snapshotRequest.snapshotId, retValues, blockDoc.number);
         }
-        if (retValues.length === 0) {
-            return;
-        }
-        await this.elasticSearchAgent.indexSnapshotUTXOList(
-            retValues,
-            new H256(snapshotRequest.assetType),
-            snapshotRequest.blockNumber
-        );
     };
 
-    private handleLogData = async (blockDoc: BlockDoc, isRetract: boolean) => {
-        const dateString = moment
-            .unix(blockDoc.timestamp)
-            .utc()
-            .format("YYYY-MM-DD");
-        await this.queryLog(isRetract, dateString, LogType.BLOCK_COUNT, 1);
-        await this.queryLog(isRetract, dateString, LogType.BLOCK_MINING_COUNT, 1, blockDoc.author);
-        const parcelCount = blockDoc.parcels.length;
-        if (parcelCount > 0) {
-            await this.queryLog(isRetract, dateString, LogType.PARCEL_COUNT, parcelCount);
-            const paymentParcelCount = _.filter(blockDoc.parcels, p => Type.isPaymentDoc(p.action)).length;
-            await this.queryLog(isRetract, dateString, LogType.PARCEL_PAYMENT_COUNT, paymentParcelCount);
-            const serRegularKeyParcelCount = _.filter(blockDoc.parcels, p => Type.isSetRegularKeyDoc(p.action)).length;
-            await this.queryLog(isRetract, dateString, LogType.PARCEL_SET_REGULAR_KEY_COUNT, serRegularKeyParcelCount);
-            const assetTransactionGroupParcelCount = _.filter(blockDoc.parcels, p =>
-                Type.isAssetTransactionGroupDoc(p.action)
-            ).length;
-            await this.queryLog(
-                isRetract,
-                dateString,
-                LogType.PARCEL_ASSET_TRANSACTION_GROUP_COUNT,
-                assetTransactionGroupParcelCount
-            );
+    private handleRetractAssetSnapshot = async (blockDoc: BlockDoc) => {
+        const snapshot = await this.elasticSearchAgent.getSnapshotUTXOByBlockNumber(blockDoc.number);
+        if (!snapshot) {
+            return;
         }
-        const transactions = Type.getTransactionsByBlock(blockDoc);
-        const txCount = transactions.length;
-        if (txCount > 0) {
-            await this.queryLog(isRetract, dateString, LogType.TX_COUNT, txCount);
-            const assetMintTxCount = _.filter(transactions, tx => Type.isAssetMintTransactionDoc(tx)).length;
-            await this.queryLog(isRetract, dateString, LogType.TX_ASSET_MINT_COUNT, assetMintTxCount);
-            const assetTransferTxCount = _.filter(transactions, tx => Type.isAssetTransferTransactionDoc(tx)).length;
-            await this.queryLog(isRetract, dateString, LogType.TX_ASSET_TRANSFER_COUNT, assetTransferTxCount);
-        }
+        await this.elasticSearchAgent.updateSnapshotRequestStatus(snapshot.id, "wait");
     };
 
     private handleBalance = async (blockDoc: BlockDoc, isRetract: boolean) => {
