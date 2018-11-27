@@ -83,6 +83,8 @@ export class ElasticSearchAgent
             lastParcelIndex?: number | null;
             lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
+            address?: string | null;
+            assetType?: H256 | null;
         } | null
     ) => Promise<TransactionDoc[]>;
     public getTransactionsByAssetType!: (
@@ -129,7 +131,12 @@ export class ElasticSearchAgent
     public revialPendingParcel!: (hash: H256) => Promise<void>;
     public checkIndexOrCreate!: () => Promise<void>;
     public getTotalParcelCount!: () => Promise<number>;
-    public getTotalTransactionCount!: () => Promise<number>;
+    public getTotalTransactionCount!: (
+        params?: {
+            address?: string | null;
+            assetType?: H256 | null;
+        } | null
+    ) => Promise<number>;
     public countPendingParcel!: (body: any) => Promise<CountResponse>;
     public getTotalPendingParcelCount!: (
         params?: { signerFilter?: string | null; actionFilters?: string[] | null } | null

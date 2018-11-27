@@ -30,8 +30,57 @@ export class QueryTransaction implements BaseAction {
             lastParcelIndex?: number | null;
             lastTransactionIndex?: number | null;
             itemsPerPage?: number | null;
+            address?: string | null;
+            assetType?: H256 | null;
         } | null
     ): Promise<TransactionDoc[]> {
+        const query: any = [{ term: { isRetracted: false } }];
+        if (params && params.address) {
+            const address = params.address;
+            query.push({
+                bool: {
+                    should: [
+                        { term: { "data.outputs.owner": address } },
+                        {
+                            term: {
+                                "data.inputs.prevOut.owner": address
+                            }
+                        },
+                        {
+                            term: {
+                                "data.burns.prevOut.owner": address
+                            }
+                        },
+                        { term: { "data.output.owner": address } }
+                    ]
+                }
+            });
+        }
+        if (params && params.assetType) {
+            const assetType = params.assetType;
+            query.push({
+                bool: {
+                    should: [
+                        {
+                            term: {
+                                "data.inputs.prevOut.assetType": assetType.value
+                            }
+                        },
+                        {
+                            term: {
+                                "data.burns.prevOut.assetType": assetType.value
+                            }
+                        },
+                        {
+                            term: {
+                                "data.output.assetType": assetType.value
+                            }
+                        }
+                    ]
+                }
+            });
+        }
+
         const response = await this.searchTransaction({
             sort: [
                 { "data.blockNumber": { order: "desc" } },
@@ -46,17 +95,70 @@ export class QueryTransaction implements BaseAction {
             size: params && params.itemsPerPage != undefined ? params.itemsPerPage : 25,
             query: {
                 bool: {
-                    must: [{ term: { isRetracted: false } }]
+                    must: query
                 }
             }
         });
         return _.map(response.hits.hits, hit => hit._source);
     }
 
-    public async getTotalTransactionCount(): Promise<number> {
+    public async getTotalTransactionCount(
+        params?: {
+            address?: string | null;
+            assetType?: H256 | null;
+        } | null
+    ): Promise<number> {
+        const query: any = [{ term: { isRetracted: false } }];
+        if (params && params.address) {
+            const address = params.address;
+            query.push({
+                bool: {
+                    should: [
+                        { term: { "data.outputs.owner": address } },
+                        {
+                            term: {
+                                "data.inputs.prevOut.owner": address
+                            }
+                        },
+                        {
+                            term: {
+                                "data.burns.prevOut.owner": address
+                            }
+                        },
+                        { term: { "data.output.owner": address } }
+                    ]
+                }
+            });
+        }
+        if (params && params.assetType) {
+            const assetType = params.assetType;
+            query.push({
+                bool: {
+                    should: [
+                        {
+                            term: {
+                                "data.inputs.prevOut.assetType": assetType.value
+                            }
+                        },
+                        {
+                            term: {
+                                "data.burns.prevOut.assetType": assetType.value
+                            }
+                        },
+                        {
+                            term: {
+                                "data.output.assetType": assetType.value
+                            }
+                        }
+                    ]
+                }
+            });
+        }
         const count = await this.countTransaction({
             query: {
-                term: { isRetracted: false }
+                bool: {
+                    must: query
+                }
             }
         });
         return count.count;

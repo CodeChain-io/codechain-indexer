@@ -25,6 +25,8 @@ function handle(context: ServerContext, router: Router) {
         const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
         const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
         const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
+        const address: string | null | undefined = req.query.address;
+        const assetType: string | null | undefined = req.query.assetType;
         try {
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
@@ -48,7 +50,9 @@ function handle(context: ServerContext, router: Router) {
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
                         lastTransactionIndex: lastTransactionIndexCursor,
-                        itemsPerPage: 10000
+                        itemsPerPage: 10000,
+                        assetType: assetType ? new H256(assetType) : null,
+                        address
                     });
                     const lastCursorTx = _.last(cursorTx);
                     if (lastCursorTx) {
@@ -63,7 +67,9 @@ function handle(context: ServerContext, router: Router) {
                     lastBlockNumber: lastBlockNumberCursor,
                     lastParcelIndex: lastParcelIndexCursor,
                     lastTransactionIndex: lastTransactionIndexCursor,
-                    itemsPerPage: skipCount
+                    itemsPerPage: skipCount,
+                    assetType: assetType ? new H256(assetType) : null,
+                    address
                 });
                 const lastSkipTxs = _.last(skipTxs);
                 if (lastSkipTxs) {
@@ -79,7 +85,9 @@ function handle(context: ServerContext, router: Router) {
                 lastBlockNumber: calculatedLastBlockNumber,
                 lastParcelIndex: calculatedLastParcelIndex,
                 lastTransactionIndex: calculatedLastTransactionIndex,
-                itemsPerPage
+                itemsPerPage,
+                assetType: assetType ? new H256(assetType) : null,
+                address
             });
             res.send(transactions);
         } catch (e) {
@@ -87,9 +95,14 @@ function handle(context: ServerContext, router: Router) {
         }
     });
 
-    router.get("/txs/totalCount", async (_R, res, next) => {
+    router.get("/txs/totalCount", async (req, res, next) => {
+        const address: string | null | undefined = req.query.address;
+        const assetType: string | null | undefined = req.query.assetType;
         try {
-            const countOfBlocks = await context.db.getTotalTransactionCount();
+            const countOfBlocks = await context.db.getTotalTransactionCount({
+                assetType: assetType ? new H256(assetType) : null,
+                address
+            });
             res.send(JSON.stringify(countOfBlocks));
         } catch (e) {
             next(e);
