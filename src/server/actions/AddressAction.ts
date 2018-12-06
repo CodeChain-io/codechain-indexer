@@ -14,10 +14,10 @@ function handle(context: ServerContext, router: Router) {
             return;
         }
         try {
-            const balance = await context.codechainSdk.rpc.chain.getBalance(address);
+            const balance = await context.db.getAccount(address);
             const nonce = await context.codechainSdk.rpc.chain.getNonce(address);
             const account = {
-                balance: balance ? balance.value : 0,
+                balance: balance ? balance.balance : 0,
                 nonce: nonce.value
             };
             res.send(account);

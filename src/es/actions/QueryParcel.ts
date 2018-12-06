@@ -53,7 +53,7 @@ export class QueryParcel implements BaseAction {
         if (params && params.onlyUnconfirmed && params.currentBestBlockNumber && params.confirmThreshold) {
             query.push({
                 range: {
-                    "data.blockNumber": {
+                    blockNumber: {
                         gte: params.currentBestBlockNumber - params.confirmThreshold
                     }
                 }
