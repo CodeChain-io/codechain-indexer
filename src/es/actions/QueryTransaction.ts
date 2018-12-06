@@ -32,6 +32,9 @@ export class QueryTransaction implements BaseAction {
             itemsPerPage?: number | null;
             address?: string | null;
             assetType?: H256 | null;
+            onlyUnconfirmed?: boolean | null;
+            currentBestBlockNumber?: number | null;
+            confirmThreshold?: number | null;
         } | null
     ): Promise<TransactionDoc[]> {
         const query: any = [{ term: { isRetracted: false } }];
@@ -77,6 +80,15 @@ export class QueryTransaction implements BaseAction {
                             }
                         }
                     ]
+                }
+            });
+        }
+        if (params && params.onlyUnconfirmed && params.currentBestBlockNumber && params.confirmThreshold) {
+            query.push({
+                range: {
+                    "data.blockNumber": {
+                        gte: params.currentBestBlockNumber - params.confirmThreshold
+                    }
                 }
             });
         }

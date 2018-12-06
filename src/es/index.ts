@@ -85,6 +85,9 @@ export class ElasticSearchAgent
             itemsPerPage?: number | null;
             address?: string | null;
             assetType?: H256 | null;
+            onlyUnconfirmed?: boolean | null;
+            currentBestBlockNumber?: number | null;
+            confirmThreshold?: number | null;
         } | null
     ) => Promise<TransactionDoc[]>;
     public getTransactionsByAssetType!: (

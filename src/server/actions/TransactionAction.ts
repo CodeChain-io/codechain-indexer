@@ -27,7 +27,13 @@ function handle(context: ServerContext, router: Router) {
         const lastTransactionIndex = req.query.lastTransactionIndex && parseInt(req.query.lastTransactionIndex, 10);
         const address: string | null | undefined = req.query.address;
         const assetType: string | null | undefined = req.query.assetType;
+        const onlyUnconfirmed = req.query.onlyUnconfirmed;
+        const confirmThreshold = req.query.confirmThreshold != undefined ? parseInt(req.query.confirmThreshold, 10) : 5;
         try {
+            let currentBestBlockNumber = 0;
+            if (onlyUnconfirmed === "true") {
+                currentBestBlockNumber = await context.db.getLastBlockNumber();
+            }
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
             let calculatedLastTransactionIndex;
@@ -52,7 +58,10 @@ function handle(context: ServerContext, router: Router) {
                         lastTransactionIndex: lastTransactionIndexCursor,
                         itemsPerPage: 10000,
                         assetType: assetType ? new H256(assetType) : null,
-                        address
+                        address,
+                        onlyUnconfirmed: onlyUnconfirmed === "true",
+                        currentBestBlockNumber,
+                        confirmThreshold
                     });
                     const lastCursorTx = _.last(cursorTx);
                     if (lastCursorTx) {
@@ -69,7 +78,10 @@ function handle(context: ServerContext, router: Router) {
                     lastTransactionIndex: lastTransactionIndexCursor,
                     itemsPerPage: skipCount,
                     assetType: assetType ? new H256(assetType) : null,
-                    address
+                    address,
+                    onlyUnconfirmed: onlyUnconfirmed === "true",
+                    currentBestBlockNumber,
+                    confirmThreshold
                 });
                 const lastSkipTxs = _.last(skipTxs);
                 if (lastSkipTxs) {
@@ -87,9 +99,22 @@ function handle(context: ServerContext, router: Router) {
                 lastTransactionIndex: calculatedLastTransactionIndex,
                 itemsPerPage,
                 assetType: assetType ? new H256(assetType) : null,
-                address
+                address,
+                onlyUnconfirmed: onlyUnconfirmed === "true",
+                currentBestBlockNumber,
+                confirmThreshold
             });
             res.send(transactions);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    router.get("/txs/pending/:address", async (req, res, next) => {
+        const { address } = req.params;
+        try {
+            const pendingTxs = await context.db.getPendingTransactionsByAddress(address);
+            res.send(pendingTxs);
         } catch (e) {
             next(e);
         }
