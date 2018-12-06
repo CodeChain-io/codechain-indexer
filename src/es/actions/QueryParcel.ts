@@ -29,20 +29,44 @@ export class QueryParcel implements BaseAction {
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
             itemsPerPage?: number | null;
+            address?: string | null;
+            onlyUnconfirmed?: boolean | null;
+            currentBestBlockNumber?: number | null;
+            confirmThreshold?: number | null;
         } | null
     ): Promise<ParcelDoc[]> {
+        const query: any = [{ term: { isRetracted: false } }];
         const itemsPerPage = params && params.itemsPerPage != undefined ? params.itemsPerPage : 25;
         const lastBlockNumber =
             params && params.lastBlockNumber != undefined ? params.lastBlockNumber : Number.MAX_VALUE;
         const lastParcelIndex =
             params && params.lastParcelIndex != undefined ? params.lastParcelIndex : Number.MAX_VALUE;
+
+        if (params && params.address) {
+            const address = params.address;
+            query.push({
+                bool: {
+                    should: [{ term: { signer: address } }, { term: { "action.receiver": address } }]
+                }
+            });
+        }
+        if (params && params.onlyUnconfirmed && params.currentBestBlockNumber && params.confirmThreshold) {
+            query.push({
+                range: {
+                    "data.blockNumber": {
+                        gte: params.currentBestBlockNumber - params.confirmThreshold
+                    }
+                }
+            });
+        }
+
         const response = await this.searchParcel({
             sort: [{ blockNumber: { order: "desc" } }, { parcelIndex: { order: "desc" } }],
             search_after: [lastBlockNumber, lastParcelIndex],
             size: itemsPerPage,
             query: {
                 bool: {
-                    must: [{ term: { isRetracted: false } }]
+                    must: query
                 }
             }
         });

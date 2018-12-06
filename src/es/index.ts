@@ -63,6 +63,10 @@ export class ElasticSearchAgent
             lastBlockNumber?: number | null;
             lastParcelIndex?: number | null;
             itemsPerPage?: number | null;
+            address?: string | null;
+            onlyUnconfirmed?: boolean | null;
+            currentBestBlockNumber?: number | null;
+            confirmThreshold?: number | null;
         } | null
     ) => Promise<ParcelDoc[]>;
     public getParcelsByPlatformAddress!: (

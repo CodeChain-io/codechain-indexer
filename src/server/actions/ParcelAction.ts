@@ -87,7 +87,14 @@ function handle(context: ServerContext, router: Router) {
         const itemsPerPage = req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const lastBlockNumber = req.query.lastBlockNumber && parseInt(req.query.lastBlockNumber, 10);
         const lastParcelIndex = req.query.lastParcelIndex && parseInt(req.query.lastParcelIndex, 10);
+        const address: string | null | undefined = req.query.address;
+        const onlyUnconfirmed = req.query.onlyUnconfirmed;
+        const confirmThreshold = req.query.confirmThreshold != undefined ? parseInt(req.query.confirmThreshold, 10) : 5;
         try {
+            let currentBestBlockNumber = 0;
+            if (onlyUnconfirmed === "true") {
+                currentBestBlockNumber = await context.db.getLastBlockNumber();
+            }
             let calculatedLastBlockNumber;
             let calculatedLastParcelIndex;
             if (lastBlockNumber && lastParcelIndex) {
@@ -105,7 +112,11 @@ function handle(context: ServerContext, router: Router) {
                     const cursorParcel = await context.db.getParcels({
                         lastBlockNumber: lastBlockNumberCursor,
                         lastParcelIndex: lastParcelIndexCursor,
-                        itemsPerPage: 10000
+                        itemsPerPage: 10000,
+                        address,
+                        onlyUnconfirmed: onlyUnconfirmed === "true",
+                        currentBestBlockNumber,
+                        confirmThreshold
                     });
                     const lastCursorParcel = _.last(cursorParcel);
                     if (lastCursorParcel) {
@@ -118,7 +129,11 @@ function handle(context: ServerContext, router: Router) {
                 const skipParcels = await context.db.getParcels({
                     lastBlockNumber: lastBlockNumberCursor,
                     lastParcelIndex: lastParcelIndexCursor,
-                    itemsPerPage: skipCount
+                    itemsPerPage: skipCount,
+                    address,
+                    onlyUnconfirmed: onlyUnconfirmed === "true",
+                    currentBestBlockNumber,
+                    confirmThreshold
                 });
                 const lastSkipParcels = _.last(skipParcels);
                 if (lastSkipParcels) {
@@ -131,7 +146,11 @@ function handle(context: ServerContext, router: Router) {
             const parcels = await context.db.getParcels({
                 lastBlockNumber: calculatedLastBlockNumber,
                 lastParcelIndex: calculatedLastParcelIndex,
-                itemsPerPage
+                itemsPerPage,
+                address,
+                onlyUnconfirmed: onlyUnconfirmed === "true",
+                currentBestBlockNumber,
+                confirmThreshold
             });
             res.send(parcels);
         } catch (e) {
