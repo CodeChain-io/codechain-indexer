@@ -111,7 +111,7 @@ export class QueryPendingParcel implements BaseAction {
         return addressTxs;
     }
 
-    public async getPendingPaymentParcelsByAddress(
+    public async getPendingParcelsByAddress(
         address: string,
         params?: {
             page?: number | null;
@@ -120,7 +120,6 @@ export class QueryPendingParcel implements BaseAction {
     ): Promise<PendingParcelDoc[]> {
         const query = [
             { term: { status: "pending" } },
-            { term: { "parcel.action.action": "payment" } },
             {
                 bool: {
                     should: [{ term: { "parcel.signer": address } }, { term: { "parcel.action.receiver": address } }]

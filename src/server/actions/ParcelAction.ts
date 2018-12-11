@@ -65,7 +65,7 @@ function handle(context: ServerContext, router: Router) {
     router.get("/parcels/pending/:address", async (req, res, next) => {
         const { address } = req.params;
         try {
-            const pendingParcels = await context.db.getPendingPaymentParcelsByAddress(address);
+            const pendingParcels = await context.db.getPendingParcelsByAddress(address);
             res.send(pendingParcels);
         } catch (e) {
             next(e);

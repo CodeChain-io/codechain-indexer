@@ -251,7 +251,7 @@ export class ElasticSearchAgent
             itemsPerPage?: number | null;
         } | null
     ) => Promise<PendingTransactionDoc[]>;
-    public getPendingPaymentParcelsByAddress!: (
+    public getPendingParcelsByAddress!: (
         address: string,
         params?: {
             page?: number | null;
