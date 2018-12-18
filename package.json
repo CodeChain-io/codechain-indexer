@@ -7,7 +7,7 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
-    "codechain-indexer-types": "^0.3.0-alpha.0",
+    "codechain-indexer-types": "https://github.com/CodeChain-io/codechain-indexer-types-js#7aaf8a03e96bc70c74daa497ccd061dbc45741b9",
     "codechain-sdk": "https://github.com/CodeChain-io/codechain-sdk-js#c8f395dca20665f2619f96b17f7af4559fac74ed",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
@@ -25,6 +25,7 @@
     "winston": "^2.4.0"
   },
   "scripts": {
+    "reset": "export NODE_ENV=local && sequelize db:migrate:undo:all && sequelize db:migrate",
     "migrate": "export NODE_ENV=local && sequelize db:migrate",
     "start": "ts-node src/index.ts",
     "test": "jest --env node",

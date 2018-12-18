@@ -1,7 +1,21 @@
-import { ParcelDoc } from "codechain-indexer-types";
 import * as Sequelize from "sequelize";
 
-export interface ParcelInstance extends Sequelize.Instance<ParcelDoc> {}
+export interface ParcelAttribute {
+    id?: string;
+    blockNumber?: number | null;
+    blockHash?: string | null;
+    parcelIndex?: number | null;
+    seq: number;
+    fee: string;
+    networkId: string;
+    sig: string;
+    hash: string;
+    signer: string;
+    timestamp: number;
+    isRetracted: boolean;
+}
+
+export interface ParcelInstance extends Sequelize.Instance<ParcelAttribute> {}
 
 export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) => {
     const Parcel = sequelize.define(
@@ -24,7 +38,7 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
             },
             seq: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.INTEGER
             },
             fee: {
                 allowNull: false,
@@ -53,15 +67,20 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
             isRetracted: {
                 allowNull: false,
                 type: Sequelize.BOOLEAN
+            },
+            createdAt: {
+                allowNull: false,
+                type: DataTypes.DATE
+            },
+            updatedAt: {
+                allowNull: false,
+                type: DataTypes.DATE
             }
         },
         {}
     );
-    Parcel.associate = models => {
-        models.Block.hasMany(models.Parcel, {
-            as: "parcel",
-            foreignKey: "hash"
-        });
+    Parcel.associate = () => {
+        // associate
     };
     return Parcel;
 };

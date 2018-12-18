@@ -3,12 +3,13 @@ import * as pg from "pg";
 
 export default class BlockSync {
     public pg: pg.Pool;
-    private sdk: SDK;
+    // private sdk: SDK;
     constructor(options: { sdk: SDK; pg: pg.Pool }) {
         this.pg = options.pg;
-        this.sdk = options.sdk;
+        // this.sdk = options.sdk;
+        this.run();
     }
-    public run = () => {
-        // TODO
+    public run = async () => {
+        // nothing
     };
 }

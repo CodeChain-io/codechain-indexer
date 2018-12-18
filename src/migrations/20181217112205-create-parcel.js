@@ -6,20 +6,24 @@ module.exports = {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
-                type: Sequelize.INTEGER
+                type: Sequelize.BIGINT
             },
             blockNumber: {
                 type: Sequelize.INTEGER
             },
             blockHash: {
-                type: Sequelize.STRING
+                type: Sequelize.STRING,
+                references: {
+                    model: "Blocks",
+                    key: "hash"
+                }
             },
             parcelIndex: {
                 type: Sequelize.INTEGER
             },
             seq: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.INTEGER
             },
             fee: {
                 allowNull: false,

@@ -10,7 +10,7 @@ const corsOptions = {
     exposedHeaders: ["Location", "Link"]
 };
 
-export function createApiRouter(context: IndexerContext, useCors = false) {
+export function createApiRouter(_C: IndexerContext, useCors = false) {
     const router = express.Router();
 
     if (useCors) {

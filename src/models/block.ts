@@ -1,16 +1,40 @@
-import { BlockDoc } from "codechain-indexer-types";
 import * as Sequelize from "sequelize";
 
-export interface BlockInstance extends Sequelize.Instance<BlockDoc> {}
+export interface BlockAttribute {
+    id?: string;
+    parentHash: string;
+    timestamp: number;
+    number: number;
+    author: string;
+    extraData: Buffer;
+    parcelsRoot: string;
+    stateRoot: string;
+    invoicesRoot: string;
+    score: string;
+    seal: Buffer[];
+    hash: string;
+    isRetracted: boolean;
+    miningReward: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
 
 export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) => {
     const Block = sequelize.define(
         "Block",
         {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER
+            },
             hash: {
                 allowNull: false,
                 type: DataTypes.STRING,
-                primaryKey: true
+                unique: true
             },
             parentHash: {
                 allowNull: false,
@@ -59,12 +83,24 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
             miningReward: {
                 allowNull: false,
                 type: DataTypes.STRING
+            },
+            createdAt: {
+                allowNull: false,
+                type: DataTypes.DATE
+            },
+            updatedAt: {
+                allowNull: false,
+                type: DataTypes.DATE
             }
         },
         {}
     );
-    Block.associate = () => {
-        // associations can be defined here
+    Block.associate = models => {
+        Block.hasMany(models.Parcel, {
+            sourceKey: "hash",
+            foreignKey: "blockHash",
+            as: "parcel"
+        });
     };
     return Block;
 };

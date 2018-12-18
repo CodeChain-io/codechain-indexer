@@ -3,6 +3,8 @@ import * as _ from "lodash";
 import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
+import { BlockAttribute, BlockInstance } from "./block";
+import { ParcelAttribute, ParcelInstance } from "./parcel";
 
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "local";
@@ -34,6 +36,8 @@ models.Sequelize = sequelize;
 interface DB {
     sequelize: Sequelize.Sequelize;
     Sequelize: Sequelize.SequelizeStatic;
+    Block: Sequelize.Model<BlockInstance, BlockAttribute>;
+    Parcel: Sequelize.Model<ParcelInstance, ParcelAttribute>;
 }
 
 export default models as DB;

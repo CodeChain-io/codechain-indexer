@@ -2,10 +2,16 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable("Blocks", {
-            hash: {
+            id: {
                 allowNull: false,
-                type: Sequelize.STRING,
-                primaryKey: true
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.BIGINT
+            },
+            hash: {
+                unique: true,
+                allowNull: false,
+                type: Sequelize.STRING
             },
             parentHash: {
                 allowNull: false,
