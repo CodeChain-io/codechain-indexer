@@ -1,7 +1,7 @@
 export const getUTXOSnapshotMapping = () => {
     return {
         properties: {
-            blockNumber: "number",
+            blockNumber: "long",
             utxoList: {
                 properties: {
                     address: {
