@@ -2,15 +2,8 @@ language: node_js
 node_js:
   - "10"
   - "8"
-before_script:
-  - docker pull kodebox/codechain:25b8af1dd5945c9a71ce4523375a391ee390e547
-  - docker run -d -p 8080:8080 kodebox/codechain:25b8af1dd5945c9a71ce4523375a391ee390e547 --jsonrpc-interface 0.0.0.0 -c solo --reseal-min-period 0
-  - docker ps -a
 before_install:
   - yarn install
 script:
   - yarn run lint
-  - yarn run test
-services:
-  - docker
 cache: yarn
