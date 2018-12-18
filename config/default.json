@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "baseUrl": "http://localhost:8080",
+  "httpPort": 8080,
+  "pg": {
+    "user": "codechain-indexer",
+    "password": "preempt-entreat-bell-chanson",
+    "database": "codechain-indexer",
+    "port": 5432
+  },
+  "sequelize": {
+    "dialect": "postgres",
+    "operatorsAliases": false,
+    "host": "localhost",
+    "pool": {
+      "min": 1,
+      "max": 10,
+      "handleDisconnects": true
+    },
+    "retry": {
+      "max": 5
+    }
+  }
+}

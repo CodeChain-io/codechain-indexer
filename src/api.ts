@@ -2,7 +2,7 @@ import * as cors from "cors";
 import * as express from "express";
 import * as _ from "lodash";
 
-import { ServerContext } from ".";
+import { IndexerContext } from "./context";
 
 const corsOptions = {
     origin: true,
@@ -10,7 +10,7 @@ const corsOptions = {
     exposedHeaders: ["Location", "Link"]
 };
 
-export function createApiRouter(context: ServerContext, useCors = false) {
+export function createApiRouter(context: IndexerContext, useCors = false) {
     const router = express.Router();
 
     if (useCors) {
