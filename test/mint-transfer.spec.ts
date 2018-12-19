@@ -14,6 +14,9 @@ import * as Helper from "./helper";
 
 beforeAll(async done => {
     await Helper.runExample("import-test-account");
+    // FIXME: If seq is zero, an error is occurs.
+    // https://github.com/CodeChain-io/codechain-sdk-js/pull/278
+    await Helper.runExample("mint-and-transfer");
     await Helper.runExample("mint-and-transfer");
     done();
 });
@@ -49,7 +52,6 @@ test("Create mint transfer block", async done => {
 
     expect(mintBlockDoc.hash).toEqual(mintBlock.hash.value);
     expect(transferBlockDoc.hash).toEqual(transferBlock.hash.value);
-
     let error: Error | null = null;
     try {
         await BlockModel.createBlock(transferBlock, new U64("1000"));
