@@ -20,7 +20,6 @@ export async function createBlock(block: Block, miningReward: U64): Promise<Bloc
             score: block.score.value.toString(10),
             seal: block.seal,
             hash: block.hash.value,
-            isRetracted: false,
             miningReward: miningReward.value.toString(10)
         });
     } catch (err) {
@@ -57,6 +56,17 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
         });
     } catch (err) {
         console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function deleteBlockByNumber(blockNumber: number): Promise<number> {
+    try {
+        return await models.Block.destroy({
+            where: { number: blockNumber }
+        });
+    } catch (err) {
+        console.log(err);
         throw Exception.DBError;
     }
 }

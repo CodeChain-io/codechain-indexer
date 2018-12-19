@@ -11,6 +11,7 @@ module.exports = {
             parcelHash: {
                 allowNull: false,
                 type: Sequelize.STRING,
+                onDelete: "CASCADE",
                 references: {
                     model: "Parcels",
                     key: "hash"

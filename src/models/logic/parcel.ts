@@ -35,7 +35,6 @@ export async function createParcel(parcel: SignedParcel): Promise<ParcelInstance
             hash: parcel.hash().value,
             signer: parcel.getSignerAddress({ networkId: parcel.unsigned.networkId }).value,
             timestamp: block.timestamp,
-            isRetracted: false,
             blockHash: parcel.blockHash.value,
             blockNumber: parcel.blockNumber,
             parcelIndex: parcel.parcelIndex

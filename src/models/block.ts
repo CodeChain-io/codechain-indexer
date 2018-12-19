@@ -13,7 +13,6 @@ export interface BlockAttribute {
     score: string;
     seal: Buffer[];
     hash: string;
-    isRetracted: boolean;
     miningReward: string;
     createdAt?: string;
     updatedAt?: string;
@@ -71,10 +70,6 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-            isRetracted: {
-                allowNull: false,
-                type: DataTypes.BOOLEAN
-            },
             miningReward: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
@@ -93,7 +88,8 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
     Block.associate = models => {
         Block.hasMany(models.Parcel, {
             foreignKey: "blockHash",
-            as: "parcel"
+            as: "parcel",
+            onDelete: "CASCADE"
         });
     };
     return Block;

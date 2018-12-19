@@ -82,3 +82,17 @@ export async function createAction(
     }
     return actionInstance;
 }
+
+// This is for the cascade test
+export async function getByHash(hash: H256): Promise<ActionInstance | null> {
+    try {
+        return await models.Action.findOne({
+            where: {
+                parcelHash: hash.value
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}

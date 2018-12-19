@@ -47,10 +47,6 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.JSONB
             },
-            isRetracted: {
-                allowNull: false,
-                type: Sequelize.BOOLEAN
-            },
             miningReward: {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })

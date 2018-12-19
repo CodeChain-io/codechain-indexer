@@ -14,7 +14,6 @@ export interface ParcelAttribute {
     signer: string;
     timestamp: number;
     action?: ActionAttribute;
-    isRetracted: boolean;
 }
 
 export interface ParcelInstance extends Sequelize.Instance<ParcelAttribute> {}
@@ -64,10 +63,6 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
                 allowNull: false,
                 type: DataTypes.INTEGER
             },
-            isRetracted: {
-                allowNull: false,
-                type: DataTypes.BOOLEAN
-            },
             createdAt: {
                 allowNull: false,
                 type: DataTypes.DATE
@@ -82,7 +77,8 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
     Parcel.associate = models => {
         Parcel.hasOne(models.Action, {
             foreignKey: "parcelHash",
-            as: "action"
+            as: "action",
+            onDelete: "CASCADE"
         });
     };
     return Parcel;

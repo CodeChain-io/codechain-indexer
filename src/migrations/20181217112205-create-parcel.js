@@ -14,6 +14,7 @@ module.exports = {
             blockHash: {
                 allowNull: false,
                 type: Sequelize.STRING,
+                onDelete: "CASCADE",
                 references: {
                     model: "Blocks",
                     key: "hash"
@@ -46,10 +47,6 @@ module.exports = {
             timestamp: {
                 allowNull: false,
                 type: Sequelize.INTEGER
-            },
-            isRetracted: {
-                allowNull: false,
-                type: Sequelize.BOOLEAN
             },
             createdAt: {
                 allowNull: false,

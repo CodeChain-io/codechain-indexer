@@ -801,6 +801,13 @@ code-point-at@^1.0.0:
     buffer "^5.2.1"
     lodash "^4.17.10"
 
+"codechain-indexer-types@https://github.com/CodeChain-io/codechain-indexer-types-js#bf321efb62fa72a4e220d1f5c684cecd5a26dfc8":
+  version "0.3.0-alpha.0"
+  resolved "https://github.com/CodeChain-io/codechain-indexer-types-js#bf321efb62fa72a4e220d1f5c684cecd5a26dfc8"
+  dependencies:
+    buffer "^5.2.1"
+    lodash "^4.17.10"
+
 codechain-keystore@^0.6.0:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/codechain-keystore/-/codechain-keystore-0.6.1.tgz#b0b27fec28afe1b31bd42a2858d2d5fb59838252"

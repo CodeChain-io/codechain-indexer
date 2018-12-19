@@ -27,7 +27,8 @@ afterAll(async done => {
     done();
 });
 
-let bestBlockNumber: number;
+let mintBlockNumber: number;
+let transferBlockNumber: number;
 let mintBlock: Block;
 let transferBlock: Block;
 let mintParcel: SignedParcel;
@@ -35,9 +36,11 @@ let transferParcel: SignedParcel;
 let mintAction: AssetTransaction;
 let transferAction: AssetTransaction;
 test("Create mint transfer block", async done => {
-    bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
-    const mintBlockResponse = await Helper.sdk.rpc.chain.getBlock(bestBlockNumber - 1);
-    const transferBlockResponse = await Helper.sdk.rpc.chain.getBlock(bestBlockNumber);
+    const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
+    mintBlockNumber = bestBlockNumber - 1;
+    transferBlockNumber = bestBlockNumber;
+    const mintBlockResponse = await Helper.sdk.rpc.chain.getBlock(mintBlockNumber);
+    const transferBlockResponse = await Helper.sdk.rpc.chain.getBlock(transferBlockNumber);
 
     expect(mintBlockResponse).toBeTruthy();
     expect(transferBlockResponse).toBeTruthy();
@@ -127,7 +130,7 @@ test("Create mint transfer action", async done => {
 });
 
 test("Get block docuemnt containing parcel, action", async done => {
-    const savedTransfterBlockResponse = await BlockModel.getByNumber(bestBlockNumber);
+    const savedTransfterBlockResponse = await BlockModel.getByNumber(transferBlockNumber);
     expect(savedTransfterBlockResponse).toBeTruthy();
 
     const savedBlock = savedTransfterBlockResponse!;
@@ -140,6 +143,23 @@ test("Get block docuemnt containing parcel, action", async done => {
 
     expect(savedBlockDoc.parcel![0].action).toBeTruthy();
     expect(savedBlockDoc.parcel![0].action!.action).toEqual("assetTransaction");
+
+    done();
+});
+
+test("Delete the block, parcel, action as cascade", async done => {
+    const row = await BlockModel.deleteBlockByNumber(transferBlockNumber);
+    expect(row).toBeTruthy();
+
+    const blockInstance = await BlockModel.getByNumber(transferBlockNumber);
+    expect(blockInstance).toBeNull();
+
+    const transferParcelHash = transferParcel.hash();
+    const parcelInstance = await ParcelModel.getByHash(transferParcelHash);
+    expect(parcelInstance).toBeNull();
+
+    const actionInstance = await ActionModel.getByHash(transferParcelHash);
+    expect(actionInstance).toBeNull();
 
     done();
 });
