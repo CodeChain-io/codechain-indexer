@@ -45,6 +45,7 @@
     "@types/sharp": "^0.17.10",
     "jest": "^23.6.0",
     "prettier": "^1.14.2",
+    "sequelize-cli": "^5.4.0",
     "ts-jest": "^23.10.4",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0"
