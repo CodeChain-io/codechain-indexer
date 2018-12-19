@@ -1,11 +1,11 @@
-import { Block, H256 } from "codechain-sdk/lib/core/classes";
+import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { BlockInstance } from "../block";
 import models from "../index";
 
-export async function createBlock(block: Block): Promise<BlockInstance> {
+export async function createBlock(block: Block, miningReward: U64): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
     try {
         blockInstance = await models.Block.create({
@@ -21,8 +21,7 @@ export async function createBlock(block: Block): Promise<BlockInstance> {
             seal: block.seal,
             hash: block.hash.value,
             isRetracted: false,
-            // TODO: Calculate mining reward
-            miningReward: "0"
+            miningReward: miningReward.value.toString(10)
         });
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {

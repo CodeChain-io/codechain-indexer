@@ -1,55 +1,48 @@
 "use strict";
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable("Parcels", {
-            hash: {
+        return queryInterface.createTable("Actions", {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
                 primaryKey: true,
-                allowNull: false,
-                type: Sequelize.STRING
-            },
-            blockNumber: {
-                allowNull: false,
                 type: Sequelize.INTEGER
             },
-            blockHash: {
+            parcelHash: {
                 allowNull: false,
                 type: Sequelize.STRING,
                 references: {
-                    model: "Blocks",
+                    model: "Parcels",
                     key: "hash"
                 }
             },
-            parcelIndex: {
+            action: {
                 allowNull: false,
-                type: Sequelize.INTEGER
+                type: Sequelize.STRING
             },
-            seq: {
-                allowNull: false,
+            receiver: {
+                type: Sequelize.STRING
+            },
+            key: {
+                type: Sequelize.STRING
+            },
+            amount: {
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
-            fee: {
-                allowNull: false,
-                type: Sequelize.STRING
-            },
-            networkId: {
-                allowNull: false,
-                type: Sequelize.STRING
-            },
-            sig: {
-                allowNull: false,
-                type: Sequelize.STRING
-            },
-            signer: {
-                allowNull: false,
-                type: Sequelize.STRING
-            },
-            timestamp: {
-                allowNull: false,
+            shardId: {
                 type: Sequelize.INTEGER
             },
-            isRetracted: {
-                allowNull: false,
+            invoice: {
                 type: Sequelize.BOOLEAN
+            },
+            owners: {
+                type: Sequelize.JSONB
+            },
+            users: {
+                type: Sequelize.JSONB
+            },
+            errorType: {
+                type: Sequelize.STRING
             },
             createdAt: {
                 allowNull: false,
@@ -62,6 +55,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("Parcels");
+        return queryInterface.dropTable("Actions");
     }
 };

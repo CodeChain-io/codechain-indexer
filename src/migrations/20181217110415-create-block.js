@@ -2,14 +2,8 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable("Blocks", {
-            id: {
-                allowNull: false,
-                autoIncrement: true,
-                primaryKey: true,
-                type: Sequelize.BIGINT
-            },
             hash: {
-                unique: true,
+                primaryKey: true,
                 allowNull: false,
                 type: Sequelize.STRING
             },
@@ -59,7 +53,7 @@ module.exports = {
             },
             miningReward: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
             createdAt: {
                 allowNull: false,

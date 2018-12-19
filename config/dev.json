@@ -1,0 +1,8 @@
+{
+  "pg": {
+    "user": "user",
+    "password": "password",
+    "database": "codechain-indexer-dev",
+    "port": 5432
+  }
+}

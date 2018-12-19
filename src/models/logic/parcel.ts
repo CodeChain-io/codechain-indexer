@@ -15,18 +15,27 @@ export async function createParcel(parcel: SignedParcel): Promise<ParcelInstance
         throw Exception.InvalidParcel;
     }
     const block = blockInstance.get({ plain: true });
+    if (
+        parcel.unsigned.seq == undefined ||
+        parcel.unsigned.fee == undefined ||
+        parcel.blockHash == undefined ||
+        parcel.blockNumber == undefined ||
+        parcel.parcelIndex == undefined
+    ) {
+        throw Exception.InvalidParcel;
+    }
     let parcelInstance: ParcelInstance;
     try {
         parcelInstance = await models.Parcel.create({
-            seq: parcel.unsigned.seq || 0,
-            fee: parcel.unsigned.fee!.value.toString(10),
+            seq: parcel.unsigned.seq,
+            fee: parcel.unsigned.fee.value.toString(10),
             networkId: parcel.unsigned.networkId,
             sig: parcel.toJSON().sig,
             hash: parcel.hash().value,
             signer: parcel.getSignerAddress({ networkId: parcel.unsigned.networkId }).value,
             timestamp: block.timestamp,
             isRetracted: false,
-            blockHash: parcel.blockHash && parcel.blockHash.value,
+            blockHash: parcel.blockHash.value,
             blockNumber: parcel.blockNumber,
             parcelIndex: parcel.parcelIndex
         });

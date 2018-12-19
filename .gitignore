@@ -25,3 +25,6 @@ yarn-error.log*
 .vscode/
 
 kibana.yml
+
+# keyfile for test
+keystore.db

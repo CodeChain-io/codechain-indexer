@@ -23,3 +23,8 @@ export const InvalidParcel: Exception = {
     code: 104,
     message: "InvalidParcel"
 };
+
+export const InvalidAction: Exception = {
+    code: 105,
+    message: "InvalidAction"
+};

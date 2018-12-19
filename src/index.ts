@@ -5,7 +5,7 @@ import log from "./log";
 import { createServer } from "./server";
 
 async function runServer() {
-    const env = process.env.NODE_ENV || "local";
+    const env = process.env.NODE_ENV || "dev";
     const options = require("config") as IndexerConfig;
     const context = IndexerContext.newInstance(options);
     const app = createServer(context);

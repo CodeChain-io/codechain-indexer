@@ -3,14 +3,8 @@
   "baseUrl": "http://localhost:8080",
   "httpPort": 8080,
   "codechain": {
-    "host": "",
+    "host": "http://localhost:8080",
     "networkId": "tc"
-  },
-  "pg": {
-    "user": "codechain-indexer",
-    "password": "preempt-entreat-bell-chanson",
-    "database": "codechain-indexer",
-    "port": 5432
   },
   "sequelize": {
     "dialect": "postgres",

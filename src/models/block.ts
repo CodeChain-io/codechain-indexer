@@ -1,7 +1,6 @@
 import * as Sequelize from "sequelize";
 
 export interface BlockAttribute {
-    id?: string;
     parentHash: string;
     timestamp: number;
     number: number;
@@ -25,16 +24,10 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
     const Block = sequelize.define(
         "Block",
         {
-            id: {
-                allowNull: false,
-                autoIncrement: true,
-                primaryKey: true,
-                type: Sequelize.INTEGER
-            },
             hash: {
                 allowNull: false,
                 type: DataTypes.STRING,
-                unique: true
+                primaryKey: true
             },
             parentHash: {
                 allowNull: false,
@@ -82,7 +75,7 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
             },
             miningReward: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             createdAt: {
                 allowNull: false,
@@ -97,7 +90,6 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
     );
     Block.associate = models => {
         Block.hasMany(models.Parcel, {
-            sourceKey: "hash",
             foreignKey: "blockHash",
             as: "parcel"
         });

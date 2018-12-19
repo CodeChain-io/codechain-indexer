@@ -2,9 +2,9 @@ import * as Sequelize from "sequelize";
 
 export interface ParcelAttribute {
     id?: string;
-    blockNumber?: number | null;
-    blockHash?: string | null;
-    parcelIndex?: number | null;
+    blockNumber: number;
+    blockHash: string;
+    parcelIndex: number;
     seq: number;
     fee: string;
     networkId: string;
@@ -21,52 +21,50 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
     const Parcel = sequelize.define(
         "Parcel",
         {
-            id: {
-                allowNull: false,
-                autoIncrement: true,
+            hash: {
                 primaryKey: true,
-                type: Sequelize.INTEGER
+                allowNull: false,
+                type: DataTypes.STRING
             },
             blockNumber: {
-                type: Sequelize.INTEGER
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             blockHash: {
-                type: Sequelize.STRING
+                allowNull: false,
+                type: DataTypes.STRING
             },
             parcelIndex: {
-                type: Sequelize.INTEGER
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             seq: {
                 allowNull: false,
-                type: Sequelize.INTEGER
+                type: DataTypes.INTEGER
             },
             fee: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             networkId: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: DataTypes.STRING
             },
             sig: {
                 allowNull: false,
-                type: Sequelize.STRING
-            },
-            hash: {
-                allowNull: false,
-                type: Sequelize.STRING
+                type: DataTypes.STRING
             },
             signer: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: DataTypes.STRING
             },
             timestamp: {
                 allowNull: false,
-                type: Sequelize.INTEGER
+                type: DataTypes.INTEGER
             },
             isRetracted: {
                 allowNull: false,
-                type: Sequelize.BOOLEAN
+                type: DataTypes.BOOLEAN
             },
             createdAt: {
                 allowNull: false,
@@ -79,8 +77,11 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
         },
         {}
     );
-    Parcel.associate = () => {
-        // associate
+    Parcel.associate = models => {
+        Parcel.hasOne(models.Action, {
+            foreignKey: "parcelHash",
+            as: "action"
+        });
     };
     return Parcel;
 };
