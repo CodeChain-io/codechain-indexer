@@ -25,12 +25,10 @@
     "winston": "^2.4.0"
   },
   "scripts": {
-    "reset:dev": "export NODE_ENV=dev && sequelize db:migrate:undo:all && sequelize db:migrate",
-    "reset:test": "export NODE_ENV=test && sequelize db:migrate:undo:all && sequelize db:migrate",
-    "migrate:dev": "export NODE_ENV=dev && sequelize db:migrate",
-    "migrate:test": "export NODE_ENV=test && sequelize db:migrate",
-    "start:dev": "NODE_ENV=dev ts-node src/index.ts",
-    "test": "NODE_ENV=test jest --env node",
+    "reset": "sequelize db:migrate:undo:all && sequelize db:migrate",
+    "migrate": "sequelize db:migrate",
+    "start": "ts-node src/index.ts",
+    "test": "jest --env node",
     "lint": "tslint -p . && prettier '{src, scripts}/**/*.{ts,js,json}' -l",
     "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write"
   },

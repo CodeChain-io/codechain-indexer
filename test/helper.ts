@@ -6,6 +6,7 @@ import * as path from "path";
 import * as pg from "pg";
 import { IndexerConfig } from "../src/config";
 
+process.env.NODE_ENV = "test";
 const options = require("config") as IndexerConfig;
 export const CODECHAIN_NETWORK_ID = options.codechain.networkId;
 export const SERVER_URL = options.codechain.host;
