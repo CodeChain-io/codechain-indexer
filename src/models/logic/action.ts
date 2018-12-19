@@ -16,7 +16,7 @@ import models from "../index";
 export async function createAction(
     parcelHash: H256,
     action: Action,
-    options: { invoice?: boolean | null; errorType?: string | null }
+    options: { invoice: boolean | null; errorType: string | null }
 ): Promise<ActionInstance> {
     let actionInstance: ActionInstance;
     try {

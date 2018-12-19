@@ -38,14 +38,20 @@ export async function createBlock(block: Block, miningReward: U64): Promise<Bloc
 
 export async function getByHash(hash: H256): Promise<BlockInstance | null> {
     try {
-        return await models.Block.find({
+        return await models.Block.findOne({
             where: {
                 hash: hash.value
             },
             include: [
                 {
                     as: "parcel",
-                    model: models.Parcel
+                    model: models.Parcel,
+                    include: [
+                        {
+                            as: "action",
+                            model: models.Action
+                        }
+                    ]
                 }
             ]
         });
@@ -57,14 +63,20 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
 
 export async function getByNumber(blockNumber: number): Promise<BlockInstance | null> {
     try {
-        return await models.Block.find({
+        return await models.Block.findOne({
             where: {
                 number: blockNumber
             },
             include: [
                 {
                     as: "parcel",
-                    model: models.Parcel
+                    model: models.Parcel,
+                    include: [
+                        {
+                            as: "action",
+                            model: models.Action
+                        }
+                    ]
                 }
             ]
         });

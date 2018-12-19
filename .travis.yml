@@ -4,7 +4,6 @@ node_js:
   - "8"
 before_install:
   - yarn install
-  - yarn migrate
 before_script:
   - docker pull kodebox/codechain:03ecfdf81f87f1cf579f862c9da8edd5faf7266d
   - docker run -d -p 8080:8080 kodebox/codechain:03ecfdf81f87f1cf579f862c9da8edd5faf7266d --jsonrpc-interface 0.0.0.0 -c solo --reseal-min-period 0
@@ -13,7 +12,7 @@ before_script:
   - docker ps -a
 script:
   - yarn run lint
-  - yarn run test
+  - NODE_ENV=test yarn migrate && yarn run test
 services:
   - docker
 cache: yarn

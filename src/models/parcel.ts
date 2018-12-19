@@ -1,4 +1,5 @@
 import * as Sequelize from "sequelize";
+import { ActionAttribute } from "./action";
 
 export interface ParcelAttribute {
     id?: string;
@@ -12,6 +13,7 @@ export interface ParcelAttribute {
     hash: string;
     signer: string;
     timestamp: number;
+    action?: ActionAttribute;
     isRetracted: boolean;
 }
 

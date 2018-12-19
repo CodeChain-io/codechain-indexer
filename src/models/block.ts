@@ -1,4 +1,5 @@
 import * as Sequelize from "sequelize";
+import { ParcelAttribute } from "./parcel";
 
 export interface BlockAttribute {
     parentHash: string;
@@ -16,6 +17,7 @@ export interface BlockAttribute {
     miningReward: string;
     createdAt?: string;
     updatedAt?: string;
+    parcel?: ParcelAttribute[];
 }
 
 export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
