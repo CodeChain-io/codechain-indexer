@@ -46,8 +46,12 @@ test("Create mint transfer block", async done => {
     const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
     mintBlockNumber = bestBlockNumber - 1;
     transferBlockNumber = bestBlockNumber;
-    const mintBlockResponse = await Helper.sdk.rpc.chain.getBlock(mintBlockNumber);
-    const transferBlockResponse = await Helper.sdk.rpc.chain.getBlock(transferBlockNumber);
+    const mintBlockResponse = await Helper.sdk.rpc.chain.getBlock(
+        mintBlockNumber
+    );
+    const transferBlockResponse = await Helper.sdk.rpc.chain.getBlock(
+        transferBlockNumber
+    );
 
     expect(mintBlockResponse).toBeTruthy();
     expect(transferBlockResponse).toBeTruthy();
@@ -56,14 +60,24 @@ test("Create mint transfer block", async done => {
     transferBlock = transferBlockResponse!;
 
     // Create block
-    const mintBlockInstance = await BlockModel.createBlock(mintBlock, new U64("1000"));
-    const transferBlockInstance = await BlockModel.createBlock(transferBlock, new U64("1000"));
+    const mintBlockInstance = await BlockModel.createBlock(
+        mintBlock,
+        new U64("1000")
+    );
+    const transferBlockInstance = await BlockModel.createBlock(
+        transferBlock,
+        new U64("1000")
+    );
     const mintBlockDoc = mintBlockInstance.get({ plain: true });
     const transferBlockDoc = transferBlockInstance.get({ plain: true });
 
     expect(mintBlockDoc.hash).toEqual(mintBlock.hash.value);
     expect(transferBlockDoc.hash).toEqual(transferBlock.hash.value);
 
+    done();
+});
+
+test("Check duplicated block", async done => {
     // Duplicated error test
     let error: Error | null = null;
     try {
@@ -76,7 +90,10 @@ test("Create mint transfer block", async done => {
     error = error!;
     expect(error.message).toEqual("AlreadyExist");
 
-    // Check parcel
+    done();
+});
+
+test("Check parcel", async done => {
     mintParcel = mintBlock.parcels[0];
     transferParcel = transferBlock.parcels[0];
 
@@ -84,7 +101,9 @@ test("Create mint transfer block", async done => {
     expect(transferParcel).toBeTruthy();
 
     let mintParcelInstance = await ParcelModel.getByHash(mintParcel.hash());
-    let transferParcelInstance = await ParcelModel.getByHash(transferParcel.hash());
+    let transferParcelInstance = await ParcelModel.getByHash(
+        transferParcel.hash()
+    );
 
     expect(mintParcelInstance).toBeTruthy();
     expect(transferParcelInstance).toBeTruthy();
@@ -97,7 +116,10 @@ test("Create mint transfer block", async done => {
     expect(mintParcelDoc.hash).toEqual(mintParcel.hash().value);
     expect(transferParcelDoc.hash).toEqual(transferParcel.hash().value);
 
-    // Check Action
+    done();
+});
+
+test("Check action", async done => {
     mintAction = mintParcel.unsigned.action as AssetTransaction;
     transferAction = transferParcel.unsigned.action as AssetTransaction;
 
@@ -107,7 +129,9 @@ test("Create mint transfer block", async done => {
     mintParcel = mintParcel!;
     transferParcel = transferParcel!;
     let mintActionInstance = await ActionModel.getByHash(mintParcel.hash());
-    let transferActionInstance = await ActionModel.getByHash(transferParcel.hash());
+    let transferActionInstance = await ActionModel.getByHash(
+        transferParcel.hash()
+    );
 
     expect(mintActionInstance).toBeTruthy();
     expect(transferActionInstance).toBeTruthy();
@@ -128,12 +152,19 @@ test("Create mint transfer block", async done => {
     expect(mintActionId).toBeTruthy();
     expect(transferActionId).toBeTruthy();
 
-    // check transaction
+    done();
+});
+
+test("Check transaction", async done => {
     mintTransaction = mintAction.transaction as AssetMintTransaction;
     transferTransaction = transferAction.transaction as AssetTransferTransaction;
 
-    let mintTransactionInstance = await TransactionModel.getByHash(mintTransaction.hash());
-    let transferTransactionInstance = await TransactionModel.getByHash(transferTransaction.hash());
+    let mintTransactionInstance = await TransactionModel.getByHash(
+        mintTransaction.hash()
+    );
+    let transferTransactionInstance = await TransactionModel.getByHash(
+        transferTransaction.hash()
+    );
 
     expect(mintTransactionInstance).toBeTruthy();
     expect(transferTransactionInstance).toBeTruthy();
@@ -142,16 +173,22 @@ test("Create mint transfer block", async done => {
     transferTransactionInstance = transferTransactionInstance!;
 
     const mintTransactionDoc = mintTransactionInstance.get({ plain: true });
-    const transferTransactionDoc = transferTransactionInstance.get({ plain: true });
+    const transferTransactionDoc = transferTransactionInstance.get({
+        plain: true
+    });
 
     expect(mintTransactionDoc.hash).toEqual(mintTransaction.hash().value);
-    expect(transferTransactionDoc.hash).toEqual(transferTransaction.hash().value);
+    expect(transferTransactionDoc.hash).toEqual(
+        transferTransaction.hash().value
+    );
 
     done();
 });
 
 test("Get block docuemnt containing parcel, action, transaction", async done => {
-    const savedTransfterBlockResponse = await BlockModel.getByNumber(transferBlockNumber);
+    const savedTransfterBlockResponse = await BlockModel.getByNumber(
+        transferBlockNumber
+    );
     expect(savedTransfterBlockResponse).toBeTruthy();
 
     const savedBlock = savedTransfterBlockResponse!;
@@ -163,9 +200,14 @@ test("Get block docuemnt containing parcel, action, transaction", async done => 
     expect(savedBlockDoc.parcels![0].hash).toEqual(transferParcel.hash().value);
 
     expect(savedBlockDoc.parcels![0].action).toBeTruthy();
-    expect(savedBlockDoc.parcels![0].action!.action).toEqual("assetTransaction");
+    expect(savedBlockDoc.parcels![0].action!.action).toEqual(
+        "assetTransaction"
+    );
 
-    expect((savedBlockDoc.parcels![0].action! as AssetTransactionAttribute).transaction).toBeTruthy();
+    expect(
+        (savedBlockDoc.parcels![0].action! as AssetTransactionAttribute)
+            .transaction
+    ).toBeTruthy();
 
     done();
 });
@@ -185,7 +227,9 @@ test("Delete the block, parcel, action as cascade", async done => {
     expect(actionInstance).toBeNull();
 
     const transferTransactionHash = transferTransaction.hash();
-    const transactionInstance = await TransactionModel.getByHash(transferTransactionHash);
+    const transactionInstance = await TransactionModel.getByHash(
+        transferTransactionHash
+    );
     expect(transactionInstance).toBeNull();
 
     done();
