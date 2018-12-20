@@ -9,7 +9,6 @@ import {
 import models from "../src/models";
 import { AssetTransactionAttribute } from "../src/models/action";
 import * as ActionModel from "../src/models/logic/action";
-import * as AssetMintOutputModel from "../src/models/logic/assetmintoutput";
 import * as BlockModel from "../src/models/logic/block";
 import * as ParcelModel from "../src/models/logic/parcel";
 import * as TransactionModel from "../src/models/logic/transaction";
@@ -43,7 +42,6 @@ let transferActionId: string;
 let mintActionId: string;
 let mintTransaction: AssetMintTransaction;
 let transferTransaction: AssetTransferTransaction;
-let mintTransactionOutputId: string;
 
 test("Create mint transfer block", async done => {
     const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
@@ -227,8 +225,6 @@ test("Get block docuemnt containing parcel, action, transaction", async done => 
     expect(savedMintTransactionDoc).toBeTruthy();
     expect(savedMintTransactionDoc.output).toBeTruthy();
 
-    mintTransactionOutputId = savedMintTransactionDoc.output!.id!;
-
     done();
 });
 
@@ -260,11 +256,6 @@ test("Delete the block, parcel, action as cascade", async done => {
         mintTransactionHash
     );
     expect(mintTransactionInstance).toBeNull();
-
-    const mintOutputInstance = await AssetMintOutputModel.getById(
-        mintTransactionOutputId
-    );
-    expect(mintOutputInstance).toBeNull();
 
     done();
 });

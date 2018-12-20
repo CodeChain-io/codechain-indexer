@@ -16,6 +16,21 @@ module.exports = {
                     key: "id"
                 }
             },
+            output: {
+                type: Sequelize.JSONB
+            },
+            burns: {
+                type: Sequelize.JSONB
+            },
+            input: {
+                type: Sequelize.JSONB
+            },
+            inputs: {
+                type: Sequelize.JSONB
+            },
+            outputs: {
+                type: Sequelize.JSONB
+            },
             networkId: {
                 type: Sequelize.STRING
             },

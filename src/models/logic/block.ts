@@ -63,13 +63,7 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
                             include: [
                                 {
                                     as: "transaction",
-                                    model: models.Transaction,
-                                    include: [
-                                        {
-                                            as: "output",
-                                            model: models.AssetMintOutput
-                                        }
-                                    ]
+                                    model: models.Transaction
                                 }
                             ]
                         }
@@ -115,13 +109,7 @@ export async function getByNumber(
                             include: [
                                 {
                                     as: "transaction",
-                                    model: models.Transaction,
-                                    include: [
-                                        {
-                                            as: "output",
-                                            model: models.AssetMintOutput
-                                        }
-                                    ]
+                                    model: models.Transaction
                                 }
                             ]
                         }

@@ -4,10 +4,6 @@ import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { ActionAttribute, ActionInstance } from "./action";
-import {
-    AssetMintOutputAttribute,
-    AssetMintOutputInstance
-} from "./assetmintoutput";
 import { BlockAttribute, BlockInstance } from "./block";
 import { ParcelAttribute, ParcelInstance } from "./parcel";
 import { TransactionAttribute, TransactionInstance } from "./transaction";
@@ -52,10 +48,6 @@ interface DB {
     Parcel: Sequelize.Model<ParcelInstance, ParcelAttribute>;
     Action: Sequelize.Model<ActionInstance, ActionAttribute>;
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
-    AssetMintOutput: Sequelize.Model<
-        AssetMintOutputInstance,
-        AssetMintOutputAttribute
-    >;
 }
 
 export default models as DB;

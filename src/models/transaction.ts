@@ -1,5 +1,5 @@
+import { Timelock } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
-import { AssetMintOutputAttribute } from "./assetmintoutput";
 
 export type TransactionAttribute =
     | AssetMintTransactionAttribute
@@ -10,7 +10,7 @@ export type TransactionAttribute =
 export interface AssetMintTransactionAttribute {
     type: "assetMint";
     actionId: string;
-    output?: AssetMintOutputAttribute;
+    output: AssetMintOutputAttribute;
     networkId: string;
     shardId: number;
     metadata: string;
@@ -26,13 +26,57 @@ export interface AssetMintTransactionAttribute {
     errorType?: string | null;
 }
 
+export interface AssetMintOutputAttribute {
+    lockScriptHash: string;
+    parameters: Buffer[];
+    amount?: string | null;
+    approver?: string | null;
+    administrator?: string | null;
+    assetType: string;
+}
+
+export interface AssetTransferInputAttribute {
+    prevOut: AssetOutPointAttribute;
+    timelock?: Timelock | null;
+    lockScript: Buffer;
+    unlockScript: Buffer;
+}
+
+export interface AssetTransferOutputAttribute {
+    lockScriptHash: string;
+    parameters: Buffer[];
+    assetType: string;
+    amount: string;
+    owner?: string | null;
+    assetScheme: AssetSchemeAttribute;
+}
+
+export interface AssetOutPointAttribute {
+    transactionHash: string;
+    index: number;
+    assetType: string;
+    assetScheme: AssetSchemeAttribute;
+    amount: string;
+    owner?: string | null;
+    lockScriptHash?: string | null;
+    parameters?: Buffer[] | null;
+}
+
+export interface AssetSchemeAttribute {
+    metadata: string;
+    registrar?: string | null;
+    amount?: string | null;
+    networkId?: string | null;
+    shardId?: number | null;
+}
+
 export interface AssetTransferTransactionAttribute {
     type: "assetTransfer";
     actionId: string;
     networkId: string;
-    // burns: AssetTransferInputDoc[];
-    // inputs: AssetTransferInputDoc[];
-    // outputs: AssetTransferOutputDoc[];
+    burns: AssetTransferInputAttribute[];
+    inputs: AssetTransferInputAttribute[];
+    outputs: AssetTransferOutputAttribute[];
     hash: string;
     timestamp: number;
     parcelHash: string;
@@ -48,8 +92,10 @@ export interface AssetComposeTransactionAttribute {
     networkId: string;
     shardId: number;
     metadata: string;
-    output?: AssetMintOutputAttribute;
-    // inputs: AssetTransferInputDoc[];
+    approver?: string | null;
+    administrator?: string | null;
+    output: AssetMintOutputAttribute;
+    inputs: AssetTransferInputAttribute[];
     hash: string;
     timestamp: number;
     assetName?: string | null;
@@ -63,8 +109,8 @@ export interface AssetComposeTransactionAttribute {
 export interface AssetDecomposeTransactionAttribute {
     type: "assetDecompose";
     actionId: string;
-    // input: AssetTransferInputDoc;
-    // outputs: AssetTransferOutputDoc[];
+    input: AssetTransferInputAttribute;
+    outputs: AssetTransferOutputAttribute[];
     networkId: string;
     hash: string;
     timestamp: number;
@@ -98,6 +144,21 @@ export default (
                     model: "Actions",
                     key: "id"
                 }
+            },
+            output: {
+                type: DataTypes.JSONB
+            },
+            burns: {
+                type: DataTypes.JSONB
+            },
+            input: {
+                type: DataTypes.JSONB
+            },
+            inputs: {
+                type: DataTypes.JSONB
+            },
+            outputs: {
+                type: DataTypes.JSONB
             },
             networkId: {
                 type: DataTypes.STRING
@@ -150,12 +211,8 @@ export default (
         },
         {}
     );
-    Transaction.associate = models => {
-        Transaction.hasOne(models.AssetMintOutput, {
-            foreignKey: "transactionHash",
-            as: "output",
-            onDelete: "CASCADE"
-        });
+    Transaction.associate = () => {
+        //
     };
     return Transaction;
 };
