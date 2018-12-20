@@ -25,7 +25,10 @@ export async function createTransaction(
 ): Promise<TransactionInstance> {
     let transactionInstance: TransactionInstance;
     try {
-        if (transaction instanceof AssetMintTransaction || transaction instanceof AssetComposeTransaction) {
+        if (
+            transaction instanceof AssetMintTransaction ||
+            transaction instanceof AssetComposeTransaction
+        ) {
             const transactionJSON = transaction.toJSON().data;
             transactionInstance = await models.Transaction.create({
                 type: "assetMint",
@@ -100,7 +103,9 @@ export async function createTransaction(
 }
 
 // This is for the cascade test
-export async function getByHash(hash: H256): Promise<TransactionInstance | null> {
+export async function getByHash(
+    hash: H256
+): Promise<TransactionInstance | null> {
     try {
         return await models.Transaction.findOne({
             where: {

@@ -12,7 +12,11 @@ async function runServer() {
 
     const httpServer = http.createServer(app);
     httpServer.listen(options.httpPort, () => {
-        log.info(`HTTP server is listening on ${options.httpPort} in ${process.env.NODE_ENV} mode`);
+        log.info(
+            `HTTP server is listening on ${options.httpPort} in ${
+                process.env.NODE_ENV
+            } mode`
+        );
     });
 }
 

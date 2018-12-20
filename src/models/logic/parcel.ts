@@ -33,7 +33,9 @@ export async function createParcel(
             networkId: parcel.unsigned.networkId,
             sig: parcel.toJSON().sig,
             hash: parcel.hash().value,
-            signer: parcel.getSignerAddress({ networkId: parcel.unsigned.networkId }).value,
+            signer: parcel.getSignerAddress({
+                networkId: parcel.unsigned.networkId
+            }).value,
             timestamp: options.timestamp,
             blockHash: parcel.blockHash.value,
             blockNumber: parcel.blockNumber,

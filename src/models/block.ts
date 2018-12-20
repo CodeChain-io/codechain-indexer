@@ -21,7 +21,10 @@ export interface BlockAttribute {
 
 export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
 
-export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) => {
+export default (
+    sequelize: Sequelize.Sequelize,
+    DataTypes: Sequelize.DataTypes
+) => {
     const Block = sequelize.define(
         "Block",
         {

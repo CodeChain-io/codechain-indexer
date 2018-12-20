@@ -6,7 +6,10 @@ import { BlockInstance } from "../block";
 import models from "../index";
 import * as ParcelModel from "./parcel";
 
-export async function createBlock(block: Block, miningReward: U64): Promise<BlockInstance> {
+export async function createBlock(
+    block: Block,
+    miningReward: U64
+): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
     try {
         blockInstance = await models.Block.create({
@@ -25,7 +28,9 @@ export async function createBlock(block: Block, miningReward: U64): Promise<Bloc
         });
         await Promise.all(
             block.parcels.map(async parcel => {
-                await ParcelModel.createParcel(parcel, { timestamp: block.timestamp });
+                await ParcelModel.createParcel(parcel, {
+                    timestamp: block.timestamp
+                });
             })
         );
     } catch (err) {
@@ -66,7 +71,9 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
     }
 }
 
-export async function deleteBlockByNumber(blockNumber: number): Promise<number> {
+export async function deleteBlockByNumber(
+    blockNumber: number
+): Promise<number> {
     try {
         return await models.Block.destroy({
             where: { number: blockNumber }
@@ -77,7 +84,9 @@ export async function deleteBlockByNumber(blockNumber: number): Promise<number> 
     }
 }
 
-export async function getByNumber(blockNumber: number): Promise<BlockInstance | null> {
+export async function getByNumber(
+    blockNumber: number
+): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
             where: {

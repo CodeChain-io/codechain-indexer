@@ -68,7 +68,10 @@ export interface SetShardUsersAttribute {
 
 export interface ActionInstance extends Sequelize.Instance<ActionAttribute> {}
 
-export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) => {
+export default (
+    sequelize: Sequelize.Sequelize,
+    DataTypes: Sequelize.DataTypes
+) => {
     const Action = sequelize.define(
         "Action",
         {

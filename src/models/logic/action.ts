@@ -47,7 +47,11 @@ export async function createAction(
                 errorType: options.errorType
             });
             const id = actionInstance.get({ plain: true }).id!;
-            await TransactionModel.createTransaction(id, action.transaction, options);
+            await TransactionModel.createTransaction(
+                id,
+                action.transaction,
+                options
+            );
         } else if (action instanceof SetRegularKey) {
             actionInstance = await models.Action.create({
                 action: "setRegularKey",

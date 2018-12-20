@@ -22,7 +22,10 @@ export class IndexerContext {
 
     private constructor(public readonly options: IndexerConfig) {
         this.pg = new pg.Pool(options.pg);
-        this.sdk = new SDK({ server: options.codechain.host, networkId: options.codechain.networkId });
+        this.sdk = new SDK({
+            server: options.codechain.host,
+            networkId: options.codechain.networkId
+        });
         this.blockSyncer = new BlockSync({ sdk: this.sdk, pg: this.pg });
     }
 

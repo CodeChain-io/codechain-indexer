@@ -18,7 +18,10 @@ export interface ParcelAttribute {
 
 export interface ParcelInstance extends Sequelize.Instance<ParcelAttribute> {}
 
-export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) => {
+export default (
+    sequelize: Sequelize.Sequelize,
+    DataTypes: Sequelize.DataTypes
+) => {
     const Parcel = sequelize.define(
         "Parcel",
         {

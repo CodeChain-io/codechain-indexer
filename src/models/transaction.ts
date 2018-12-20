@@ -74,9 +74,13 @@ export interface AssetDecomposeTransactionAttribute {
     errorType?: string | null;
 }
 
-export interface TransactionInstance extends Sequelize.Instance<TransactionAttribute> {}
+export interface TransactionInstance
+    extends Sequelize.Instance<TransactionAttribute> {}
 
-export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) => {
+export default (
+    sequelize: Sequelize.Sequelize,
+    DataTypes: Sequelize.DataTypes
+) => {
     const Transaction = sequelize.define(
         "Transaction",
         {

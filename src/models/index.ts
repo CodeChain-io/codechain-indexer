@@ -18,8 +18,14 @@ const models: any = {};
 
 fs.readdirSync(__dirname)
     .filter(file => {
-        const extension = _.includes(["dev", "test"], process.env.NODE_ENV) ? ".ts" : ".js";
-        return file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === extension;
+        const extension = _.includes(["dev", "test"], process.env.NODE_ENV)
+            ? ".ts"
+            : ".js";
+        return (
+            file.indexOf(".") !== 0 &&
+            file !== basename &&
+            file.slice(-3) === extension
+        );
     })
     .forEach(file => {
         const model = sequelize.import(path.join(__dirname, file));
