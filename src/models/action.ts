@@ -84,6 +84,7 @@ export default (
             parcelHash: {
                 allowNull: false,
                 type: DataTypes.STRING,
+                onDelete: "CASCADE",
                 references: {
                     model: "Parcels",
                     key: "hash"

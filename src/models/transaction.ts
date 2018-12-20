@@ -1,4 +1,5 @@
 import * as Sequelize from "sequelize";
+import { AssetMintOutputAttribute } from "./assetmintoutput";
 
 export type TransactionAttribute =
     | AssetMintTransactionAttribute
@@ -9,7 +10,7 @@ export type TransactionAttribute =
 export interface AssetMintTransactionAttribute {
     type: "assetMint";
     actionId: string;
-    // output?: AssetMintOutputDoc;
+    output?: AssetMintOutputAttribute;
     networkId: string;
     shardId: number;
     metadata: string;
@@ -47,7 +48,7 @@ export interface AssetComposeTransactionAttribute {
     networkId: string;
     shardId: number;
     metadata: string;
-    // output: AssetMintOutputDoc;
+    output?: AssetMintOutputAttribute;
     // inputs: AssetTransferInputDoc[];
     hash: string;
     timestamp: number;
@@ -84,11 +85,10 @@ export default (
     const Transaction = sequelize.define(
         "Transaction",
         {
-            id: {
-                allowNull: false,
-                autoIncrement: true,
+            hash: {
                 primaryKey: true,
-                type: DataTypes.BIGINT
+                allowNull: false,
+                type: DataTypes.STRING
             },
             actionId: {
                 allowNull: false,
@@ -112,10 +112,6 @@ export default (
                 type: DataTypes.STRING
             },
             administrator: {
-                type: DataTypes.STRING
-            },
-            hash: {
-                allowNull: false,
                 type: DataTypes.STRING
             },
             timestamp: {
@@ -154,8 +150,12 @@ export default (
         },
         {}
     );
-    Transaction.associate = () => {
-        // associations can be defined here
+    Transaction.associate = models => {
+        Transaction.hasOne(models.AssetMintOutput, {
+            foreignKey: "transactionHash",
+            as: "output",
+            onDelete: "CASCADE"
+        });
     };
     return Transaction;
 };

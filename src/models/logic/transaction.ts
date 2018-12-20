@@ -10,6 +10,7 @@ import * as _ from "lodash";
 import * as Exception from "../../exception";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
+import * as AssetMintOutputModel from "./assetmintoutput";
 
 export async function createTransaction(
     actionId: string,
@@ -47,6 +48,15 @@ export async function createTransaction(
                 invoice: options.invoice,
                 errorType: options.errorType
             });
+            await AssetMintOutputModel.createAssetMintOutput(
+                transaction.hash(),
+                transaction.output,
+                {
+                    approver: transactionJSON.approver,
+                    administrator: transactionJSON.administrator,
+                    assetType: transaction.getAssetSchemeAddress()
+                }
+            );
         } else if (transaction instanceof AssetTransferTransaction) {
             transactionInstance = await models.Transaction.create({
                 type: "assetTransfer",
@@ -110,7 +120,13 @@ export async function getByHash(
         return await models.Transaction.findOne({
             where: {
                 hash: hash.value
-            }
+            },
+            include: [
+                {
+                    as: "output",
+                    model: models.AssetMintOutput
+                }
+            ]
         });
     } catch (err) {
         console.error(err);

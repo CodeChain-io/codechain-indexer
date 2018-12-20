@@ -9,9 +9,11 @@ import {
 import models from "../src/models";
 import { AssetTransactionAttribute } from "../src/models/action";
 import * as ActionModel from "../src/models/logic/action";
+import * as AssetMintOutputModel from "../src/models/logic/assetmintoutput";
 import * as BlockModel from "../src/models/logic/block";
 import * as ParcelModel from "../src/models/logic/parcel";
 import * as TransactionModel from "../src/models/logic/transaction";
+import { AssetMintTransactionAttribute } from "../src/models/transaction";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
@@ -41,6 +43,7 @@ let transferActionId: string;
 let mintActionId: string;
 let mintTransaction: AssetMintTransaction;
 let transferTransaction: AssetTransferTransaction;
+let mintTransactionOutputId: string;
 
 test("Create mint transfer block", async done => {
     const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
@@ -191,23 +194,40 @@ test("Get block docuemnt containing parcel, action, transaction", async done => 
     );
     expect(savedTransfterBlockResponse).toBeTruthy();
 
-    const savedBlock = savedTransfterBlockResponse!;
-    const savedBlockDoc = savedBlock.get({ plain: true });
+    const savedMintBlockResponse = await BlockModel.getByNumber(
+        mintBlockNumber
+    );
+    expect(savedMintBlockResponse).toBeTruthy();
 
-    expect(savedBlockDoc.hash).toEqual(transferBlock.hash.value);
+    const savedTransferBlock = savedTransfterBlockResponse!;
+    const savedTransferBlockDoc = savedTransferBlock.get({ plain: true });
 
-    expect(savedBlockDoc.parcels).toBeTruthy();
-    expect(savedBlockDoc.parcels![0].hash).toEqual(transferParcel.hash().value);
+    const savedMintBlock = savedMintBlockResponse!;
+    const savedMintBlockDoc = savedMintBlock.get({ plain: true });
 
-    expect(savedBlockDoc.parcels![0].action).toBeTruthy();
-    expect(savedBlockDoc.parcels![0].action!.action).toEqual(
+    expect(savedTransferBlockDoc.hash).toEqual(transferBlock.hash.value);
+
+    expect(savedTransferBlockDoc.parcels).toBeTruthy();
+    expect(savedTransferBlockDoc.parcels![0].hash).toEqual(
+        transferParcel.hash().value
+    );
+
+    expect(savedTransferBlockDoc.parcels![0].action).toBeTruthy();
+    expect(savedTransferBlockDoc.parcels![0].action!.action).toEqual(
         "assetTransaction"
     );
 
-    expect(
-        (savedBlockDoc.parcels![0].action! as AssetTransactionAttribute)
-            .transaction
-    ).toBeTruthy();
+    const savedTransferTransactionDoc = (savedTransferBlockDoc.parcels![0]
+        .action! as AssetTransactionAttribute).transaction;
+    expect(savedTransferTransactionDoc).toBeTruthy();
+
+    const savedMintTransactionDoc = (savedMintBlockDoc.parcels![0]
+        .action! as AssetTransactionAttribute)
+        .transaction as AssetMintTransactionAttribute;
+    expect(savedMintTransactionDoc).toBeTruthy();
+    expect(savedMintTransactionDoc.output).toBeTruthy();
+
+    mintTransactionOutputId = savedMintTransactionDoc.output!.id!;
 
     done();
 });
@@ -215,6 +235,9 @@ test("Get block docuemnt containing parcel, action, transaction", async done => 
 test("Delete the block, parcel, action as cascade", async done => {
     const row = await BlockModel.deleteBlockByNumber(transferBlockNumber);
     expect(row).toBeTruthy();
+
+    const mintTxRow = await BlockModel.deleteBlockByNumber(mintBlockNumber);
+    expect(mintTxRow).toBeTruthy();
 
     const blockInstance = await BlockModel.getByNumber(transferBlockNumber);
     expect(blockInstance).toBeNull();
@@ -231,6 +254,17 @@ test("Delete the block, parcel, action as cascade", async done => {
         transferTransactionHash
     );
     expect(transactionInstance).toBeNull();
+
+    const mintTransactionHash = mintTransaction.hash();
+    const mintTransactionInstance = await TransactionModel.getByHash(
+        mintTransactionHash
+    );
+    expect(mintTransactionInstance).toBeNull();
+
+    const mintOutputInstance = await AssetMintOutputModel.getById(
+        mintTransactionOutputId
+    );
+    expect(mintOutputInstance).toBeNull();
 
     done();
 });

@@ -104,7 +104,19 @@ export async function getByHash(hash: H256): Promise<ActionInstance | null> {
         return await models.Action.findOne({
             where: {
                 parcelHash: hash.value
-            }
+            },
+            include: [
+                {
+                    as: "transaction",
+                    model: models.Transaction,
+                    include: [
+                        {
+                            as: "output",
+                            model: models.AssetMintOutput
+                        }
+                    ]
+                }
+            ]
         });
     } catch (err) {
         console.error(err);

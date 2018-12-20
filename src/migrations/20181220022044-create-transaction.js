@@ -2,11 +2,10 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable("Transactions", {
-            id: {
+            hash: {
                 allowNull: false,
-                autoIncrement: true,
                 primaryKey: true,
-                type: Sequelize.BIGINT
+                type: Sequelize.STRING
             },
             actionId: {
                 allowNull: false,
@@ -30,10 +29,6 @@ module.exports = {
                 type: Sequelize.STRING
             },
             administrator: {
-                type: Sequelize.STRING
-            },
-            hash: {
-                allowNull: false,
                 type: Sequelize.STRING
             },
             timestamp: {
