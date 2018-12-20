@@ -6,6 +6,7 @@ import { IndexerConfig } from "../config";
 import { ActionAttribute, ActionInstance } from "./action";
 import { BlockAttribute, BlockInstance } from "./block";
 import { ParcelAttribute, ParcelInstance } from "./parcel";
+import { TransactionAttribute, TransactionInstance } from "./transaction";
 
 const basename = path.basename(__filename);
 process.env.NODE_ENV = process.env.NODE_ENV || "dev";
@@ -40,6 +41,7 @@ interface DB {
     Block: Sequelize.Model<BlockInstance, BlockAttribute>;
     Parcel: Sequelize.Model<ParcelInstance, ParcelAttribute>;
     Action: Sequelize.Model<ActionInstance, ActionAttribute>;
+    Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
 }
 
 export default models as DB;

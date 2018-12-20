@@ -6,7 +6,7 @@ module.exports = {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
-                type: Sequelize.INTEGER
+                type: Sequelize.BIGINT
             },
             parcelHash: {
                 allowNull: false,
@@ -37,6 +37,9 @@ module.exports = {
                 type: Sequelize.BOOLEAN
             },
             owners: {
+                type: Sequelize.JSONB
+            },
+            approvals: {
                 type: Sequelize.JSONB
             },
             users: {

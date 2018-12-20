@@ -16,7 +16,7 @@ export interface BlockAttribute {
     miningReward: string;
     createdAt?: string;
     updatedAt?: string;
-    parcel?: ParcelAttribute[];
+    parcels?: ParcelAttribute[];
 }
 
 export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
@@ -88,7 +88,7 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
     Block.associate = models => {
         Block.hasMany(models.Parcel, {
             foreignKey: "blockHash",
-            as: "parcel",
+            as: "parcels",
             onDelete: "CASCADE"
         });
     };

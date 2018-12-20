@@ -12,11 +12,19 @@ import * as _ from "lodash";
 import * as Exception from "../../exception";
 import { ActionInstance } from "../action";
 import models from "../index";
+import * as TransactionModel from "./transaction";
 
 export async function createAction(
     parcelHash: H256,
     action: Action,
-    options: { invoice: boolean | null; errorType: string | null }
+    options: {
+        invoice: boolean | null;
+        errorType: string | null;
+        blockNumber: number;
+        parcelIndex: number;
+        parcelHash: H256;
+        timestamp: number;
+    }
 ): Promise<ActionInstance> {
     let actionInstance: ActionInstance;
     try {
@@ -34,9 +42,12 @@ export async function createAction(
             actionInstance = await models.Action.create({
                 action: "assetTransaction",
                 parcelHash: parcelHash.value,
+                approvals: action.approvals,
                 invoice: options.invoice,
                 errorType: options.errorType
             });
+            const id = actionInstance.get({ plain: true }).id!;
+            await TransactionModel.createTransaction(id, action.transaction, options);
         } else if (action instanceof SetRegularKey) {
             actionInstance = await models.Action.create({
                 action: "setRegularKey",
@@ -75,7 +86,7 @@ export async function createAction(
         }
     } catch (err) {
         console.error(err);
-        if (err.code === 105) {
+        if (err.code === Exception.InvalidAction.code) {
             throw err;
         }
         throw Exception.DBError;

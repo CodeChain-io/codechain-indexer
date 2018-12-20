@@ -4,6 +4,7 @@ import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { BlockInstance } from "../block";
 import models from "../index";
+import * as ParcelModel from "./parcel";
 
 export async function createBlock(block: Block, miningReward: U64): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
@@ -22,6 +23,11 @@ export async function createBlock(block: Block, miningReward: U64): Promise<Bloc
             hash: block.hash.value,
             miningReward: miningReward.value.toString(10)
         });
+        await Promise.all(
+            block.parcels.map(async parcel => {
+                await ParcelModel.createParcel(parcel, { timestamp: block.timestamp });
+            })
+        );
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
@@ -43,7 +49,7 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
             },
             include: [
                 {
-                    as: "parcel",
+                    as: "parcels",
                     model: models.Parcel,
                     include: [
                         {
@@ -79,12 +85,18 @@ export async function getByNumber(blockNumber: number): Promise<BlockInstance | 
             },
             include: [
                 {
-                    as: "parcel",
+                    as: "parcels",
                     model: models.Parcel,
                     include: [
                         {
                             as: "action",
-                            model: models.Action
+                            model: models.Action,
+                            include: [
+                                {
+                                    as: "transaction",
+                                    model: models.Transaction
+                                }
+                            ]
                         }
                     ]
                 }

@@ -1,21 +1,26 @@
 import * as Sequelize from "sequelize";
+import { TransactionAttribute } from "./transaction";
 
 export type ActionAttribute =
-    | AssetTransaction
+    | AssetTransactionAttribute
     | PaymentAttribute
     | SetRegularKeyAttribute
     | CreateShardAttribute
     | SetShardOwnersAttribute
     | SetShardUsersAttribute;
 
-export interface AssetTransaction {
+export interface AssetTransactionAttribute {
+    id?: string;
     action: "assetTransaction";
+    transaction?: TransactionAttribute;
     parcelHash: string;
+    approvals: string[];
     invoice?: boolean | null;
     errorType?: string | null;
 }
 
 export interface PaymentAttribute {
+    id?: string;
     action: "payment";
     parcelHash: string;
     receiver: string;
@@ -25,6 +30,7 @@ export interface PaymentAttribute {
 }
 
 export interface SetRegularKeyAttribute {
+    id?: string;
     action: "setRegularKey";
     parcelHash: string;
     key: string;
@@ -33,6 +39,7 @@ export interface SetRegularKeyAttribute {
 }
 
 export interface CreateShardAttribute {
+    id?: string;
     action: "createShard";
     parcelHash: string;
     invoice?: boolean | null;
@@ -40,6 +47,7 @@ export interface CreateShardAttribute {
 }
 
 export interface SetShardOwnersAttribute {
+    id?: string;
     action: "setShardOwners";
     parcelHash: string;
     shardId: number;
@@ -49,6 +57,7 @@ export interface SetShardOwnersAttribute {
 }
 
 export interface SetShardUsersAttribute {
+    id?: string;
     action: "setShardUsers";
     parcelHash: string;
     shardId: number;
@@ -99,6 +108,9 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
             owners: {
                 type: DataTypes.JSONB
             },
+            approvals: {
+                type: DataTypes.JSONB
+            },
             users: {
                 type: DataTypes.JSONB
             },
@@ -116,8 +128,12 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) 
         },
         {}
     );
-    Action.associate = () => {
-        // associations can be defined here
+    Action.associate = models => {
+        Action.hasOne(models.Transaction, {
+            foreignKey: "actionId",
+            as: "transaction",
+            onDelete: "CASCADE"
+        });
     };
     return Action;
 };

@@ -28,3 +28,8 @@ export const InvalidAction: Exception = {
     code: 105,
     message: "InvalidAction"
 };
+
+export const InvalidTransaction: Exception = {
+    code: 106,
+    message: "InvalidTransaction"
+};
