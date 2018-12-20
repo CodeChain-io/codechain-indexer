@@ -1,5 +1,6 @@
 import { Timelock } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
+import { AssetSchemeAttribute } from "./assetscheme";
 
 export type TransactionAttribute =
     | AssetMintTransactionAttribute
@@ -60,14 +61,6 @@ export interface AssetOutPointAttribute {
     owner?: string | null;
     lockScriptHash?: string | null;
     parameters?: Buffer[] | null;
-}
-
-export interface AssetSchemeAttribute {
-    metadata: string;
-    registrar?: string | null;
-    amount?: string | null;
-    networkId?: string | null;
-    shardId?: number | null;
 }
 
 export interface AssetTransferTransactionAttribute {

@@ -4,6 +4,7 @@ import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { ActionAttribute, ActionInstance } from "./action";
+import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import { BlockAttribute, BlockInstance } from "./block";
 import { ParcelAttribute, ParcelInstance } from "./parcel";
 import { TransactionAttribute, TransactionInstance } from "./transaction";
@@ -48,6 +49,7 @@ interface DB {
     Parcel: Sequelize.Model<ParcelInstance, ParcelAttribute>;
     Action: Sequelize.Model<ActionInstance, ActionAttribute>;
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
+    AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
 }
 
 export default models as DB;

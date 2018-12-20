@@ -1,4 +1,4 @@
-import { U64 } from "codechain-primitives/lib";
+import { H256, U64 } from "codechain-primitives/lib";
 import {
     AssetMintTransaction,
     AssetTransaction,
@@ -9,6 +9,7 @@ import {
 import models from "../src/models";
 import { AssetTransactionAttribute } from "../src/models/action";
 import * as ActionModel from "../src/models/logic/action";
+import * as AssetSchemeModel from "../src/models/logic/assetscheme";
 import * as BlockModel from "../src/models/logic/block";
 import * as ParcelModel from "../src/models/logic/parcel";
 import * as TransactionModel from "../src/models/logic/transaction";
@@ -42,6 +43,7 @@ let transferActionId: string;
 let mintActionId: string;
 let mintTransaction: AssetMintTransaction;
 let transferTransaction: AssetTransferTransaction;
+let assetType: H256;
 
 test("Create mint transfer block", async done => {
     const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
@@ -186,6 +188,21 @@ test("Check transaction", async done => {
     done();
 });
 
+test("Check assetScheme", async done => {
+    assetType = mintTransaction.getAssetSchemeAddress();
+    const assetSchemeInstance = await AssetSchemeModel.getByAssetType(
+        assetType
+    );
+    expect(assetSchemeInstance).toBeTruthy();
+
+    const assetSchemeDoc = assetSchemeInstance!.get({ plain: true });
+    expect(assetSchemeDoc.transactionHash).toEqual(
+        mintTransaction.hash().value
+    );
+
+    done();
+});
+
 test("Get block docuemnt containing parcel, action, transaction", async done => {
     const savedTransfterBlockResponse = await BlockModel.getByNumber(
         transferBlockNumber
@@ -256,6 +273,11 @@ test("Delete the block, parcel, action as cascade", async done => {
         mintTransactionHash
     );
     expect(mintTransactionInstance).toBeNull();
+
+    const assetSchemeInstance = await AssetSchemeModel.getByAssetType(
+        assetType
+    );
+    expect(assetSchemeInstance).toBeNull();
 
     done();
 });

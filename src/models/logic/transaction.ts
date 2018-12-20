@@ -13,6 +13,7 @@ import {
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import * as _ from "lodash";
 import * as Exception from "../../exception";
+import { AssetSchemeAttribute } from "../assetscheme";
 import models from "../index";
 import {
     AssetMintOutputAttribute,
@@ -20,6 +21,7 @@ import {
     AssetTransferOutputAttribute,
     TransactionInstance
 } from "../transaction";
+import * as AssetSchemeModel from "./assetscheme";
 
 const P2PKH = "5f5960a7bca6ceeeb0c97bc717562914e7a1de04";
 const P2PKHBURN = "37572bdcc22d39a59c0d12d301f6271ba3fdd451";
@@ -72,28 +74,52 @@ export async function createTransaction(
                 invoice: options.invoice,
                 errorType: options.errorType
             });
+            await AssetSchemeModel.createAssetScheme(
+                transaction.getAssetSchemeAddress(),
+                transaction.hash(),
+                transaction.getAssetScheme()
+            );
         } else if (transaction instanceof AssetTransferTransaction) {
+            const inputs = await Promise.all(
+                transaction.inputs.map(async input => {
+                    const assetScheme = await getAssetSheme(
+                        input.prevOut.assetType
+                    );
+                    return getAssetTransferInputAttribute(
+                        input,
+                        transaction.networkId,
+                        assetScheme
+                    );
+                })
+            );
+            const outputs = await Promise.all(
+                transaction.outputs.map(async output => {
+                    const assetScheme = await getAssetSheme(output.assetType);
+                    return getAssetTransferOutputAttribute(
+                        output,
+                        transaction.networkId,
+                        assetScheme
+                    );
+                })
+            );
+            const burns = await Promise.all(
+                transaction.burns.map(async burn => {
+                    const assetScheme = await getAssetSheme(
+                        burn.prevOut.assetType
+                    );
+                    return getAssetTransferInputAttribute(
+                        burn,
+                        transaction.networkId,
+                        assetScheme
+                    );
+                })
+            );
             transactionInstance = await models.Transaction.create({
                 type: "assetTransfer",
                 actionId,
-                inputs: transaction.inputs.map(input => {
-                    return getAssetTransferInputAttribute(
-                        input,
-                        transaction.networkId
-                    );
-                }),
-                outputs: transaction.outputs.map(output => {
-                    return getAssetTransferOutputAttribute(
-                        output,
-                        transaction.networkId
-                    );
-                }),
-                burns: transaction.burns.map(burn => {
-                    return getAssetTransferInputAttribute(
-                        burn,
-                        transaction.networkId
-                    );
-                }),
+                inputs,
+                outputs,
+                burns,
                 networkId: transaction.networkId,
                 hash: transaction.hash().value,
                 timestamp: options.timestamp,
@@ -104,15 +130,22 @@ export async function createTransaction(
                 errorType: options.errorType
             });
         } else if (transaction instanceof AssetComposeTransaction) {
+            const inputs = await Promise.all(
+                transaction.inputs.map(async input => {
+                    const assetScheme = await getAssetSheme(
+                        input.prevOut.assetType
+                    );
+                    return getAssetTransferInputAttribute(
+                        input,
+                        transaction.networkId,
+                        assetScheme
+                    );
+                })
+            );
             transactionInstance = await models.Transaction.create({
                 type: "assetCompose",
                 actionId,
-                inputs: transaction.inputs.map(input => {
-                    return getAssetTransferInputAttribute(
-                        input,
-                        transaction.networkId
-                    );
-                }),
+                inputs,
                 output: getAssetMintOutputAttribute(
                     transaction.output,
                     transaction.getAssetSchemeAddress(),
@@ -140,21 +173,36 @@ export async function createTransaction(
                 invoice: options.invoice,
                 errorType: options.errorType
             });
+            await AssetSchemeModel.createAssetScheme(
+                transaction.getAssetSchemeAddress(),
+                transaction.hash(),
+                transaction.getAssetScheme()
+            );
         } else if (transaction instanceof AssetDecomposeTransaction) {
+            const inputAssetScheme = await getAssetSheme(
+                transaction.input.prevOut.assetType
+            );
+            const input = getAssetTransferInputAttribute(
+                transaction.input,
+                transaction.networkId,
+                inputAssetScheme
+            );
+            const outputs = await Promise.all(
+                transaction.outputs.map(async output => {
+                    const assetScheme = await getAssetSheme(output.assetType);
+                    return getAssetTransferOutputAttribute(
+                        output,
+                        transaction.networkId,
+                        assetScheme
+                    );
+                })
+            );
             transactionInstance = await models.Transaction.create({
                 type: "assetDecompose",
                 actionId,
                 networkId: transaction.networkId,
-                input: getAssetTransferInputAttribute(
-                    transaction.input,
-                    transaction.networkId
-                ),
-                outputs: transaction.outputs.map(output => {
-                    return getAssetTransferOutputAttribute(
-                        output,
-                        transaction.networkId
-                    );
-                }),
+                input,
+                outputs,
                 hash: transaction.hash().value,
                 timestamp: options.timestamp,
                 parcelHash: options.parcelHash.value,
@@ -194,9 +242,9 @@ export async function getByHash(
 
 function getAssetTransferInputAttribute(
     input: AssetTransferInput,
-    networkId: string
+    networkId: string,
+    assetScheme: AssetSchemeAttribute
 ): AssetTransferInputAttribute {
-    const assetScheme = { metadata: "hi" };
     return {
         timelock: input.timelock,
         lockScript: input.lockScript,
@@ -225,9 +273,9 @@ function getAssetTransferInputAttribute(
 
 function getAssetTransferOutputAttribute(
     output: AssetTransferOutput,
-    networkId: string
+    networkId: string,
+    assetScheme: AssetSchemeAttribute
 ): AssetTransferOutputAttribute {
-    const assetScheme = { metadata: "hi" };
     return {
         lockScriptHash: output.lockScriptHash.value,
         parameters: output.parameters,
@@ -254,6 +302,18 @@ function getAssetMintOutputAttribute(
         approver: options.approver,
         administrator: options.administrator
     };
+}
+
+async function getAssetSheme(assetType: H256): Promise<AssetSchemeAttribute> {
+    const assetSchemeInstance = await AssetSchemeModel.getByAssetType(
+        assetType
+    );
+    if (!assetSchemeInstance) {
+        throw Exception.InvalidTransaction;
+    }
+    return assetSchemeInstance.get({
+        plain: true
+    });
 }
 
 function getAssetName(metadata: string): string | null {
