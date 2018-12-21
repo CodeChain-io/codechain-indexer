@@ -4,6 +4,7 @@ import { Transaction } from "codechain-sdk/lib/core/classes";
 import { readFileSync, writeFile } from "fs";
 import * as path from "path";
 import { IndexerConfig } from "../src/config";
+import Worker from "../src/worker";
 
 process.env.NODE_ENV = "test";
 const options = require("config") as IndexerConfig;
@@ -14,6 +15,7 @@ export const sdk = new SDK({
     keyStoreType: "memory",
     networkId: CODECHAIN_NETWORK_ID
 });
+export const worker = new Worker({ sdk }, options.worker);
 
 export const ACCOUNT_SECRET =
     process.env.ACCOUNT_SECRET ||
