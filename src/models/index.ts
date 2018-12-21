@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
+import { AccountAttribtue, AccountInstance } from "./account";
 import { ActionAttribute, ActionInstance } from "./action";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import { BlockAttribute, BlockInstance } from "./block";
@@ -50,6 +51,7 @@ interface DB {
     Action: Sequelize.Model<ActionInstance, ActionAttribute>;
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
+    Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
 }
 
 export default models as DB;

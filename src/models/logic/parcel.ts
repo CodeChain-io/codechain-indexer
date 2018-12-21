@@ -10,6 +10,8 @@ export async function createParcel(
     parcel: SignedParcel,
     options: {
         timestamp: number;
+        invoice: boolean | null;
+        errorType: string | null;
     }
 ): Promise<ParcelInstance> {
     const blockHash = parcel.toJSON().blockHash;
@@ -43,8 +45,8 @@ export async function createParcel(
         });
 
         await ActionModel.createAction(parcel.hash(), parcel.unsigned.action, {
-            invoice: null,
-            errorType: null,
+            invoice: options.invoice,
+            errorType: options.errorType,
             blockNumber: parcel.blockNumber,
             parcelHash: parcel.hash(),
             parcelIndex: parcel.parcelIndex,

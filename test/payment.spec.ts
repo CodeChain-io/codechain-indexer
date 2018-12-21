@@ -24,8 +24,12 @@ test("Create payment block", async done => {
         "chain_getMiningReward",
         [paymentBlockNumber]
     );
+
     expect(miningRewardResponse).toBeTruthy();
-    await BlockModel.createBlock(paymentBlock!, new U64(miningRewardResponse!));
+    await BlockModel.createBlock(paymentBlock!, {
+        miningReward: new U64("1000"),
+        invoices: []
+    });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
     expect(lastBlockInstance!.get({ plain: true }).number).toEqual(

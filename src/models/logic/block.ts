@@ -8,7 +8,10 @@ import * as ParcelModel from "./parcel";
 
 export async function createBlock(
     block: Block,
-    miningReward: U64
+    options: {
+        miningReward: U64;
+        invoices: { invoice: boolean | null; errorType: string | null }[];
+    }
 ): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
     try {
@@ -24,12 +27,15 @@ export async function createBlock(
             score: block.score.value.toString(10),
             seal: block.seal,
             hash: block.hash.value,
-            miningReward: miningReward.value.toString(10)
+            miningReward: options.miningReward.value.toString(10)
         });
         await Promise.all(
             block.parcels.map(async parcel => {
+                const invoice = options.invoices[parcel.parcelIndex!];
                 await ParcelModel.createParcel(parcel, {
-                    timestamp: block.timestamp
+                    timestamp: block.timestamp,
+                    invoice: invoice && invoice.invoice,
+                    errorType: invoice && invoice.errorType
                 });
             })
         );

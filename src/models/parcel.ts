@@ -2,7 +2,6 @@ import * as Sequelize from "sequelize";
 import { ActionAttribute } from "./action";
 
 export interface ParcelAttribute {
-    id?: string;
     blockNumber: number;
     blockHash: string;
     parcelIndex: number;

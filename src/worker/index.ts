@@ -1,9 +1,10 @@
 import { SDK } from "codechain-sdk";
 import { Block, U64 } from "codechain-sdk/lib/core/classes";
 import { Job, scheduleJob } from "node-schedule";
-import { InvalidBlockNumber } from "../exception";
+import { InvalidBlockNumber, InvalidParcel } from "../exception";
 import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
+import * as AccountUtil from "./account";
 
 export interface WorkerContext {
     sdk: SDK;
@@ -94,9 +95,6 @@ export default class Worker {
                 }
             }
             console.log("%d block is indexing...", nextBlockNumber);
-            if (nextBlockNumber === 0) {
-                await this.handleGenesisBlock(nextBlock);
-            }
             await this.indexNewBlock(nextBlock);
             console.log("%d block is synchronized", nextBlockNumber);
             lastIndexedBlockNumber = nextBlockNumber;
@@ -150,14 +148,42 @@ export default class Worker {
             }
             miningReward = miningRewardResponse;
         }
-        await BlockModel.createBlock(block, new U64(miningReward));
+        const invoices = await Promise.all(
+            block.parcels.map(async parcel => {
+                const invoice = await sdk.rpc.chain.getParcelInvoice(
+                    parcel.hash()
+                );
+                if (!invoice) {
+                    throw InvalidParcel;
+                }
+                return {
+                    invoice: invoice.success,
+                    errorType: invoice.error ? invoice.error.type : null
+                };
+            })
+        );
+        await BlockModel.createBlock(block, {
+            miningReward: new U64(miningReward),
+            invoices
+        });
+        const blockInstance = await BlockModel.getByHash(block.hash);
+        await AccountUtil.updateAccount(
+            blockInstance!.get({ plain: true }),
+            {
+                checkingBlockNumber: block.number
+            },
+            this.context
+        );
     };
 
     private deleteBlock = async (block: BlockAttribute) => {
         await BlockModel.deleteBlockByNumber(block.number);
-    };
-
-    private handleGenesisBlock = async (_: Block) => {
-        // TODO
+        await AccountUtil.updateAccount(
+            block,
+            {
+                checkingBlockNumber: block.number - 1
+            },
+            this.context
+        );
     };
 }

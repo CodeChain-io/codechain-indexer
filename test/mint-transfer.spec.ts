@@ -62,14 +62,14 @@ test("Create mint transfer block", async done => {
     transferBlock = transferBlockResponse!;
 
     // Create block
-    const mintBlockInstance = await BlockModel.createBlock(
-        mintBlock,
-        new U64("1000")
-    );
-    const transferBlockInstance = await BlockModel.createBlock(
-        transferBlock,
-        new U64("1000")
-    );
+    const mintBlockInstance = await BlockModel.createBlock(mintBlock, {
+        miningReward: new U64("1000"),
+        invoices: []
+    });
+    const transferBlockInstance = await BlockModel.createBlock(transferBlock, {
+        miningReward: new U64("1000"),
+        invoices: []
+    });
     const mintBlockDoc = mintBlockInstance.get({ plain: true });
     const transferBlockDoc = transferBlockInstance.get({ plain: true });
 
@@ -83,7 +83,10 @@ test("Check duplicated block", async done => {
     // Duplicated error test
     let error: Error | null = null;
     try {
-        await BlockModel.createBlock(transferBlock, new U64("1000"));
+        await BlockModel.createBlock(transferBlock, {
+            miningReward: new U64("1000"),
+            invoices: []
+        });
     } catch (e) {
         error = e;
     }
