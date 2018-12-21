@@ -18,5 +18,8 @@
     "retry": {
       "max": 5
     }
+  },
+  "worker": {
+    "watchSchedule": "*/10 * * * * *"
   }
 }

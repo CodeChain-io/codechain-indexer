@@ -90,6 +90,17 @@ export async function deleteBlockByNumber(
     }
 }
 
+export async function getLatestBlock(): Promise<BlockInstance | null> {
+    try {
+        return await models.Block.findOne({
+            order: [["number", "DESC"]]
+        });
+    } catch (err) {
+        console.log(err);
+        throw Exception.DBError;
+    }
+}
+
 export async function getByNumber(
     blockNumber: number
 ): Promise<BlockInstance | null> {

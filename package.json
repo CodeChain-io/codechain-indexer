@@ -8,7 +8,7 @@
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
     "codechain-indexer-types": "https://github.com/CodeChain-io/codechain-indexer-types-js#bf321efb62fa72a4e220d1f5c684cecd5a26dfc8",
-    "codechain-sdk": "https://github.com/CodeChain-io/codechain-sdk-js#c8f395dca20665f2619f96b17f7af4559fac74ed",
+    "codechain-sdk": "https://github.com/CodeChain-io/codechain-sdk-js#ce96d5d5b2a7d34de350ae5a8769996b8a93a7ef",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
@@ -28,7 +28,7 @@
     "reset": "sequelize db:migrate:undo:all && sequelize db:migrate",
     "migrate": "sequelize db:migrate",
     "start": "ts-node src/index.ts",
-    "test": "jest --env node",
+    "test": "jest --env node --runInBand",
     "lint": "tslint -p . && prettier '{src, scripts}/**/*.{ts,js,json}' -l",
     "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write"
   },

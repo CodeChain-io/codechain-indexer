@@ -212,6 +212,7 @@ export async function createTransaction(
                 errorType: options.errorType
             });
         } else {
+            console.log(transaction.toJSON());
             throw Exception.InvalidTransaction;
         }
     } catch (err) {

@@ -4,5 +4,8 @@
     "password": "password",
     "database": "codechain-indexer-dev",
     "port": 5432
+  },
+  "sequelize": {
+    "logging": false
   }
 }

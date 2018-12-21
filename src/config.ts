@@ -13,4 +13,7 @@ export interface IndexerConfig {
         dialect: string;
         operatorsAliases: boolean;
     };
+    worker: {
+        watchSchedule: string;
+    };
 }

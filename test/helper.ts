@@ -3,7 +3,6 @@ import { SDK } from "codechain-sdk";
 import { Transaction } from "codechain-sdk/lib/core/classes";
 import { readFileSync, writeFile } from "fs";
 import * as path from "path";
-import * as pg from "pg";
 import { IndexerConfig } from "../src/config";
 
 process.env.NODE_ENV = "test";
@@ -15,11 +14,13 @@ export const sdk = new SDK({
     keyStoreType: "memory",
     networkId: CODECHAIN_NETWORK_ID
 });
-export const db = new pg.Pool(options.pg);
 
 export const ACCOUNT_SECRET =
-    process.env.ACCOUNT_SECRET || "ede1d4ccb4ec9a8bbbae9a13db3f4a7b56ea04189be86ac3a6a439d9a0a1addd";
-export const ACCOUNT_ID = process.env.ACCOUNT_ID || sdk.util.getAccountIdFromPrivate(ACCOUNT_SECRET).toString(); // "0x6fe64ffa3a46c074226457c90ccb32dc06ccced1"
+    process.env.ACCOUNT_SECRET ||
+    "ede1d4ccb4ec9a8bbbae9a13db3f4a7b56ea04189be86ac3a6a439d9a0a1addd";
+export const ACCOUNT_ID =
+    process.env.ACCOUNT_ID ||
+    sdk.util.getAccountIdFromPrivate(ACCOUNT_SECRET).toString(); // "0x6fe64ffa3a46c074226457c90ccb32dc06ccced1"
 export const ACCOUNT_ADDRESS =
     process.env.ACCOUNT_ADDRESS ||
     sdk.core.classes.PlatformAddress.fromAccountId(ACCOUNT_ID, {
@@ -27,7 +28,11 @@ export const ACCOUNT_ADDRESS =
     }).toString(); // "tccq9h7vnl68frvqapzv3tujrxtxtwqdnxw6yamrrgd"
 export const ACCOUNT_PASSPHRASE = process.env.ACCOUNT_PASSPHRASE || "satoshi";
 
-export const sendTransaction = async ({ transaction }: { transaction: Transaction }) => {
+export const sendTransaction = async ({
+    transaction
+}: {
+    transaction: Transaction;
+}) => {
     const parcel = sdk.core.createAssetTransactionParcel({
         transaction
     });
@@ -42,16 +47,25 @@ export const sendTransaction = async ({ transaction }: { transaction: Transactio
     };
 };
 
-export const mintAsset = async ({ metadata, amount, lockScriptHash, approver }: any) => {
+export const mintAsset = async ({
+    metadata,
+    amount,
+    lockScriptHash,
+    approver
+}: any) => {
     const assetScheme = sdk.core.createAssetScheme({
         shardId: 0,
         metadata,
         amount,
         approver
     });
-    const assetAddress = sdk.core.classes.AssetTransferAddress.fromTypeAndPayload(0, lockScriptHash, {
-        networkId: CODECHAIN_NETWORK_ID
-    });
+    const assetAddress = sdk.core.classes.AssetTransferAddress.fromTypeAndPayload(
+        0,
+        lockScriptHash,
+        {
+            networkId: CODECHAIN_NETWORK_ID
+        }
+    );
     const assetMintTransaction = assetScheme.createMintTransaction({
         recipient: assetAddress
     });
@@ -81,9 +95,22 @@ export const payment = async (params?: { inc_seq?: number }) => {
 };
 
 export const runExample = (name: string) => {
-    const originalPath = path.join(__dirname, "..", "node_modules/codechain-sdk/", `examples/${name}.js`);
-    const code = String(readFileSync(originalPath)).replace(`require("codechain-sdk")`, `require("..")`);
-    const testPath = path.join(__dirname, "..", "node_modules/codechain-sdk/", `examples/test-${name}.js`);
+    const originalPath = path.join(
+        __dirname,
+        "..",
+        "node_modules/codechain-sdk/",
+        `examples/${name}.js`
+    );
+    const code = String(readFileSync(originalPath)).replace(
+        `require("codechain-sdk")`,
+        `require("..")`
+    );
+    const testPath = path.join(
+        __dirname,
+        "..",
+        "node_modules/codechain-sdk/",
+        `examples/test-${name}.js`
+    );
     return new Promise((resolve, reject) => {
         writeFile(testPath, code, err => {
             if (err) {

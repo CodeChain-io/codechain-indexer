@@ -1,8 +1,7 @@
 import { SDK } from "codechain-sdk";
-import * as pg from "pg";
-import BlockSync from "./block-sync";
 import { IndexerConfig } from "./config";
 import models from "./models";
+import Worker from "./worker";
 
 export class IndexerContext {
     public static newInstance(options: IndexerConfig) {
@@ -16,21 +15,18 @@ export class IndexerContext {
 
         return context;
     }
-    public pg: pg.Pool;
     public sdk: SDK;
-    public blockSyncer: BlockSync;
+    public worker: Worker;
 
     private constructor(public readonly options: IndexerConfig) {
-        this.pg = new pg.Pool(options.pg);
         this.sdk = new SDK({
             server: options.codechain.host,
             networkId: options.codechain.networkId
         });
-        this.blockSyncer = new BlockSync({ sdk: this.sdk, pg: this.pg });
+        this.worker = new Worker({ sdk: this.sdk }, options.worker);
     }
 
     public destroy = async () => {
-        await this.pg.end();
         await models.sequelize.close();
     };
 }

@@ -29,11 +29,10 @@ export async function createAction(
     let actionInstance: ActionInstance;
     try {
         if (action instanceof Payment) {
-            const actionString = action.toJSON();
             actionInstance = await models.Action.create({
                 action: "payment",
-                amount: actionString.amount.toString(),
-                receiver: actionString.receiver,
+                amount: action.amount.value.toString(10),
+                receiver: action.receiver.value,
                 parcelHash: parcelHash.value,
                 invoice: options.invoice,
                 errorType: options.errorType

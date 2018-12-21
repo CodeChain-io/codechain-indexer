@@ -33,3 +33,8 @@ export const InvalidTransaction: Exception = {
     code: 106,
     message: "InvalidTransaction"
 };
+
+export const InvalidBlockNumber: Exception = {
+    code: 107,
+    message: "InvalidBlockNumber"
+};

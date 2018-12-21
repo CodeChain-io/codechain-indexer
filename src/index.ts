@@ -18,6 +18,7 @@ async function runServer() {
             } mode`
         );
     });
+    context.worker.run();
 }
 
 runServer();

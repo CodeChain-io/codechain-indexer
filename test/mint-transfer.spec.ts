@@ -1,10 +1,11 @@
-import { H256, U64 } from "codechain-primitives/lib";
 import {
     AssetMintTransaction,
     AssetTransaction,
     AssetTransferTransaction,
     Block,
-    SignedParcel
+    H256,
+    SignedParcel,
+    U64
 } from "codechain-sdk/lib/core/classes";
 import models from "../src/models";
 import { AssetTransactionAttribute } from "../src/models/action";
@@ -21,12 +22,10 @@ beforeAll(async done => {
     // FIXME: If seq is zero, an error is occurs.
     // https://github.com/CodeChain-io/codechain-sdk-js/pull/278
     await Helper.runExample("mint-and-transfer");
-    await Helper.runExample("mint-and-transfer");
     done();
 });
 
 afterAll(async done => {
-    await Helper.db.end();
     await models.sequelize.close();
     done();
 });
