@@ -14,7 +14,7 @@ import { TransactionInstance } from "../transaction";
 import * as AssetMintOutputModel from "./assetmintoutput";
 import * as AssetSchemeModel from "./assetscheme";
 import * as AssetTransferBurnModel from "./assettransferburn";
-import * as AssetTransferInputModel from "./assettransferInput";
+import * as AssetTransferInputModel from "./assettransferinput";
 import * as AssetTransferOutputModel from "./assettransferoutput";
 
 export async function createTransaction(
