@@ -12,17 +12,46 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
-            quantity: {
+            assetType: {
                 allowNull: false,
-                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
+                type: Sequelize.STRING
             },
-            asset: {
+            lockScriptHash: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
+            parameters: {
                 allowNull: false,
                 type: Sequelize.JSONB
             },
-            isUsed: {
+            amount: {
                 allowNull: false,
-                type: Sequelize.BOOLEAN
+                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
+            },
+            transactionHash: {
+                allowNull: false,
+                type: Sequelize.STRING,
+                onDelete: "CASCADE",
+                references: {
+                    model: "Transactions",
+                    key: "hash"
+                }
+            },
+            transactionOutputIndex: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
+            assetScheme: {
+                allowNull: false,
+                type: Sequelize.JSONB
+            },
+            usedTransaction: {
+                type: Sequelize.STRING,
+                onDelete: "SET NULL",
+                references: {
+                    model: "Transactions",
+                    key: "hash"
+                }
             },
             createdAt: {
                 allowNull: false,

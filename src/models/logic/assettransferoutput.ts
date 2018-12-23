@@ -1,7 +1,6 @@
 import {
-    AssetTransferAddress,
+    Asset,
     AssetTransferOutput,
-    H160,
     H256
 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
@@ -9,9 +8,8 @@ import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
 import models from "../index";
-
-const P2PKH = "5f5960a7bca6ceeeb0c97bc717562914e7a1de04";
-const P2PKHBURN = "37572bdcc22d39a59c0d12d301f6271ba3fdd451";
+import * as AddressUtil from "./utils/address";
+import * as UTXOModel from "./utxo";
 
 export async function createAssetTransferOutput(
     transactionHash: H256,
@@ -19,10 +17,16 @@ export async function createAssetTransferOutput(
     params: {
         networkId: string;
         assetScheme: AssetSchemeAttribute;
+        asset: Asset;
     }
 ): Promise<AssetTransferOutputInstance> {
     let assetTransferOuputInstance: AssetTransferOutputInstance;
     try {
+        const owner = AddressUtil.getOwner(
+            output.lockScriptHash,
+            output.parameters,
+            params.networkId
+        );
         assetTransferOuputInstance = await models.AssetTransferOutput.create({
             transactionHash: transactionHash.value,
             lockScriptHash: output.lockScriptHash.value,
@@ -30,12 +34,9 @@ export async function createAssetTransferOutput(
             assetType: output.assetType.value,
             amount: output.amount.value.toString(10),
             assetScheme: params.assetScheme,
-            owner: getOwner(
-                output.lockScriptHash,
-                output.parameters,
-                params.networkId
-            )
+            owner
         });
+        await UTXOModel.createUTXO(owner, params.asset);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;
@@ -57,34 +58,4 @@ export async function getByHash(
         console.error(err);
         throw Exception.DBError;
     }
-}
-
-function getOwner(
-    lockScriptHash: H160,
-    parameters: Buffer[],
-    networkId: string
-) {
-    let owner = "";
-    if (lockScriptHash.value === P2PKH) {
-        owner = AssetTransferAddress.fromTypeAndPayload(
-            1,
-            new H160(Buffer.from(parameters[0]).toString("hex")),
-            {
-                networkId
-            }
-        ).value;
-    } else if (lockScriptHash.value === P2PKHBURN) {
-        owner = AssetTransferAddress.fromTypeAndPayload(
-            2,
-            new H160(Buffer.from(parameters[0]).toString("hex")),
-            {
-                networkId
-            }
-        ).value;
-    } else if (parameters.length === 0) {
-        owner = AssetTransferAddress.fromTypeAndPayload(0, lockScriptHash, {
-            networkId
-        }).value;
-    }
-    return owner;
 }

@@ -1,8 +1,9 @@
-import { Asset } from "codechain-sdk/lib/core/classes";
+import { Asset, H256 } from "codechain-sdk/lib/core/classes";
 import models from "..";
 import * as Exception from "../../exception";
-import { AccountInstance } from "../account";
+import { AssetSchemeAttribute } from "../assetscheme";
 import { UTXOInstance } from "../utxo";
+import * as AssetSchemeModel from "./assetscheme";
 
 export async function createUTXO(
     address: string,
@@ -10,6 +11,7 @@ export async function createUTXO(
 ): Promise<UTXOInstance> {
     let utxoInstance;
     try {
+        const assetScheme = await getAssetSheme(utxo.assetType);
         utxoInstance = await models.UTXO.create({
             address,
             assetType: utxo.assetType.value,
@@ -18,7 +20,7 @@ export async function createUTXO(
             amount: utxo.amount.value.toString(10),
             transactionHash: utxo.outPoint.transactionHash.value,
             transactionOutputIndex: utxo.outPoint.index,
-            isUsed: false
+            assetScheme
         });
     } catch (err) {
         console.error(err);
@@ -27,21 +29,59 @@ export async function createUTXO(
     return utxoInstance;
 }
 
-export async function setUsed() {
-    // TODO
-}
-
-export async function setUnUsed() {
-    // TODO
-}
-
-export async function getByAddress(
-    address: string
-): Promise<AccountInstance | null> {
+export async function setUsed(id: string, usedTransactionHash: H256) {
     try {
-        return await models.Account.findOne({
+        return await models.UTXO.update(
+            {
+                usedTransaction: usedTransactionHash.value
+            },
+            {
+                where: {
+                    id
+                }
+            }
+        );
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+async function getAssetSheme(assetType: H256): Promise<AssetSchemeAttribute> {
+    const assetSchemeInstance = await AssetSchemeModel.getByAssetType(
+        assetType
+    );
+    if (!assetSchemeInstance) {
+        throw Exception.InvalidTransaction;
+    }
+    return assetSchemeInstance.get({
+        plain: true
+    });
+}
+
+export async function getByAddress(address: string): Promise<UTXOInstance[]> {
+    try {
+        return await models.UTXO.findAll({
             where: {
-                address
+                address,
+                usedTransaction: null
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getByTxHashIndex(
+    transactionHash: H256,
+    outputIndex: number
+) {
+    try {
+        return await models.UTXO.findOne({
+            where: {
+                transactionHash: transactionHash.value,
+                transactionOutputIndex: outputIndex
             }
         });
     } catch (err) {

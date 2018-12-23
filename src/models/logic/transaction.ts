@@ -1,4 +1,5 @@
 import {
+    Asset,
     AssetComposeTransaction,
     AssetDecomposeTransaction,
     AssetMintTransaction,
@@ -31,10 +32,7 @@ export async function createTransaction(
 ): Promise<TransactionInstance> {
     let transactionInstance: TransactionInstance;
     try {
-        if (
-            transaction instanceof AssetMintTransaction ||
-            transaction instanceof AssetComposeTransaction
-        ) {
+        if (transaction instanceof AssetMintTransaction) {
             transactionInstance = await models.Transaction.create({
                 type: "assetMint",
                 actionId,
@@ -54,6 +52,11 @@ export async function createTransaction(
                 invoice: params.invoice,
                 errorType: params.errorType
             });
+            await AssetSchemeModel.createAssetScheme(
+                transaction.getAssetSchemeAddress(),
+                transaction.hash(),
+                transaction.getAssetScheme()
+            );
             await AssetMintOutputModel.createAssetMintOutput(
                 transaction.hash(),
                 transaction.output,
@@ -63,13 +66,10 @@ export async function createTransaction(
                         transaction.approver && transaction.approver.value,
                     administrator:
                         transaction.administrator &&
-                        transaction.administrator.value
+                        transaction.administrator.value,
+                    asset: transaction.getMintedAsset(),
+                    networkId: transaction.networkId
                 }
-            );
-            await AssetSchemeModel.createAssetScheme(
-                transaction.getAssetSchemeAddress(),
-                transaction.hash(),
-                transaction.getAssetScheme()
             );
         } else if (transaction instanceof AssetTransferTransaction) {
             transactionInstance = await models.Transaction.create({
@@ -100,14 +100,23 @@ export async function createTransaction(
                 })
             );
             await Promise.all(
-                transaction.outputs.map(async output => {
+                transaction.outputs.map(async (output, index) => {
                     const assetScheme = await getAssetSheme(output.assetType);
                     await AssetTransferOutputModel.createAssetTransferOutput(
                         transaction.hash(),
                         output,
                         {
                             networkId: transaction.networkId,
-                            assetScheme
+                            assetScheme,
+                            asset: new Asset({
+                                assetType: output.assetType,
+                                lockScriptHash: output.lockScriptHash,
+                                parameters: output.parameters,
+                                amount: output.amount,
+                                orderHash: null,
+                                transactionHash: transaction.hash(),
+                                transactionOutputIndex: index
+                            })
                         }
                     );
                 })
@@ -168,7 +177,9 @@ export async function createTransaction(
                         transaction.approver && transaction.approver.value,
                     administrator:
                         transaction.administrator &&
-                        transaction.administrator.value
+                        transaction.administrator.value,
+                    networkId: transaction.networkId,
+                    asset: transaction.getComposedAsset()
                 }
             );
             await AssetSchemeModel.createAssetScheme(
@@ -201,14 +212,23 @@ export async function createTransaction(
                 }
             );
             await Promise.all(
-                transaction.outputs.map(async output => {
+                transaction.outputs.map(async (output, index) => {
                     const assetScheme = await getAssetSheme(output.assetType);
                     await AssetTransferOutputModel.createAssetTransferOutput(
                         transaction.hash(),
                         output,
                         {
                             networkId: transaction.networkId,
-                            assetScheme
+                            assetScheme,
+                            asset: new Asset({
+                                assetType: output.assetType,
+                                lockScriptHash: output.lockScriptHash,
+                                parameters: output.parameters,
+                                amount: output.amount,
+                                orderHash: null,
+                                transactionHash: transaction.hash(),
+                                transactionOutputIndex: index
+                            })
                         }
                     );
                 })

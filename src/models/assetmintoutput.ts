@@ -8,6 +8,7 @@ export interface AssetMintOutputAttribute {
     approver?: string | null;
     administrator?: string | null;
     assetType: string;
+    recipient: string;
 }
 
 export interface AssetMintOutputInstance
@@ -49,6 +50,10 @@ export default (
                 type: DataTypes.STRING
             },
             assetType: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            recipient: {
                 allowNull: false,
                 type: DataTypes.STRING
             },

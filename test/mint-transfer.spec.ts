@@ -17,6 +17,7 @@ import * as AssetTransferOutputModel from "../src/models/logic/assettransferoutp
 import * as BlockModel from "../src/models/logic/block";
 import * as ParcelModel from "../src/models/logic/parcel";
 import * as TransactionModel from "../src/models/logic/transaction";
+import * as UTXOModel from "../src/models/logic/utxo";
 import {
     AssetMintTransactionAttribute,
     AssetTransferTransactionAttribute
@@ -234,6 +235,31 @@ test("Check assetTransfer input output", async done => {
     done();
 });
 
+test("Check utxo", async done => {
+    const mintOutputInst = await AssetMintOutputModel.getByHash(
+        mintTransaction.hash()
+    );
+    const transferOutputInst = await AssetTransferOutputModel.getByHash(
+        transferTransaction.hash()
+    );
+
+    const mintOwner = mintOutputInst!.get().recipient;
+    const utxoOfMintOwner = await UTXOModel.getByAddress(mintOwner);
+    const utxoOfMintAssetInst = await UTXOModel.getByTxHashIndex(
+        mintTransaction.hash(),
+        0
+    );
+
+    expect(utxoOfMintOwner.length).toEqual(1);
+    expect(utxoOfMintAssetInst!.get().usedTransaction).toBeTruthy();
+
+    const firstOutputOwner = transferOutputInst[0].get().owner;
+    const UTXOInst = await UTXOModel.getByAddress(firstOutputOwner!);
+    expect(UTXOInst.length).not.toEqual(0);
+
+    done();
+});
+
 test("Get block docuemnt containing parcel, action, transaction, output, input", async done => {
     const savedTransfterBlockResponse = await BlockModel.getByNumber(
         transferBlockNumber
@@ -285,6 +311,18 @@ test("Get block docuemnt containing parcel, action, transaction, output, input",
 test("Delete the block, parcel, action as cascade", async done => {
     const row = await BlockModel.deleteBlockByNumber(transferBlockNumber);
     expect(row).toBeTruthy();
+
+    const mintOutputInst = await AssetMintOutputModel.getByHash(
+        mintTransaction.hash()
+    );
+    const mintOwner = mintOutputInst!.get().recipient;
+    const utxoOfMintOwner = await UTXOModel.getByAddress(mintOwner);
+    const utxoOfMintAssetInst = await UTXOModel.getByTxHashIndex(
+        mintTransaction.hash(),
+        0
+    );
+    expect(utxoOfMintOwner.length).toEqual(1);
+    expect(utxoOfMintAssetInst!.get().usedTransaction).toBeNull();
 
     const mintTxRow = await BlockModel.deleteBlockByNumber(mintBlockNumber);
     expect(mintTxRow).toBeTruthy();

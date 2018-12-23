@@ -35,6 +35,10 @@ module.exports = {
             administrator: {
                 type: Sequelize.STRING
             },
+            recipient: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
             assetType: {
                 allowNull: false,
                 type: Sequelize.STRING

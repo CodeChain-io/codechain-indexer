@@ -38,3 +38,8 @@ export const InvalidBlockNumber: Exception = {
     code: 107,
     message: "InvalidBlockNumber"
 };
+
+export const InvalidUTXO: Exception = {
+    code: 108,
+    message: "InvalidUTXO"
+};

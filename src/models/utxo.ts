@@ -10,8 +10,8 @@ export interface UTXOAttribute {
     amount: string;
     transactionHash: string;
     transactionOutputIndex: number;
-    isUsed: boolean;
-    assetScheme?: AssetSchemeAttribute;
+    usedTransaction?: string;
+    assetScheme: AssetSchemeAttribute;
 }
 
 export interface UTXOInstance extends Sequelize.Instance<UTXOAttribute> {}
@@ -33,17 +33,46 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            quantity: {
+            assetType: {
                 allowNull: false,
-                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+                type: DataTypes.STRING
             },
-            asset: {
+            lockScriptHash: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            parameters: {
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-            isUsed: {
+            amount: {
                 allowNull: false,
-                type: DataTypes.BOOLEAN
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+            transactionHash: {
+                allowNull: false,
+                type: DataTypes.STRING,
+                onDelete: "CASCADE",
+                references: {
+                    model: "Transactions",
+                    key: "hash"
+                }
+            },
+            transactionOutputIndex: {
+                allowNull: false,
+                type: DataTypes.INTEGER
+            },
+            assetScheme: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            usedTransaction: {
+                type: DataTypes.STRING,
+                onDelete: "SET NULL",
+                references: {
+                    model: "Transactions",
+                    key: "hash"
+                }
             },
             createdAt: {
                 allowNull: false,
