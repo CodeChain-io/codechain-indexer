@@ -1,38 +1,46 @@
 import * as Sequelize from "sequelize";
 
-export interface AssetSchemeAttribute {
-    assetType: string;
+export interface AssetMintOutputAttribute {
+    lockScriptHash: string;
     transactionHash: string;
-    metadata: string;
+    parameters: Buffer[];
+    amount: string;
     approver?: string | null;
     administrator?: string | null;
-    amount?: string | null;
-    networkId?: string | null;
-    shardId?: number | null;
+    assetType: string;
 }
 
-export interface AssetSchemeInstance
-    extends Sequelize.Instance<AssetSchemeAttribute> {}
+export interface AssetMintOutputInstance
+    extends Sequelize.Instance<AssetMintOutputAttribute> {}
 
 export default (
     sequelize: Sequelize.Sequelize,
     DataTypes: Sequelize.DataTypes
 ) => {
-    const AssetScheme = sequelize.define(
-        "AssetScheme",
+    const AssetMintOutput = sequelize.define(
+        "AssetMintOutput",
         {
-            assetType: {
+            id: {
                 allowNull: false,
+                autoIncrement: true,
                 primaryKey: true,
-                type: DataTypes.STRING
+                type: DataTypes.BIGINT
             },
             transactionHash: {
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            metadata: {
+            lockScriptHash: {
                 allowNull: false,
                 type: DataTypes.STRING
+            },
+            parameters: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            amount: {
+                allowNull: false,
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             approver: {
                 type: DataTypes.STRING
@@ -40,14 +48,9 @@ export default (
             administrator: {
                 type: DataTypes.STRING
             },
-            amount: {
-                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
-            },
-            networkId: {
+            assetType: {
+                allowNull: false,
                 type: DataTypes.STRING
-            },
-            shardId: {
-                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,
@@ -60,8 +63,8 @@ export default (
         },
         {}
     );
-    AssetScheme.associate = () => {
+    AssetMintOutput.associate = () => {
         // associations can be defined here
     };
-    return AssetScheme;
+    return AssetMintOutput;
 };

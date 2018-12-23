@@ -5,7 +5,7 @@ import * as AccountModel from "../models/logic/account";
 
 export async function updateAccount(
     block: BlockAttribute,
-    options: {
+    params: {
         checkingBlockNumber: number;
     },
     context: WorkerContext
@@ -38,11 +38,11 @@ export async function updateAccount(
         _.uniq(affectedAddresses).map(async affectedAddress => {
             const balance = await sdk.rpc.chain.getBalance(
                 affectedAddress,
-                options.checkingBlockNumber
+                params.checkingBlockNumber
             );
             const seq = await sdk.rpc.chain.getSeq(
                 affectedAddress,
-                options.checkingBlockNumber
+                params.checkingBlockNumber
             );
             await AccountModel.updateAccountOrCreate(affectedAddress, {
                 balance,

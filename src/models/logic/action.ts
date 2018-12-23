@@ -17,7 +17,7 @@ import * as TransactionModel from "./transaction";
 export async function createAction(
     parcelHash: H256,
     action: Action,
-    options: {
+    params: {
         invoice: boolean | null;
         errorType: string | null;
         blockNumber: number;
@@ -34,37 +34,37 @@ export async function createAction(
                 amount: action.amount.value.toString(10),
                 receiver: action.receiver.value,
                 parcelHash: parcelHash.value,
-                invoice: options.invoice,
-                errorType: options.errorType
+                invoice: params.invoice,
+                errorType: params.errorType
             });
         } else if (action instanceof AssetTransaction) {
             actionInstance = await models.Action.create({
                 action: "assetTransaction",
                 parcelHash: parcelHash.value,
                 approvals: action.approvals,
-                invoice: options.invoice,
-                errorType: options.errorType
+                invoice: params.invoice,
+                errorType: params.errorType
             });
             const id = actionInstance.get({ plain: true }).id!;
             await TransactionModel.createTransaction(
                 id,
                 action.transaction,
-                options
+                params
             );
         } else if (action instanceof SetRegularKey) {
             actionInstance = await models.Action.create({
                 action: "setRegularKey",
                 parcelHash: parcelHash.value,
                 key: action.key.value,
-                invoice: options.invoice,
-                errorType: options.errorType
+                invoice: params.invoice,
+                errorType: params.errorType
             });
         } else if (action instanceof CreateShard) {
             actionInstance = await models.Action.create({
                 action: "createShard",
                 parcelHash: parcelHash.value,
-                invoice: options.invoice,
-                errorType: options.errorType
+                invoice: params.invoice,
+                errorType: params.errorType
             });
         } else if (action instanceof SetShardOwners) {
             actionInstance = await models.Action.create({
@@ -72,8 +72,8 @@ export async function createAction(
                 parcelHash: parcelHash.value,
                 shardId: action.shardId,
                 owners: action.owners.map(owner => owner.value),
-                invoice: options.invoice,
-                errorType: options.errorType
+                invoice: params.invoice,
+                errorType: params.errorType
             });
         } else if (action instanceof SetShardUsers) {
             actionInstance = await models.Action.create({
@@ -81,8 +81,8 @@ export async function createAction(
                 parcelHash: parcelHash.value,
                 shardId: action.shardId,
                 users: action.users.map(user => user.value),
-                invoice: options.invoice,
-                errorType: options.errorType
+                invoice: params.invoice,
+                errorType: params.errorType
             });
         } else {
             throw Exception.InvalidAction;
@@ -107,7 +107,25 @@ export async function getByHash(hash: H256): Promise<ActionInstance | null> {
             include: [
                 {
                     as: "transaction",
-                    model: models.Transaction
+                    model: models.Transaction,
+                    include: [
+                        {
+                            as: "outputs",
+                            model: models.AssetTransferOutput
+                        },
+                        {
+                            as: "output",
+                            model: models.AssetMintOutput
+                        },
+                        {
+                            as: "inputs",
+                            model: models.AssetTransferInput
+                        },
+                        {
+                            as: "input",
+                            model: models.AssetDecomposeInput
+                        }
+                    ]
                 }
             ]
         });

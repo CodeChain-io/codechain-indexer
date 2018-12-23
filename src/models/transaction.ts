@@ -1,6 +1,8 @@
 import { Timelock } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
+import { AssetMintOutputAttribute } from "./assetmintoutput";
 import { AssetSchemeAttribute } from "./assetscheme";
+import { AssetTransferOutputAttribute } from "./assettransferoutput";
 
 export type TransactionAttribute =
     | AssetMintTransactionAttribute
@@ -11,7 +13,7 @@ export type TransactionAttribute =
 export interface AssetMintTransactionAttribute {
     type: "assetMint";
     actionId: string;
-    output: AssetMintOutputAttribute;
+    output?: AssetMintOutputAttribute;
     networkId: string;
     shardId: number;
     metadata: string;
@@ -27,29 +29,13 @@ export interface AssetMintTransactionAttribute {
     errorType?: string | null;
 }
 
-export interface AssetMintOutputAttribute {
-    lockScriptHash: string;
-    parameters: Buffer[];
-    amount?: string | null;
-    approver?: string | null;
-    administrator?: string | null;
-    assetType: string;
-}
-
 export interface AssetTransferInputAttribute {
+    id?: string;
+    transactionHash: string;
     prevOut: AssetOutPointAttribute;
     timelock?: Timelock | null;
     lockScript: Buffer;
     unlockScript: Buffer;
-}
-
-export interface AssetTransferOutputAttribute {
-    lockScriptHash: string;
-    parameters: Buffer[];
-    assetType: string;
-    amount: string;
-    owner?: string | null;
-    assetScheme: AssetSchemeAttribute;
 }
 
 export interface AssetOutPointAttribute {
@@ -67,9 +53,9 @@ export interface AssetTransferTransactionAttribute {
     type: "assetTransfer";
     actionId: string;
     networkId: string;
-    burns: AssetTransferInputAttribute[];
-    inputs: AssetTransferInputAttribute[];
-    outputs: AssetTransferOutputAttribute[];
+    burns?: AssetTransferInputAttribute[];
+    inputs?: AssetTransferInputAttribute[];
+    outputs?: AssetTransferOutputAttribute[];
     hash: string;
     timestamp: number;
     parcelHash: string;
@@ -87,8 +73,8 @@ export interface AssetComposeTransactionAttribute {
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
-    output: AssetMintOutputAttribute;
-    inputs: AssetTransferInputAttribute[];
+    output?: AssetMintOutputAttribute;
+    inputs?: AssetTransferInputAttribute[];
     hash: string;
     timestamp: number;
     assetName?: string | null;
@@ -102,8 +88,8 @@ export interface AssetComposeTransactionAttribute {
 export interface AssetDecomposeTransactionAttribute {
     type: "assetDecompose";
     actionId: string;
-    input: AssetTransferInputAttribute;
-    outputs: AssetTransferOutputAttribute[];
+    input?: AssetTransferInputAttribute;
+    outputs?: AssetTransferOutputAttribute[];
     networkId: string;
     hash: string;
     timestamp: number;
@@ -137,21 +123,6 @@ export default (
                     model: "Actions",
                     key: "id"
                 }
-            },
-            output: {
-                type: DataTypes.JSONB
-            },
-            burns: {
-                type: DataTypes.JSONB
-            },
-            input: {
-                type: DataTypes.JSONB
-            },
-            inputs: {
-                type: DataTypes.JSONB
-            },
-            outputs: {
-                type: DataTypes.JSONB
             },
             networkId: {
                 type: DataTypes.STRING
@@ -204,8 +175,27 @@ export default (
         },
         {}
     );
-    Transaction.associate = () => {
-        //
+    Transaction.associate = models => {
+        Transaction.hasMany(models.AssetTransferOutput, {
+            foreignKey: "transactionHash",
+            as: "outputs",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.AssetMintOutput, {
+            foreignKey: "transactionHash",
+            as: "output",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasMany(models.AssetTransferInput, {
+            foreignKey: "transactionHash",
+            as: "inputs",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.AssetDecomposeInput, {
+            foreignKey: "transactionHash",
+            as: "input",
+            onDelete: "CASCADE"
+        });
     };
     return Transaction;
 };

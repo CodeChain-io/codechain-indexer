@@ -10,11 +10,17 @@ import {
 import models from "../src/models";
 import { AssetTransactionAttribute } from "../src/models/action";
 import * as ActionModel from "../src/models/logic/action";
+import * as AssetMintOutputModel from "../src/models/logic/assetmintoutput";
 import * as AssetSchemeModel from "../src/models/logic/assetscheme";
+import * as AssetTransferInputModel from "../src/models/logic/assettransferinput";
+import * as AssetTransferOutputModel from "../src/models/logic/assettransferoutput";
 import * as BlockModel from "../src/models/logic/block";
 import * as ParcelModel from "../src/models/logic/parcel";
 import * as TransactionModel from "../src/models/logic/transaction";
-import { AssetMintTransactionAttribute } from "../src/models/transaction";
+import {
+    AssetMintTransactionAttribute,
+    AssetTransferTransactionAttribute
+} from "../src/models/transaction";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
@@ -205,7 +211,30 @@ test("Check assetScheme", async done => {
     done();
 });
 
-test("Get block docuemnt containing parcel, action, transaction", async done => {
+test("Check assetMintOutput", async done => {
+    const mintOutputInst = await AssetMintOutputModel.getByHash(
+        mintTransaction.hash()
+    );
+    expect(mintOutputInst).toBeTruthy();
+
+    done();
+});
+
+test("Check assetTransfer input output", async done => {
+    const transferOutputInst = await AssetTransferOutputModel.getByHash(
+        transferTransaction.hash()
+    );
+    expect(transferOutputInst.length).not.toEqual(0);
+
+    const tranferInputInst = await AssetTransferInputModel.getByHash(
+        transferTransaction.hash()
+    );
+    expect(tranferInputInst.length).not.toEqual(0);
+
+    done();
+});
+
+test("Get block docuemnt containing parcel, action, transaction, output, input", async done => {
     const savedTransfterBlockResponse = await BlockModel.getByNumber(
         transferBlockNumber
     );
@@ -235,7 +264,8 @@ test("Get block docuemnt containing parcel, action, transaction", async done => 
     );
 
     const savedTransferTransactionDoc = (savedTransferBlockDoc.parcels![0]
-        .action! as AssetTransactionAttribute).transaction;
+        .action! as AssetTransactionAttribute)
+        .transaction as AssetTransferTransactionAttribute;
     expect(savedTransferTransactionDoc).toBeTruthy();
 
     const savedMintTransactionDoc = (savedMintBlockDoc.parcels![0]
@@ -243,6 +273,11 @@ test("Get block docuemnt containing parcel, action, transaction", async done => 
         .transaction as AssetMintTransactionAttribute;
     expect(savedMintTransactionDoc).toBeTruthy();
     expect(savedMintTransactionDoc.output).toBeTruthy();
+
+    const savedTransferInput = savedTransferTransactionDoc.inputs;
+    const savedTransferOutput = savedTransferTransactionDoc.outputs;
+    expect(savedTransferInput).toBeTruthy();
+    expect(savedTransferOutput).toBeTruthy();
 
     done();
 });
@@ -280,6 +315,16 @@ test("Delete the block, parcel, action as cascade", async done => {
         assetType
     );
     expect(assetSchemeInstance).toBeNull();
+
+    const transferOutputInst = await AssetTransferOutputModel.getByHash(
+        transferTransaction.hash()
+    );
+    expect(transferOutputInst.length).toEqual(0);
+
+    const tranferInputInst = await AssetTransferInputModel.getByHash(
+        transferTransaction.hash()
+    );
+    expect(tranferInputInst.length).toEqual(0);
 
     done();
 });

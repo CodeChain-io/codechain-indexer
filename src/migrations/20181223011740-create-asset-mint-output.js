@@ -1,11 +1,12 @@
 "use strict";
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable("AssetSchemes", {
-            assetType: {
+        return queryInterface.createTable("AssetMintOutputs", {
+            id: {
                 allowNull: false,
+                autoIncrement: true,
                 primaryKey: true,
-                type: Sequelize.STRING
+                type: Sequelize.BIGINT
             },
             transactionHash: {
                 allowNull: false,
@@ -16,9 +17,17 @@ module.exports = {
                     key: "hash"
                 }
             },
-            metadata: {
+            lockScriptHash: {
                 allowNull: false,
                 type: Sequelize.STRING
+            },
+            parameters: {
+                allowNull: false,
+                type: Sequelize.JSONB
+            },
+            amount: {
+                allowNull: false,
+                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
             approver: {
                 type: Sequelize.STRING
@@ -26,14 +35,9 @@ module.exports = {
             administrator: {
                 type: Sequelize.STRING
             },
-            amount: {
-                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
-            },
-            networkId: {
+            assetType: {
+                allowNull: false,
                 type: Sequelize.STRING
-            },
-            shardId: {
-                type: Sequelize.INTEGER
             },
             createdAt: {
                 allowNull: false,
@@ -46,6 +50,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("AssetSchemes");
+        return queryInterface.dropTable("AssetMintOutputs");
     }
 };

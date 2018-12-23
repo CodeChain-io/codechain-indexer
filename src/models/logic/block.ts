@@ -8,7 +8,7 @@ import * as ParcelModel from "./parcel";
 
 export async function createBlock(
     block: Block,
-    options: {
+    params: {
         miningReward: U64;
         invoices: { invoice: boolean | null; errorType: string | null }[];
     }
@@ -27,11 +27,11 @@ export async function createBlock(
             score: block.score.value.toString(10),
             seal: block.seal,
             hash: block.hash.value,
-            miningReward: options.miningReward.value.toString(10)
+            miningReward: params.miningReward.value.toString(10)
         });
         await Promise.all(
             block.parcels.map(async parcel => {
-                const invoice = options.invoices[parcel.parcelIndex!];
+                const invoice = params.invoices[parcel.parcelIndex!];
                 await ParcelModel.createParcel(parcel, {
                     timestamp: block.timestamp,
                     invoice: invoice && invoice.invoice,
@@ -126,7 +126,25 @@ export async function getByNumber(
                             include: [
                                 {
                                     as: "transaction",
-                                    model: models.Transaction
+                                    model: models.Transaction,
+                                    include: [
+                                        {
+                                            as: "outputs",
+                                            model: models.AssetTransferOutput
+                                        },
+                                        {
+                                            as: "output",
+                                            model: models.AssetMintOutput
+                                        },
+                                        {
+                                            as: "inputs",
+                                            model: models.AssetTransferInput
+                                        },
+                                        {
+                                            as: "input",
+                                            model: models.AssetDecomposeInput
+                                        }
+                                    ]
                                 }
                             ]
                         }

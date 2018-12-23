@@ -1,18 +1,28 @@
 "use strict";
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable("Accounts", {
-            address: {
+        return queryInterface.createTable("UTXOs", {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
                 primaryKey: true,
+                type: Sequelize.BIGINT
+            },
+            address: {
+                allowNull: false,
                 type: Sequelize.STRING
             },
-            balance: {
+            quantity: {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
-            seq: {
+            asset: {
                 allowNull: false,
-                type: Sequelize.INTEGER
+                type: Sequelize.JSONB
+            },
+            isUsed: {
+                allowNull: false,
+                type: Sequelize.BOOLEAN
             },
             createdAt: {
                 allowNull: false,
@@ -25,6 +35,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("Accounts");
+        return queryInterface.dropTable("UTXOs");
     }
 };

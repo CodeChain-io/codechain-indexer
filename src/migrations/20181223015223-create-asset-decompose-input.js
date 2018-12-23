@@ -1,11 +1,13 @@
 "use strict";
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable("AssetSchemes", {
-            assetType: {
+        // FIXMD: This code is duplicated with asset transfer input model.
+        return queryInterface.createTable("AssetDecomposeInputs", {
+            id: {
                 allowNull: false,
+                autoIncrement: true,
                 primaryKey: true,
-                type: Sequelize.STRING
+                type: Sequelize.BIGINT
             },
             transactionHash: {
                 allowNull: false,
@@ -16,24 +18,20 @@ module.exports = {
                     key: "hash"
                 }
             },
-            metadata: {
+            prevOut: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.JSONB
             },
-            approver: {
-                type: Sequelize.STRING
+            timelock: {
+                type: Sequelize.JSONB
             },
-            administrator: {
-                type: Sequelize.STRING
+            lockScript: {
+                allowNull: false,
+                type: Sequelize.JSONB
             },
-            amount: {
-                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
-            },
-            networkId: {
-                type: Sequelize.STRING
-            },
-            shardId: {
-                type: Sequelize.INTEGER
+            unlockScript: {
+                allowNull: false,
+                type: Sequelize.JSONB
             },
             createdAt: {
                 allowNull: false,
@@ -46,6 +44,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("AssetSchemes");
+        return queryInterface.dropTable("AssetDecomposeInputs");
     }
 };

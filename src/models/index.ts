@@ -5,10 +5,26 @@ import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
 import { ActionAttribute, ActionInstance } from "./action";
+import { AssetDecomposeInputInstance } from "./assetdecomposeinput";
+import {
+    AssetMintOutputAttribute,
+    AssetMintOutputInstance
+} from "./assetmintoutput";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
+import { AssetTransferBurnInstance } from "./assettransferburn";
+import { AssetTransferInputInstance } from "./assettransferinput";
+import {
+    AssetTransferOutputAttribute,
+    AssetTransferOutputInstance
+} from "./assettransferoutput";
 import { BlockAttribute, BlockInstance } from "./block";
 import { ParcelAttribute, ParcelInstance } from "./parcel";
-import { TransactionAttribute, TransactionInstance } from "./transaction";
+import {
+    AssetTransferInputAttribute,
+    TransactionAttribute,
+    TransactionInstance
+} from "./transaction";
+import { UTXOAttribute, UTXOInstance } from "./utxo";
 
 const basename = path.basename(__filename);
 process.env.NODE_ENV = process.env.NODE_ENV || "dev";
@@ -52,6 +68,27 @@ interface DB {
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
     Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
+    UTXO: Sequelize.Model<UTXOInstance, UTXOAttribute>;
+    AssetMintOutput: Sequelize.Model<
+        AssetMintOutputInstance,
+        AssetMintOutputAttribute
+    >;
+    AssetTransferInput: Sequelize.Model<
+        AssetTransferInputInstance,
+        AssetTransferInputAttribute
+    >;
+    AssetTransferOutput: Sequelize.Model<
+        AssetTransferOutputInstance,
+        AssetTransferOutputAttribute
+    >;
+    AssetTransferBurn: Sequelize.Model<
+        AssetTransferBurnInstance,
+        AssetTransferInputAttribute
+    >;
+    AssetDecomposeInput: Sequelize.Model<
+        AssetDecomposeInputInstance,
+        AssetTransferInputAttribute
+    >;
 }
 
 export default models as DB;

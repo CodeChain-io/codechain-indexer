@@ -5,7 +5,7 @@ import { AccountInstance } from "../account";
 
 export async function updateAccountOrCreate(
     address: string,
-    options: {
+    params: {
         balance: U64;
         seq: number;
     }
@@ -13,8 +13,8 @@ export async function updateAccountOrCreate(
     try {
         await models.Account.upsert({
             address,
-            balance: options.balance.value.toString(10),
-            seq: options.seq
+            balance: params.balance.value.toString(10),
+            seq: params.seq
         });
     } catch (err) {
         console.error(err);

@@ -8,7 +8,7 @@ import * as ActionModel from "./action";
 
 export async function createParcel(
     parcel: SignedParcel,
-    options: {
+    params: {
         timestamp: number;
         invoice: boolean | null;
         errorType: string | null;
@@ -38,19 +38,19 @@ export async function createParcel(
             signer: parcel.getSignerAddress({
                 networkId: parcel.unsigned.networkId
             }).value,
-            timestamp: options.timestamp,
+            timestamp: params.timestamp,
             blockHash: parcel.blockHash.value,
             blockNumber: parcel.blockNumber,
             parcelIndex: parcel.parcelIndex
         });
 
         await ActionModel.createAction(parcel.hash(), parcel.unsigned.action, {
-            invoice: options.invoice,
-            errorType: options.errorType,
+            invoice: params.invoice,
+            errorType: params.errorType,
             blockNumber: parcel.blockNumber,
             parcelHash: parcel.hash(),
             parcelIndex: parcel.parcelIndex,
-            timestamp: options.timestamp
+            timestamp: params.timestamp
         });
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -78,7 +78,25 @@ export async function getByHash(hash: H256): Promise<ParcelInstance | null> {
                     include: [
                         {
                             as: "transaction",
-                            model: models.Transaction
+                            model: models.Transaction,
+                            include: [
+                                {
+                                    as: "outputs",
+                                    model: models.AssetTransferOutput
+                                },
+                                {
+                                    as: "output",
+                                    model: models.AssetMintOutput
+                                },
+                                {
+                                    as: "inputs",
+                                    model: models.AssetTransferInput
+                                },
+                                {
+                                    as: "input",
+                                    model: models.AssetDecomposeInput
+                                }
+                            ]
                         }
                     ]
                 }
