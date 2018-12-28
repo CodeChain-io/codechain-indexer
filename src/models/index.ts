@@ -20,11 +20,16 @@ import {
 import { BlockAttribute, BlockInstance } from "./block";
 import { ParcelAttribute, ParcelInstance } from "./parcel";
 import {
+    SnapshotRequestAttribute,
+    SnapshotRequestInstance
+} from "./snapshotrequest";
+import {
     AssetTransferInputAttribute,
     TransactionAttribute,
     TransactionInstance
 } from "./transaction";
 import { UTXOAttribute, UTXOInstance } from "./utxo";
+import { UTXOSnapshotAttribute, UTXOSnapshotInstance } from "./utxosnapshot";
 
 const basename = path.basename(__filename);
 process.env.NODE_ENV = process.env.NODE_ENV || "dev";
@@ -89,6 +94,11 @@ interface DB {
         AssetDecomposeInputInstance,
         AssetTransferInputAttribute
     >;
+    SnapshotRequest: Sequelize.Model<
+        SnapshotRequestInstance,
+        SnapshotRequestAttribute
+    >;
+    UTXOSnapshot: Sequelize.Model<UTXOSnapshotInstance, UTXOSnapshotAttribute>;
 }
 
 export default models as DB;

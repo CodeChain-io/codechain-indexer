@@ -26,8 +26,6 @@ import * as Helper from "./helper";
 
 beforeAll(async done => {
     await Helper.runExample("import-test-account");
-    // FIXME: If seq is zero, an error is occurs.
-    // https://github.com/CodeChain-io/codechain-sdk-js/pull/278
     await Helper.runExample("mint-and-transfer");
     done();
 });

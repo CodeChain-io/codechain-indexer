@@ -73,6 +73,20 @@ export async function getByAddress(address: string): Promise<UTXOInstance[]> {
     }
 }
 
+export async function getByAssetType(assetType: H256) {
+    try {
+        return await models.UTXO.findAll({
+            where: {
+                assetType: assetType.value,
+                usedTransaction: null
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
 export async function getByTxHashIndex(
     transactionHash: H256,
     outputIndex: number

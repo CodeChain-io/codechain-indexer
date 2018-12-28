@@ -5,6 +5,7 @@ import { InvalidBlockNumber, InvalidParcel } from "../exception";
 import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
 import * as AccountUtil from "./account";
+import * as SnapshotUtil from "./snapshot";
 
 export interface WorkerContext {
     sdk: SDK;
@@ -172,6 +173,10 @@ export default class Worker {
             {
                 checkingBlockNumber: block.number
             },
+            this.context
+        );
+        await SnapshotUtil.updateSnapshot(
+            blockInstance!.get({ plain: true }),
             this.context
         );
     };

@@ -75,8 +75,3 @@ test(
     },
     1000 * 20
 );
-
-test("Sync UTXO test", async done => {
-    // TODO
-    done();
-});
