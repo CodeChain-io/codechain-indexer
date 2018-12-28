@@ -4,6 +4,7 @@ import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { AssetSchemeInstance } from "../assetscheme";
 import models from "../index";
+import * as AssetImageModel from "./assetimage";
 
 export async function createAssetScheme(
     assetType: H256,
@@ -23,6 +24,19 @@ export async function createAssetScheme(
             networkId: assetScheme.networkId,
             shardId: assetScheme.shardId
         });
+
+        let metadataObj;
+        try {
+            metadataObj = JSON.parse(assetScheme.metadata);
+        } catch (e) {
+            //
+        }
+        if (metadataObj && metadataObj.icon_url) {
+            await AssetImageModel.createAssetImage(
+                assetType,
+                metadataObj.icon_url
+            );
+        }
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;

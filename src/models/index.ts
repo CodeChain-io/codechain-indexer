@@ -6,6 +6,7 @@ import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
 import { ActionAttribute, ActionInstance } from "./action";
 import { AssetDecomposeInputInstance } from "./assetdecomposeinput";
+import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import {
     AssetMintOutputAttribute,
     AssetMintOutputInstance
@@ -99,6 +100,7 @@ interface DB {
         SnapshotRequestAttribute
     >;
     UTXOSnapshot: Sequelize.Model<UTXOSnapshotInstance, UTXOSnapshotAttribute>;
+    AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
 }
 
 export default models as DB;
