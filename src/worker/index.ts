@@ -5,6 +5,7 @@ import { InvalidBlockNumber, InvalidParcel } from "../exception";
 import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
 import * as AccountUtil from "./account";
+import * as LogUtil from "./log";
 import * as SnapshotUtil from "./snapshot";
 
 export interface WorkerContext {
@@ -168,17 +169,16 @@ export default class Worker {
             invoices
         });
         const blockInstance = await BlockModel.getByHash(block.hash);
+        const blockAttribute = blockInstance!.get({ plain: true });
         await AccountUtil.updateAccount(
-            blockInstance!.get({ plain: true }),
+            blockAttribute,
             {
                 checkingBlockNumber: block.number
             },
             this.context
         );
-        await SnapshotUtil.updateSnapshot(
-            blockInstance!.get({ plain: true }),
-            this.context
-        );
+        await SnapshotUtil.updateSnapshot(blockAttribute, this.context);
+        await LogUtil.indexLog(blockAttribute, false);
     };
 
     private deleteBlock = async (block: BlockAttribute) => {
@@ -190,5 +190,6 @@ export default class Worker {
             },
             this.context
         );
+        await LogUtil.indexLog(block, true);
     };
 }

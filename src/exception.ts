@@ -43,3 +43,8 @@ export const InvalidUTXO: Exception = {
     code: 108,
     message: "InvalidUTXO"
 };
+
+export const InvalidLogType: Exception = {
+    code: 109,
+    message: "InvalidLogType"
+};

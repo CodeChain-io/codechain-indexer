@@ -7,6 +7,11 @@ import { IndexerConfig } from "../src/config";
 import Worker from "../src/worker";
 
 process.env.NODE_ENV = "test";
+
+process.on("unhandledRejection", () => {
+    // unhandle global rejection
+});
+
 const options = require("config") as IndexerConfig;
 export const CODECHAIN_NETWORK_ID = options.codechain.networkId;
 export const SERVER_URL = options.codechain.host;

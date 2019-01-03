@@ -19,6 +19,7 @@ import {
     AssetTransferOutputInstance
 } from "./assettransferoutput";
 import { BlockAttribute, BlockInstance } from "./block";
+import { LogAttribute, LogInstance } from "./log";
 import { ParcelAttribute, ParcelInstance } from "./parcel";
 import {
     SnapshotRequestAttribute,
@@ -101,6 +102,7 @@ interface DB {
     >;
     UTXOSnapshot: Sequelize.Model<UTXOSnapshotInstance, UTXOSnapshotAttribute>;
     AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
+    Log: Sequelize.Model<LogInstance, LogAttribute>;
 }
 
 export default models as DB;

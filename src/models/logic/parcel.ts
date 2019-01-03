@@ -43,7 +43,6 @@ export async function createParcel(
             blockNumber: parcel.blockNumber,
             parcelIndex: parcel.parcelIndex
         });
-
         await ActionModel.createAction(parcel.hash(), parcel.unsigned.action, {
             invoice: params.invoice,
             errorType: params.errorType,
