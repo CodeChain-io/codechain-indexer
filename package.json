@@ -45,9 +45,13 @@
     "@types/request": "^2.48.1",
     "@types/sequelize": "^4.27.33",
     "@types/sharp": "^0.17.10",
+    "@types/swagger-jsdoc": "^0.0.2",
+    "@types/swagger-ui-express": "^3.0.0",
     "jest": "^23.6.0",
     "prettier": "^1.14.2",
     "sequelize-cli": "^5.4.0",
+    "swagger-jsdoc": "^3.2.6",
+    "swagger-ui-express": "^4.0.2",
     "ts-jest": "^23.10.4",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0"

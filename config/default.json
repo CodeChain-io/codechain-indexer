@@ -1,7 +1,6 @@
 {
   "version": 1,
-  "baseUrl": "http://localhost:8080",
-  "httpPort": 8080,
+  "httpPort": 9001,
   "codechain": {
     "host": "http://localhost:8080",
     "networkId": "tc"

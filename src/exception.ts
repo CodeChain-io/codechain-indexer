@@ -48,3 +48,8 @@ export const InvalidLogType: Exception = {
     code: 109,
     message: "InvalidLogType"
 };
+
+export const NotImplmeneted: Exception = {
+    code: 110,
+    message: "NotImplemented"
+};
