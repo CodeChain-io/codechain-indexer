@@ -21,13 +21,14 @@ import * as AssetTransferOutputModel from "./assettransferoutput";
 export async function createTransaction(
     actionId: string,
     transaction: Transaction,
+    parcelHash: H256,
+    isPending: boolean,
     params: {
-        invoice: boolean | null;
-        errorType: string | null;
-        blockNumber: number;
-        parcelHash: H256;
-        parcelIndex: number;
-        timestamp: number;
+        invoice?: boolean | null;
+        errorType?: string | null;
+        blockNumber?: number | null;
+        parcelIndex?: number | null;
+        timestamp?: number | null;
     }
 ): Promise<TransactionInstance> {
     let transactionInstance: TransactionInstance;
@@ -46,11 +47,12 @@ export async function createTransaction(
                 hash: transaction.hash().value,
                 timestamp: params.timestamp,
                 assetName: getAssetName(transaction.metadata),
-                parcelHash: params.parcelHash.value,
+                parcelHash: parcelHash.value,
                 parcelIndex: params.parcelIndex,
                 blockNumber: params.blockNumber,
                 invoice: params.invoice,
-                errorType: params.errorType
+                errorType: params.errorType,
+                isPending
             });
             await AssetSchemeModel.createAssetScheme(
                 transaction.getAssetSchemeAddress(),
@@ -78,11 +80,12 @@ export async function createTransaction(
                 networkId: transaction.networkId,
                 hash: transaction.hash().value,
                 timestamp: params.timestamp,
-                parcelHash: params.parcelHash.value,
+                parcelHash: parcelHash.value,
                 parcelIndex: params.parcelIndex,
                 blockNumber: params.blockNumber,
                 invoice: params.invoice,
-                errorType: params.errorType
+                errorType: params.errorType,
+                isPending
             });
             await Promise.all(
                 transaction.inputs.map(async input => {
@@ -147,11 +150,12 @@ export async function createTransaction(
                     transaction.administrator &&
                     transaction.administrator.value,
                 assetName: getAssetName(transaction.metadata),
-                parcelHash: params.parcelHash.value,
+                parcelHash: parcelHash.value,
                 parcelIndex: params.parcelIndex,
                 blockNumber: params.blockNumber,
                 invoice: params.invoice,
-                errorType: params.errorType
+                errorType: params.errorType,
+                isPending
             });
             await Promise.all(
                 transaction.inputs.map(async input => {
@@ -194,11 +198,12 @@ export async function createTransaction(
                 networkId: transaction.networkId,
                 hash: transaction.hash().value,
                 timestamp: params.timestamp,
-                parcelHash: params.parcelHash.value,
+                parcelHash: parcelHash.value,
                 blockNumber: params.blockNumber,
                 parcelIndex: params.parcelIndex,
                 invoice: params.invoice,
-                errorType: params.errorType
+                errorType: params.errorType,
+                isPending
             });
             const inputAssetScheme = await getAssetSheme(
                 transaction.input.prevOut.assetType
@@ -246,7 +251,6 @@ export async function createTransaction(
     return transactionInstance;
 }
 
-// This is for the cascade test
 export async function getByHash(
     hash: H256
 ): Promise<TransactionInstance | null> {
@@ -274,6 +278,39 @@ export async function getByHash(
                 }
             ]
         });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function updatePendingTransaction(
+    hash: H256,
+    params: {
+        invoice: boolean | null;
+        errorType: string | null;
+        timestamp: number;
+        parcelIndex: number;
+        blockNumber: number;
+        blockHash: H256;
+    }
+) {
+    try {
+        await models.Transaction.update(
+            {
+                parcelIndex: params.parcelIndex,
+                blockNumber: params.blockNumber,
+                timestamp: params.timestamp,
+                invoice: params.invoice,
+                errorType: params.errorType,
+                isPending: false
+            },
+            {
+                where: {
+                    hash: hash.value
+                }
+            }
+        );
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

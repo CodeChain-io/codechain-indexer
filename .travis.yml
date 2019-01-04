@@ -6,7 +6,7 @@ before_install:
   - yarn install
 before_script:
   - docker pull kodebox/codechain:03ecfdf81f87f1cf579f862c9da8edd5faf7266d
-  - docker run -d -p 8080:8080 kodebox/codechain:03ecfdf81f87f1cf579f862c9da8edd5faf7266d --jsonrpc-interface 0.0.0.0 -c solo --reseal-min-period 0
+  - docker run -d -p 8080:8080 kodebox/codechain:03ecfdf81f87f1cf579f862c9da8edd5faf7266d --jsonrpc-interface 0.0.0.0 -c solo --reseal-min-period 0 --enable-devel-api
   - psql -c 'CREATE DATABASE "codechain-indexer-test";' -U postgres
   - psql -c "CREATE USER \"user\" WITH ENCRYPTED PASSWORD 'password';" -U postgres
   - docker ps -a

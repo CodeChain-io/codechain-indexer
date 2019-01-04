@@ -32,11 +32,23 @@ export async function createBlock(
         await Promise.all(
             block.parcels.map(async parcel => {
                 const invoice = params.invoices[parcel.parcelIndex!];
-                await ParcelModel.createParcel(parcel, {
-                    timestamp: block.timestamp,
-                    invoice: invoice && invoice.invoice,
-                    errorType: invoice && invoice.errorType
-                });
+                const parcelInst = await ParcelModel.getByHash(parcel.hash());
+                if (parcelInst) {
+                    await ParcelModel.updatePendingParcel(parcel.hash(), {
+                        timestamp: block.timestamp,
+                        invoice: invoice && invoice.invoice,
+                        errorType: invoice && invoice.errorType,
+                        parcelIndex: parcel.parcelIndex!,
+                        blockNumber: parcel.blockNumber!,
+                        blockHash: parcel.blockHash!
+                    });
+                } else {
+                    await ParcelModel.createParcel(parcel, false, {
+                        timestamp: block.timestamp,
+                        invoice: invoice && invoice.invoice,
+                        errorType: invoice && invoice.errorType
+                    });
+                }
             })
         );
     } catch (err) {

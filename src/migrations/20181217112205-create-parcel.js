@@ -8,11 +8,9 @@ module.exports = {
                 type: Sequelize.STRING
             },
             blockNumber: {
-                allowNull: false,
                 type: Sequelize.INTEGER
             },
             blockHash: {
-                allowNull: false,
                 type: Sequelize.STRING,
                 onDelete: "CASCADE",
                 references: {
@@ -21,7 +19,6 @@ module.exports = {
                 }
             },
             parcelIndex: {
-                allowNull: false,
                 type: Sequelize.INTEGER
             },
             seq: {
@@ -45,7 +42,13 @@ module.exports = {
                 type: Sequelize.STRING
             },
             timestamp: {
+                type: Sequelize.INTEGER
+            },
+            isPending: {
                 allowNull: false,
+                type: Sequelize.BOOLEAN
+            },
+            pendingTimestamp: {
                 type: Sequelize.INTEGER
             },
             createdAt: {

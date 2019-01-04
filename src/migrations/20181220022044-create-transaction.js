@@ -47,7 +47,6 @@ module.exports = {
                 type: Sequelize.STRING
             },
             timestamp: {
-                allowNull: false,
                 type: Sequelize.INTEGER
             },
             assetName: {
@@ -58,11 +57,9 @@ module.exports = {
                 type: Sequelize.STRING
             },
             blockNumber: {
-                allowNull: false,
                 type: Sequelize.INTEGER
             },
             parcelIndex: {
-                allowNull: false,
                 type: Sequelize.INTEGER
             },
             invoice: {
@@ -70,6 +67,10 @@ module.exports = {
             },
             errorType: {
                 type: Sequelize.STRING
+            },
+            isPending: {
+                allowNull: false,
+                type: Sequelize.BOOLEAN
             },
             createdAt: {
                 allowNull: false,

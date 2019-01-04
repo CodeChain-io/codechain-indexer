@@ -2,16 +2,18 @@ import * as Sequelize from "sequelize";
 import { ActionAttribute } from "./action";
 
 export interface ParcelAttribute {
-    blockNumber: number;
-    blockHash: string;
-    parcelIndex: number;
+    blockNumber?: number | null;
+    blockHash?: string | null;
+    parcelIndex?: number | null;
     seq: number;
     fee: string;
     networkId: string;
     sig: string;
     hash: string;
     signer: string;
-    timestamp: number;
+    timestamp?: number | null;
+    isPending: boolean;
+    pendingTimestamp?: number | null;
     action?: ActionAttribute;
 }
 
@@ -30,15 +32,12 @@ export default (
                 type: DataTypes.STRING
             },
             blockNumber: {
-                allowNull: false,
                 type: DataTypes.INTEGER
             },
             blockHash: {
-                allowNull: false,
                 type: DataTypes.STRING
             },
             parcelIndex: {
-                allowNull: false,
                 type: DataTypes.INTEGER
             },
             seq: {
@@ -62,7 +61,13 @@ export default (
                 type: DataTypes.STRING
             },
             timestamp: {
+                type: DataTypes.INTEGER
+            },
+            isPending: {
                 allowNull: false,
+                type: DataTypes.BOOLEAN
+            },
+            pendingTimestamp: {
                 type: DataTypes.INTEGER
             },
             createdAt: {

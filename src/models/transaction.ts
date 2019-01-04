@@ -10,23 +10,27 @@ export type TransactionAttribute =
     | AssetComposeTransactionAttribute
     | AssetDecomposeTransactionAttribute;
 
-export interface AssetMintTransactionAttribute {
-    type: "assetMint";
+interface TransactionCommon {
+    isPending: boolean;
+    blockNumber?: number | null;
+    parcelIndex?: number | null;
+    invoice?: boolean | null;
+    errorType?: string | null;
+    timestamp?: number | null;
+    hash: string;
+    parcelHash: string;
     actionId: string;
-    output?: AssetMintOutputAttribute;
     networkId: string;
+}
+
+export interface AssetMintTransactionAttribute extends TransactionCommon {
+    type: "assetMint";
+    output?: AssetMintOutputAttribute;
     shardId: number;
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
-    hash: string;
-    timestamp: number;
     assetName?: string | null;
-    parcelHash: string;
-    blockNumber: number;
-    parcelIndex: number;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
 export interface AssetTransferInputAttribute {
@@ -49,55 +53,28 @@ export interface AssetOutPointAttribute {
     parameters?: Buffer[] | null;
 }
 
-export interface AssetTransferTransactionAttribute {
+export interface AssetTransferTransactionAttribute extends TransactionCommon {
     type: "assetTransfer";
-    actionId: string;
-    networkId: string;
     burns?: AssetTransferInputAttribute[];
     inputs?: AssetTransferInputAttribute[];
     outputs?: AssetTransferOutputAttribute[];
-    hash: string;
-    timestamp: number;
-    parcelHash: string;
-    blockNumber: number;
-    parcelIndex: number;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface AssetComposeTransactionAttribute {
+export interface AssetComposeTransactionAttribute extends TransactionCommon {
     type: "assetCompose";
-    actionId: string;
-    networkId: string;
     shardId: number;
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
     output?: AssetMintOutputAttribute;
     inputs?: AssetTransferInputAttribute[];
-    hash: string;
-    timestamp: number;
     assetName?: string | null;
-    parcelHash: string;
-    blockNumber: number;
-    parcelIndex: number;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface AssetDecomposeTransactionAttribute {
+export interface AssetDecomposeTransactionAttribute extends TransactionCommon {
     type: "assetDecompose";
-    actionId: string;
     input?: AssetTransferInputAttribute;
     outputs?: AssetTransferOutputAttribute[];
-    networkId: string;
-    hash: string;
-    timestamp: number;
-    parcelHash: string;
-    blockNumber: number;
-    parcelIndex: number;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
 export interface TransactionInstance
@@ -140,7 +117,6 @@ export default (
                 type: DataTypes.STRING
             },
             timestamp: {
-                allowNull: false,
                 type: DataTypes.INTEGER
             },
             assetName: {
@@ -151,11 +127,9 @@ export default (
                 type: DataTypes.STRING
             },
             blockNumber: {
-                allowNull: false,
                 type: DataTypes.INTEGER
             },
             parcelIndex: {
-                allowNull: false,
                 type: DataTypes.INTEGER
             },
             invoice: {
@@ -167,6 +141,10 @@ export default (
             createdAt: {
                 allowNull: false,
                 type: DataTypes.DATE
+            },
+            isPending: {
+                allowNull: false,
+                type: DataTypes.BOOLEAN
             },
             updatedAt: {
                 allowNull: false,

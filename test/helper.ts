@@ -20,6 +20,7 @@ export const sdk = new SDK({
     keyStoreType: "memory",
     networkId: CODECHAIN_NETWORK_ID
 });
+
 export const worker = new Worker({ sdk }, options.worker);
 
 export const ACCOUNT_SECRET =

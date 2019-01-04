@@ -9,61 +9,49 @@ export type ActionAttribute =
     | SetShardOwnersAttribute
     | SetShardUsersAttribute;
 
-export interface AssetTransactionAttribute {
+interface ActionCommon {
     id?: string;
+    invoice?: boolean | null;
+    errorType?: string | null;
+}
+
+export interface AssetTransactionAttribute extends ActionCommon {
     action: "assetTransaction";
     transaction?: TransactionAttribute;
     parcelHash: string;
     approvals: string[];
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface PaymentAttribute {
-    id?: string;
+export interface PaymentAttribute extends ActionCommon {
     action: "payment";
     parcelHash: string;
     receiver: string;
     amount: string;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface SetRegularKeyAttribute {
-    id?: string;
+export interface SetRegularKeyAttribute extends ActionCommon {
     action: "setRegularKey";
     parcelHash: string;
     key: string;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface CreateShardAttribute {
-    id?: string;
+export interface CreateShardAttribute extends ActionCommon {
     action: "createShard";
     parcelHash: string;
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface SetShardOwnersAttribute {
-    id?: string;
+export interface SetShardOwnersAttribute extends ActionCommon {
     action: "setShardOwners";
     parcelHash: string;
     shardId: number;
     owners: string[];
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
-export interface SetShardUsersAttribute {
-    id?: string;
+export interface SetShardUsersAttribute extends ActionCommon {
     action: "setShardUsers";
     parcelHash: string;
     shardId: number;
     users: string[];
-    invoice?: boolean | null;
-    errorType?: string | null;
 }
 
 export interface ActionInstance extends Sequelize.Instance<ActionAttribute> {}

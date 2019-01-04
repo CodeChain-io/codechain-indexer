@@ -1,9 +1,11 @@
 import { SDK } from "codechain-sdk";
-import { Block, U64 } from "codechain-sdk/lib/core/classes";
+import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
+import * as _ from "lodash";
 import { Job, scheduleJob } from "node-schedule";
 import { InvalidBlockNumber, InvalidParcel } from "../exception";
 import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
+import * as ParcelModel from "../models/logic/parcel";
 import * as AccountUtil from "./account";
 import * as LogUtil from "./log";
 import * as SnapshotUtil from "./snapshot";
@@ -101,6 +103,7 @@ export default class Worker {
             console.log("%d block is synchronized", nextBlockNumber);
             lastIndexedBlockNumber = nextBlockNumber;
         }
+        await this.indexPendingParcel();
         console.log("================ sync done ===================\n");
     };
 
@@ -191,5 +194,56 @@ export default class Worker {
             this.context
         );
         await LogUtil.indexLog(block, true);
+    };
+
+    private indexPendingParcel = async () => {
+        console.log("========== indexing pending parcels ==========");
+        const pendingParcels = await this.context.sdk.rpc.chain.getPendingParcels();
+        const indexedParcelsInst = await ParcelModel.getPendingParcels();
+        const indexedParcels = indexedParcelsInst.map(inst =>
+            inst.get({ plain: true })
+        );
+
+        console.log(
+            "current indexed pending parcels : %d",
+            indexedParcels.length
+        );
+        console.log("codechain pending parcels : %d", pendingParcels.length);
+
+        // Remove dead pending parcels
+        const pendingParcelHashList = pendingParcels.map(p => p.hash().value);
+        const removedPendingParcels = _.filter(
+            indexedParcels,
+            indexedParcel =>
+                !_.includes(pendingParcelHashList, indexedParcel.hash)
+        );
+        await Promise.all(
+            removedPendingParcels.map(async removedPendingParcel => {
+                const blockedParcelInst = await ParcelModel.getByHash(
+                    new H256(removedPendingParcel.hash)
+                );
+                if (!blockedParcelInst) {
+                    await ParcelModel.deleteByHash(
+                        new H256(removedPendingParcel.hash)
+                    );
+                }
+            })
+        );
+
+        // Index new pending parcels
+        const indexedPendingParcelHashList = _.map(indexedParcels, p => p.hash);
+        const newPendingParcels = _.filter(
+            pendingParcels,
+            pendingParcel =>
+                !_.includes(
+                    indexedPendingParcelHashList,
+                    pendingParcel.hash().value
+                )
+        );
+        await Promise.all(
+            newPendingParcels.map(async newPendingParcel => {
+                await ParcelModel.createParcel(newPendingParcel, true);
+            })
+        );
     };
 }

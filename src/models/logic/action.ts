@@ -17,13 +17,13 @@ import * as TransactionModel from "./transaction";
 export async function createAction(
     parcelHash: H256,
     action: Action,
+    isPending: boolean,
     params: {
-        invoice: boolean | null;
-        errorType: string | null;
-        blockNumber: number;
-        parcelIndex: number;
-        parcelHash: H256;
-        timestamp: number;
+        invoice?: boolean | null;
+        errorType?: string | null;
+        blockNumber?: number | null;
+        parcelIndex?: number | null;
+        timestamp?: number | null;
     }
 ): Promise<ActionInstance> {
     let actionInstance: ActionInstance;
@@ -49,6 +49,8 @@ export async function createAction(
             await TransactionModel.createTransaction(
                 id,
                 action.transaction,
+                parcelHash,
+                isPending,
                 params
             );
         } else if (action instanceof SetRegularKey) {
@@ -97,7 +99,36 @@ export async function createAction(
     return actionInstance;
 }
 
-// This is for the cascade test
+export async function updatePendingAction(
+    actionId: string,
+    params: {
+        invoice: boolean | null;
+        errorType: string | null;
+        timestamp: number;
+        parcelIndex: number;
+        blockNumber: number;
+        blockHash: H256;
+        txHash?: H256 | null;
+    }
+) {
+    try {
+        await models.Action.update(
+            {
+                invoice: params.invoice,
+                errorType: params.errorType
+            },
+            {
+                where: {
+                    id: actionId
+                }
+            }
+        );
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
 export async function getByHash(hash: H256): Promise<ActionInstance | null> {
     try {
         return await models.Action.findOne({

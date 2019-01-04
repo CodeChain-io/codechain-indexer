@@ -39,7 +39,9 @@ test("Register snapshot", async done => {
     const beforeSnapshotRequestsInst = await SnapshotModel.getSnapshotRequests();
     const snapshotInst = await SnapshotModel.createSnapshotRequests(
         assetType,
-        moment().unix()
+        moment()
+            .subtract(60, "seconds")
+            .unix()
     );
     expect(snapshotInst).toBeTruthy();
     snapshotId = snapshotInst!.get().id!;
