@@ -25,7 +25,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /block/latest:
      *   get:
-     *     summary: Returns latest block
+     *     summary: Returns latest block (Not implemented)
      *     tags: [Block]
      *     responses:
      *       200:
@@ -45,7 +45,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /block/:hashOrNumber:
      *   get:
-     *     summary: Returns specific block
+     *     summary: Returns specific block (Not implemented)
      *     tags: [Block]
      *     responses:
      *       200:
@@ -63,10 +63,26 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /blocks:
+     * /block:
      *   get:
-     *     summary: Returns blocks
+     *     summary: Returns blocks (Not implemented)
      *     tags: [Block]
+     *     parameters:
+     *       - name: address
+     *         description: Author filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
+     *       - name: page
+     *         description: page for the pagination
+     *         in: formData
+     *         required: false
+     *         type: number
+     *       - name: itemsPerPage
+     *         description: items per page for the pagination
+     *         in: formData
+     *         required: false
+     *         type: number
      *     responses:
      *       200:
      *         description: blocks
@@ -75,7 +91,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *           items:
      *             $ref: '#/definitions/Block'
      */
-    router.get("/blocks", async (_A, _B, next) => {
+    router.get("/block", async (_A, _B, next) => {
         try {
             throw Exception.NotImplmeneted;
         } catch (e) {
@@ -85,10 +101,16 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /blocks/count:
+     * /block/count:
      *   get:
-     *     summary: Returns total count of the blocks
+     *     summary: Returns total count of the blocks (Not implemented)
      *     tags: [Block]
+     *     parameters:
+     *       - name: address
+     *         description: Author filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: total count of the blocks
@@ -96,7 +118,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: number
      *           example: 12
      */
-    router.get("/blocks/count", async (_A, _B, next) => {
+    router.get("/block/count", async (_A, _B, next) => {
         try {
             throw Exception.NotImplmeneted;
         } catch (e) {

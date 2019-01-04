@@ -5,10 +5,10 @@ import * as Exception from "../exception";
 /**
  * @swagger
  * tags:
- *   name: Parcel
- *   description: Parcel management
+ *   name: Transaction
+ *   description: Transaction management
  * definitions:
- *   Parcel:
+ *   Transaction:
  *     type: object
  *     required:
  *       - content
@@ -18,18 +18,23 @@ import * as Exception from "../exception";
  *         description: ObjectID
  *       content:
  *         type: string
- *         description: parcel example
+ *         description: Transaction example
  */
 export function handle(_C: IndexerContext, router: Router) {
     /**
      * @swagger
-     * /parcel:
+     * /tx:
      *   get:
-     *     summary: Returns parcels (Not implemented)
-     *     tags: [Parcel]
+     *     summary: Returns latest transactions (Not implemented)
+     *     tags: [Transaction]
      *     parameters:
      *       - name: address
-     *         description: sender receiver filter by address
+     *         description: input, output, shard user, shard owner filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
+     *       - name: assetType
+     *         description: filter by assetType
      *         in: formData
      *         required: false
      *         type: string
@@ -55,13 +60,13 @@ export function handle(_C: IndexerContext, router: Router) {
      *         type: number
      *     responses:
      *       200:
-     *         description: latest parcels
+     *         description: latest transactions
      *         schema:
      *           type: array
      *           items:
-     *             $ref: '#/definitions/Parcel'
+     *             $ref: '#/definitions/Transaction'
      */
-    router.get("/parcel", async (_A, _B, next) => {
+    router.get("/tx", async (_A, _B, next) => {
         try {
             throw Exception.NotImplmeneted;
         } catch (e) {
@@ -71,13 +76,39 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /parcel/count:
+     * /tx/:hash:
      *   get:
-     *     summary: Returns count of parcels (Not implemented)
-     *     tags: [Parcel]
+     *     summary: Returns the specific transaction (Not implemented)
+     *     tags: [Transaction]
+     *     responses:
+     *       200:
+     *         description: specific transaction
+     *         schema:
+     *           type: object
+     *           $ref: '#/definitions/Transaction'
+     */
+    router.get("/tx/:hash", async (_A, _B, next) => {
+        try {
+            throw Exception.NotImplmeneted;
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    /**
+     * @swagger
+     * /tx/count:
+     *   get:
+     *     summary: Returns total count of the transactions (Not implemented)
+     *     tags: [Transaction]
      *     parameters:
      *       - name: address
-     *         description: sender receiver filter by address
+     *         description: input, output, shard user, shard owner filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
+     *       - name: assetType
+     *         description: filter by assetType
      *         in: formData
      *         required: false
      *         type: string
@@ -93,12 +124,12 @@ export function handle(_C: IndexerContext, router: Router) {
      *         type: number
      *     responses:
      *       200:
-     *         description: count of parcels
+     *         description: total count of the transactions
      *         schema:
      *           type: number
-     *           example: 12
+     *           example: 24
      */
-    router.get("/parcel/count", async (_A, _B, next) => {
+    router.get("/tx/count", async (_A, _B, next) => {
         try {
             throw Exception.NotImplmeneted;
         } catch (e) {
@@ -108,18 +139,18 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /parcels:
+     * /pending-tx/:hash:
      *   get:
-     *     summary: Returns a specific parcel (Not implemented)
-     *     tags: [Parcel]
+     *     summary: Returns specific pending transaction (Not implemented)
+     *     tags: [Transaction]
      *     responses:
      *       200:
-     *         description: pecific parcel
+     *         description: current pending parcels
      *         schema:
      *           type: object
-     *           $ref: '#/definitions/Parcel'
+     *           $ref: '#/definitions/Transaction'
      */
-    router.get("/parcel/:hash", async (_A, _B, next) => {
+    router.get("/pending-tx/:hash", async (_A, _B, next) => {
         try {
             throw Exception.NotImplmeneted;
         } catch (e) {
@@ -129,67 +160,30 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /pending-parcel:
+     * /pending-tx:
      *   get:
-     *     summary: Returns current pending parcels (Not implemented)
-     *     tags: [Parcel]
+     *     summary: Returns pending txs (Not implemented)
+     *     tags: [Transaction]
      *     parameters:
      *       - name: address
-     *         description: sender receiver filter by address
+     *         description: input, output, shard user, shard owner filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
+     *       - name: assetType
+     *         description: filter by assetType
      *         in: formData
      *         required: false
      *         type: string
      *     responses:
      *       200:
-     *         description: current pending parcels
+     *         description: pending transactions
      *         schema:
      *           type: array
      *           items:
-     *             $ref: '#/definitions/Parcel'
+     *             $ref: '#/definitions/Transaction'
      */
-    router.get("/pending-parcel", async (_A, _B, next) => {
-        try {
-            throw Exception.NotImplmeneted;
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    /**
-     * @swagger
-     * /pending-parcel/count:
-     *   get:
-     *     summary: Returns total count of the pending parcels (Not implemented)
-     *     tags: [Parcel]
-     *     responses:
-     *       200:
-     *         description: total count of the pending parcels
-     *         schema:
-     *           type: number
-     *           example: 12
-     */
-    router.get("/pending-parcel/count", async (_A, _B, next) => {
-        try {
-            throw Exception.NotImplmeneted;
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    /**
-     * @swagger
-     * /pending-parcel/:hash:
-     *   get:
-     *     summary: Returns the specific pending parcel (Not implemented)
-     *     tags: [Parcel]
-     *     responses:
-     *       200:
-     *         description: specific pending parcel
-     *         schema:
-     *           type: object
-     *           $ref: '#/definitions/Parcel'
-     */
-    router.get("/pending-parcel/:hash", async (_A, _B, next) => {
+    router.get("/pending-tx", async (_A, _B, next) => {
         try {
             throw Exception.NotImplmeneted;
         } catch (e) {

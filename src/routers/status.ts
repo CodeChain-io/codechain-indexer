@@ -13,7 +13,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /ping:
      *   get:
-     *     summary: Returns pong
+     *     summary: Returns pong (Not implemented)
      *     tags: [Status]
      *     responses:
      *       200:
@@ -34,7 +34,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /status/codechain:
      *   get:
-     *     summary: Returns status of the codechain
+     *     summary: Returns status of the codechain (Not implemented)
      *     tags: [Status]
      *     responses:
      *       200:
@@ -76,7 +76,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /status/sync:
      *   get:
-     *     summary: Returns sync status
+     *     summary: Returns sync status (Not implemented)
      *     tags: [Status]
      *     responses:
      *       200:
