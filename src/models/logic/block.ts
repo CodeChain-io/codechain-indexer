@@ -64,30 +64,50 @@ export async function createBlock(
     return blockInstance;
 }
 
+const includeArray = [
+    {
+        as: "parcels",
+        model: models.Parcel,
+        include: [
+            {
+                as: "action",
+                model: models.Action,
+                include: [
+                    {
+                        as: "transaction",
+                        model: models.Transaction,
+                        include: [
+                            {
+                                as: "outputs",
+                                model: models.AssetTransferOutput
+                            },
+                            {
+                                as: "output",
+                                model: models.AssetMintOutput
+                            },
+                            {
+                                as: "inputs",
+                                model: models.AssetTransferInput
+                            },
+                            {
+                                as: "input",
+                                model: models.AssetDecomposeInput
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+];
+
 export async function getByHash(hash: H256): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
             where: {
                 hash: hash.value
             },
-            include: [
-                {
-                    as: "parcels",
-                    model: models.Parcel,
-                    include: [
-                        {
-                            as: "action",
-                            model: models.Action,
-                            include: [
-                                {
-                                    as: "transaction",
-                                    model: models.Transaction
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+            include: includeArray
         });
     } catch (err) {
         console.error(err);
@@ -108,10 +128,37 @@ export async function deleteBlockByNumber(
     }
 }
 
+export async function getBlocks(params: {
+    address?: string;
+    page?: number | null;
+    itemsPerPage?: number | null;
+}) {
+    const { page = 1, itemsPerPage = 15, address } = params;
+    let query = {};
+    if (address) {
+        query = {
+            author: address
+        };
+    }
+    try {
+        return await models.Block.findAll({
+            order: [["number", "DESC"]],
+            limit: itemsPerPage!,
+            offset: (page! - 1) * itemsPerPage!,
+            where: query,
+            include: includeArray
+        });
+    } catch (err) {
+        console.log(err);
+        throw Exception.DBError;
+    }
+}
+
 export async function getLatestBlock(): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
-            order: [["number", "DESC"]]
+            order: [["number", "DESC"]],
+            include: includeArray
         });
     } catch (err) {
         console.log(err);
@@ -127,42 +174,7 @@ export async function getByNumber(
             where: {
                 number: blockNumber
             },
-            include: [
-                {
-                    as: "parcels",
-                    model: models.Parcel,
-                    include: [
-                        {
-                            as: "action",
-                            model: models.Action,
-                            include: [
-                                {
-                                    as: "transaction",
-                                    model: models.Transaction,
-                                    include: [
-                                        {
-                                            as: "outputs",
-                                            model: models.AssetTransferOutput
-                                        },
-                                        {
-                                            as: "output",
-                                            model: models.AssetMintOutput
-                                        },
-                                        {
-                                            as: "inputs",
-                                            model: models.AssetTransferInput
-                                        },
-                                        {
-                                            as: "input",
-                                            model: models.AssetDecomposeInput
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+            include: includeArray
         });
     } catch (err) {
         console.error(err);
