@@ -1,6 +1,7 @@
 import * as cors from "cors";
 import * as express from "express";
 import * as _ from "lodash";
+import * as AccountHandler from "./routers/account";
 import * as AssetHandler from "./routers/asset";
 import * as BlockHandler from "./routers/block";
 import * as ParcelHandler from "./routers/parcel";
@@ -27,6 +28,7 @@ export function createApiRouter(context: IndexerContext, useCors = false) {
     ParcelHandler.handle(context, router);
     TxHandler.handle(context, router);
     AssetHandler.handle(context, router);
+    AccountHandler.handle(context, router);
 
     return router;
 }

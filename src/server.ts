@@ -6,27 +6,20 @@ import { createApiRouter } from "./api";
 import { IndexerContext } from "./context";
 import log from "./log";
 
-// Swagger definition
-// You can set every attribute except paths and swagger
-// https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
 const swaggerDefinition = {
     info: {
         title: "CodeChain Indexer API",
         version: "1.0.0"
     },
     host: "localhost:3000",
-    basePath: "/"
+    basePath: "/api"
 };
 
-// Options for the swagger docs
 const options = {
-    // Import swaggerDefinitions
     swaggerDefinition,
-    // Path to the API docs
     apis: ["src/routers/*.ts"]
 };
 
-// Initialize swagger-jsdoc -> returns validated swagger spec in json format
 const swaggerSpec = swaggerJSDoc(options);
 
 export function createServer(context: IndexerContext) {
