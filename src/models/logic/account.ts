@@ -36,3 +36,28 @@ export async function getByAddress(
         throw Exception.DBError;
     }
 }
+
+export async function getAccounts(params: {
+    page?: number | null;
+    itemsPerPage?: number | null;
+}) {
+    const { page = 1, itemsPerPage = 15 } = params;
+    try {
+        return await models.Account.findAll({
+            limit: itemsPerPage!,
+            offset: (page! - 1) * itemsPerPage!
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getCountOfAccounts() {
+    try {
+        return await models.Account.count();
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
