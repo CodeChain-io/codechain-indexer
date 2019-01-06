@@ -199,7 +199,7 @@ export default class Worker {
     private indexPendingParcel = async () => {
         console.log("========== indexing pending parcels ==========");
         const pendingParcels = await this.context.sdk.rpc.chain.getPendingParcels();
-        const indexedParcelsInst = await ParcelModel.getPendingParcels();
+        const indexedParcelsInst = await ParcelModel.getPendingParcels({});
         const indexedParcels = indexedParcelsInst.map(inst =>
             inst.get({ plain: true })
         );
