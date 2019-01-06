@@ -50,7 +50,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /block/:hashOrNumber:
      *   get:
-     *     summary: Returns specific block (Not implemented)
+     *     summary: Returns specific block
      *     tags: [Block]
      *     responses:
      *       200:
@@ -62,6 +62,7 @@ export function handle(_C: IndexerContext, router: Router) {
         const hashOrNumber = req.params.hashOrNumber;
         let hashValue;
         let numberValue;
+        // FIXME: Throw an error if hashOrNumber is not hash or number
         try {
             hashValue = new H256(hashOrNumber);
         } catch (e) {
@@ -88,7 +89,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /block:
      *   get:
-     *     summary: Returns blocks (Not implemented)
+     *     summary: Returns blocks
      *     tags: [Block]
      *     parameters:
      *       - name: address
@@ -139,7 +140,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /block/count:
      *   get:
-     *     summary: Returns total count of the blocks (Not implemented)
+     *     summary: Returns total count of the blocks
      *     tags: [Block]
      *     parameters:
      *       - name: address

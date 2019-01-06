@@ -25,6 +25,13 @@ module.exports = {
             timelock: {
                 type: Sequelize.JSONB
             },
+            owner: {
+                type: Sequelize.STRING
+            },
+            assetType: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
             lockScript: {
                 allowNull: false,
                 type: Sequelize.JSONB

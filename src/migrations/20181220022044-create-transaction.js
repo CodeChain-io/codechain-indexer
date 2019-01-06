@@ -72,6 +72,9 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.BOOLEAN
             },
+            pendingTimestamp: {
+                type: Sequelize.INTEGER
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

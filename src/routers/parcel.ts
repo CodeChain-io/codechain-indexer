@@ -1,7 +1,6 @@
 import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
-import * as Exception from "../exception";
 import * as ParcelModel from "../models/logic/parcel";
 
 /**
@@ -150,18 +149,10 @@ export function handle(_C: IndexerContext, router: Router) {
      *           $ref: '#/definitions/Parcel'
      */
     router.get("/parcel/:hash", async (req, res, next) => {
-        const hash = req.params.hash;
-        let hashValue;
+        const hashString = req.params.hash;
         try {
-            hashValue = new H256(hash);
-        } catch (e) {
-            // invalid hash value;
-        }
-        try {
-            let parcelInst;
-            if (hashValue) {
-                parcelInst = await ParcelModel.getByHash(hashValue);
-            }
+            const hash = new H256(hashString);
+            const parcelInst = await ParcelModel.getByHash(hash);
             res.json(parcelInst ? parcelInst.get({ plain: true }) : null);
         } catch (e) {
             next(e);

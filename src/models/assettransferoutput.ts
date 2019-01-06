@@ -55,7 +55,6 @@ export default (
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             owner: {
-                allowNull: false,
                 type: DataTypes.STRING
             },
             createdAt: {

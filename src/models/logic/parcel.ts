@@ -32,7 +32,8 @@ export async function createParcel(
             blockHash: parcel.blockHash && parcel.blockHash.value,
             blockNumber: parcel.blockNumber,
             parcelIndex: parcel.parcelIndex,
-            isPending
+            isPending,
+            pendingTimestamp: isPending ? +new Date() / 1000 : null
         });
         await ActionModel.createAction(
             parcel.hash(),
@@ -131,7 +132,7 @@ const includeArray = [
     }
 ];
 
-export async function getPendingParcels(params: { address?: string | null }) {
+function getPendingParcelsQuery(params: { address?: string | null }) {
     const { address } = params;
     const query = [];
     if (address) {
@@ -145,6 +146,12 @@ export async function getPendingParcels(params: { address?: string | null }) {
     query.push({
         isPending: true
     });
+    return query;
+}
+
+export async function getPendingParcels(params: { address?: string | null }) {
+    const { address } = params;
+    const query = getPendingParcelsQuery({ address });
     try {
         return await models.Parcel.findAll({
             where: {
@@ -163,18 +170,7 @@ export async function getCountOfPendingParcels(params: {
     address?: string | null;
 }) {
     const { address } = params;
-    const query = [];
-    if (address) {
-        query.push({
-            [Sequelize.Op.or]: [
-                { signer: address },
-                { "$action.receiver$": address }
-            ]
-        });
-    }
-    query.push({
-        isPending: true
-    });
+    const query = getPendingParcelsQuery({ address });
     try {
         return await models.Parcel.count({
             where: {
@@ -246,7 +242,7 @@ export async function getParcels(params: {
         page = 1,
         itemsPerPage = 15,
         onlyConfirmed = false,
-        confirmThreshold = 5
+        confirmThreshold = 0
     } = params;
     const query = await getParcelsQuery({
         address,
@@ -275,7 +271,7 @@ export async function getCountOfParcels(params: {
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, onlyConfirmed = false, confirmThreshold = 5 } = params;
+    const { address, onlyConfirmed = false, confirmThreshold = 0 } = params;
     const query = await getParcelsQuery({
         address,
         onlyConfirmed,

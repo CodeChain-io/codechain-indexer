@@ -8,6 +8,7 @@ import {
     Transaction
 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
+import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import models from "../index";
@@ -17,6 +18,7 @@ import * as AssetSchemeModel from "./assetscheme";
 import * as AssetTransferBurnModel from "./assettransferburn";
 import * as AssetTransferInputModel from "./assettransferinput";
 import * as AssetTransferOutputModel from "./assettransferoutput";
+import * as BlockModel from "./block";
 
 export async function createTransaction(
     actionId: string,
@@ -52,7 +54,8 @@ export async function createTransaction(
                 blockNumber: params.blockNumber,
                 invoice: params.invoice,
                 errorType: params.errorType,
-                isPending
+                isPending,
+                pendingTimestamp: isPending ? +new Date() / 1000 : null
             });
             await AssetSchemeModel.createAssetScheme(
                 transaction.getAssetSchemeAddress(),
@@ -251,6 +254,25 @@ export async function createTransaction(
     return transactionInstance;
 }
 
+const includeArray = [
+    {
+        as: "outputs",
+        model: models.AssetTransferOutput
+    },
+    {
+        as: "output",
+        model: models.AssetMintOutput
+    },
+    {
+        as: "inputs",
+        model: models.AssetTransferInput
+    },
+    {
+        as: "input",
+        model: models.AssetDecomposeInput
+    }
+];
+
 export async function getByHash(
     hash: H256
 ): Promise<TransactionInstance | null> {
@@ -259,24 +281,197 @@ export async function getByHash(
             where: {
                 hash: hash.value
             },
-            include: [
-                {
-                    as: "outputs",
-                    model: models.AssetTransferOutput
-                },
-                {
-                    as: "output",
-                    model: models.AssetMintOutput
-                },
-                {
-                    as: "inputs",
-                    model: models.AssetTransferInput
-                },
-                {
-                    as: "input",
-                    model: models.AssetDecomposeInput
-                }
+            include: includeArray
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+async function getTxsQuery(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const { address, onlyConfirmed, confirmThreshold, assetType } = params;
+    const query = [];
+    if (address) {
+        query.push({
+            [Sequelize.Op.or]: [
+                { "$output.recipient$": address },
+                { "$inputs.owner$": address },
+                { "$outputs.owner$": address },
+                { "$input.owner$": address },
+                { "$burns.owner$": address }
             ]
+        });
+    }
+    if (assetType) {
+        query.push({
+            [Sequelize.Op.or]: [
+                { "$output.assetType$": assetType.value },
+                { "$inputs.assetType$": assetType.value },
+                { "$outputs.assetType$": assetType.value },
+                { "$input.assetType$": assetType.value },
+                { "$burns.assetType$": assetType.value }
+            ]
+        });
+    }
+    if (onlyConfirmed) {
+        const latestBlockInst = await BlockModel.getLatestBlock();
+        const latestBlockNumber = latestBlockInst
+            ? latestBlockInst.get().number
+            : 0;
+        query.push({
+            blockNumber: {
+                [Sequelize.Op.lte]: latestBlockNumber - confirmThreshold!
+            }
+        });
+    }
+    query.push({
+        isPending: false
+    });
+    return query;
+}
+export async function getTransactions(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    page?: number | null;
+    itemsPerPage?: number | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const {
+        address,
+        assetType,
+        page = 1,
+        itemsPerPage = 15,
+        onlyConfirmed = false,
+        confirmThreshold = 0
+    } = params;
+    const query = await getTxsQuery({
+        address,
+        assetType,
+        onlyConfirmed,
+        confirmThreshold
+    });
+    try {
+        return await models.Transaction.findAll({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            order: [["blockNumber", "DESC"], ["parcelIndex", "DESC"]],
+            limit: itemsPerPage!,
+            offset: (page! - 1) * itemsPerPage!,
+            subQuery: false,
+            include: includeArray
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getCountOfTransactions(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const {
+        address,
+        assetType,
+        onlyConfirmed = false,
+        confirmThreshold = 0
+    } = params;
+    const query = await getTxsQuery({
+        address,
+        assetType,
+        onlyConfirmed,
+        confirmThreshold
+    });
+    try {
+        return await models.Transaction.count({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            include: includeArray
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+function getPendingTxsQuery(params: {
+    address: string | null;
+    assetType: H256 | null;
+}) {
+    const { address, assetType } = params;
+    const query = [];
+    if (address) {
+        query.push({
+            [Sequelize.Op.or]: [
+                { "$output.recipient$": address },
+                { "$inputs.owner$": address },
+                { "$outputs.owner$": address },
+                { "$input.owner$": address },
+                { "$burns.owner$": address }
+            ]
+        });
+    }
+    if (assetType) {
+        query.push({
+            [Sequelize.Op.or]: [
+                { "$output.assetType$": assetType.value },
+                { "$inputs.assetType$": assetType.value },
+                { "$outputs.assetType$": assetType.value },
+                { "$input.assetType$": assetType.value },
+                { "$burns.assetType$": assetType.value }
+            ]
+        });
+    }
+    query.push({
+        isPending: true
+    });
+    return query;
+}
+
+export async function getPendingTransactions(params: {
+    address: string | null;
+    assetType: H256 | null;
+}) {
+    const { address, assetType } = params;
+    const query = getPendingTxsQuery({ address, assetType });
+    try {
+        return await models.Transaction.findAll({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            order: [["pendingTimestamp", "DESC"]],
+            subQuery: false,
+            include: includeArray
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getCountOfPendingTransactions(params: {
+    address: string | null;
+    assetType: H256 | null;
+}) {
+    const { address, assetType } = params;
+    const query = getPendingTxsQuery({ address, assetType });
+    try {
+        return await models.Transaction.count({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            include: includeArray
         });
     } catch (err) {
         console.error(err);

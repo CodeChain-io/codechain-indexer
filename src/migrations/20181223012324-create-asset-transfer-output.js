@@ -34,7 +34,6 @@ module.exports = {
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
             owner: {
-                allowNull: false,
                 type: Sequelize.STRING
             },
             createdAt: {

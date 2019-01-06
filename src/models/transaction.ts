@@ -12,6 +12,7 @@ export type TransactionAttribute =
 
 interface TransactionCommon {
     isPending: boolean;
+    pendingTimestamp?: number | null;
     blockNumber?: number | null;
     parcelIndex?: number | null;
     invoice?: boolean | null;
@@ -38,6 +39,8 @@ export interface AssetTransferInputAttribute {
     transactionHash: string;
     prevOut: AssetOutPointAttribute;
     timelock?: Timelock | null;
+    owner?: string | null;
+    assetType: string;
     lockScript: Buffer;
     unlockScript: Buffer;
 }
@@ -145,6 +148,9 @@ export default (
             isPending: {
                 allowNull: false,
                 type: DataTypes.BOOLEAN
+            },
+            pendingTimestamp: {
+                type: DataTypes.INTEGER
             },
             updatedAt: {
                 allowNull: false,

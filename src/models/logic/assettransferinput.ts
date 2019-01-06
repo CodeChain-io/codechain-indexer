@@ -18,25 +18,28 @@ export async function createAssetTransferInput(
 ): Promise<AssetTransferInputInstance> {
     let assetTransferInputInstance: AssetTransferInputInstance;
     try {
+        const owner =
+            input.prevOut.lockScriptHash &&
+            input.prevOut.parameters &&
+            AddressUtil.getOwner(
+                input.prevOut.lockScriptHash,
+                input.prevOut.parameters,
+                options.networkId
+            );
         assetTransferInputInstance = await models.AssetTransferInput.create({
             transactionHash: transactionHash.value,
             timelock: input.timelock,
             lockScript: input.lockScript,
             unlockScript: input.unlockScript,
+            owner,
+            assetType: input.prevOut.assetType.value,
             prevOut: {
                 transactionHash: input.prevOut.transactionHash.value,
                 index: input.prevOut.index,
                 assetType: input.prevOut.assetType.value,
                 assetScheme: options.assetScheme,
                 amount: input.prevOut.amount.value.toString(10),
-                owner:
-                    input.prevOut.lockScriptHash &&
-                    input.prevOut.parameters &&
-                    AddressUtil.getOwner(
-                        input.prevOut.lockScriptHash,
-                        input.prevOut.parameters,
-                        options.networkId
-                    ),
+                owner,
                 lockScriptHash:
                     input.prevOut.lockScriptHash &&
                     input.prevOut.lockScriptHash.value,
