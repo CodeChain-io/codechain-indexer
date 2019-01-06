@@ -46,14 +46,6 @@ export async function createDecomposeInput(
                 parameters: input.prevOut.parameters
             }
         });
-        const utxoInst = await UTXOModel.getByTxHashIndex(
-            input.prevOut.transactionHash,
-            input.prevOut.index
-        );
-        if (!utxoInst) {
-            throw Exception.InvalidUTXO;
-        }
-        await UTXOModel.setUsed(utxoInst.get().id!, transactionHash);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

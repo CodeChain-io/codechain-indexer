@@ -33,6 +33,19 @@ export async function createAssetImage(
     }
 }
 
+export async function getByAssetType(assetType: H256) {
+    try {
+        return await models.AssetImage.findOne({
+            where: {
+                assetType: assetType.value
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
 function getImageBuffer(url: string) {
     return new Promise((resolve, reject) => {
         request({ url, encoding: null }, (err, _R, buffer) => {

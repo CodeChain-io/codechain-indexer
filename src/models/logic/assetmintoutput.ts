@@ -5,7 +5,6 @@ import * as Exception from "../../exception";
 import { AssetMintOutputInstance } from "../assetmintoutput";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
-import * as UTXOModel from "./utxo";
 
 export async function createAssetMintOutput(
     transactionHash: H256,
@@ -35,7 +34,6 @@ export async function createAssetMintOutput(
             administrator: params.administrator,
             recipient
         });
-        await UTXOModel.createUTXO(recipient, params.asset);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

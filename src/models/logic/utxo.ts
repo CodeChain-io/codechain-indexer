@@ -1,13 +1,24 @@
-import { Asset, H256 } from "codechain-sdk/lib/core/classes";
+import { H160, H256, U64 } from "codechain-sdk/lib/core/classes";
+import * as Sequelize from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { UTXOInstance } from "../utxo";
 import * as AssetSchemeModel from "./assetscheme";
+import * as BlockModel from "./block";
 
 export async function createUTXO(
     address: string,
-    utxo: Asset
+    utxo: {
+        assetType: H256;
+        lockScriptHash: H160;
+        parameters: Buffer[];
+        amount: U64;
+        orderHash?: H256 | null;
+        transactionHash: H256;
+        transactionOutputIndex: number;
+    },
+    blockNumber: number
 ): Promise<UTXOInstance> {
     let utxoInstance;
     try {
@@ -18,9 +29,10 @@ export async function createUTXO(
             lockScriptHash: utxo.lockScriptHash.value,
             parameters: utxo.parameters,
             amount: utxo.amount.value.toString(10),
-            transactionHash: utxo.outPoint.transactionHash.value,
-            transactionOutputIndex: utxo.outPoint.index,
-            assetScheme
+            transactionHash: utxo.transactionHash.value,
+            transactionOutputIndex: utxo.transactionOutputIndex,
+            assetScheme,
+            blockNumber
         });
     } catch (err) {
         console.error(err);
@@ -33,7 +45,7 @@ export async function setUsed(id: string, usedTransactionHash: H256) {
     try {
         return await models.UTXO.update(
             {
-                usedTransaction: usedTransactionHash.value
+                usedTransactionHash: usedTransactionHash.value
             },
             {
                 where: {
@@ -64,7 +76,7 @@ export async function getByAddress(address: string): Promise<UTXOInstance[]> {
         return await models.UTXO.findAll({
             where: {
                 address,
-                usedTransaction: null
+                usedTransactionHash: null
             }
         });
     } catch (err) {
@@ -78,8 +90,128 @@ export async function getByAssetType(assetType: H256) {
         return await models.UTXO.findAll({
             where: {
                 assetType: assetType.value,
-                usedTransaction: null
+                usedTransactionHash: null
             }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+async function getUTXOQuery(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const { address, onlyConfirmed, confirmThreshold, assetType } = params;
+    const query = [];
+    if (address) {
+        query.push({
+            address
+        });
+    }
+    if (assetType) {
+        query.push({
+            assetType: assetType.value
+        });
+    }
+    if (onlyConfirmed) {
+        const latestBlockInst = await BlockModel.getLatestBlock();
+        const latestBlockNumber = latestBlockInst
+            ? latestBlockInst.get().number
+            : 0;
+        query.push({
+            blockNumber: {
+                [Sequelize.Op.lte]: latestBlockNumber - confirmThreshold!
+            }
+        });
+        query.push({
+            [Sequelize.Op.or]: [
+                {
+                    usedTransactionHash: null
+                },
+                {
+                    [Sequelize.Op.not]: {
+                        [Sequelize.Op.and]: [
+                            {
+                                usedTransactionHash: {
+                                    [Sequelize.Op.not]: null
+                                }
+                            },
+                            {
+                                $usedTransaction$: null
+                            }
+                        ]
+                    }
+                }
+            ]
+        });
+    } else {
+        query.push({
+            usedTransactionHash: null
+        });
+    }
+    return query;
+}
+
+export async function getUTXO(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    page?: number | null;
+    itemsPerPage?: number | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const {
+        address,
+        assetType,
+        page = 1,
+        itemsPerPage = 15,
+        onlyConfirmed = false,
+        confirmThreshold = 0
+    } = params;
+    const query: any = await getUTXOQuery({
+        address,
+        assetType,
+        onlyConfirmed,
+        confirmThreshold
+    });
+    let includeArray: any = [
+        {
+            as: "usedTransaction",
+            model: models.Transaction
+        }
+    ];
+    if (onlyConfirmed) {
+        const latestBlockInst = await BlockModel.getLatestBlock();
+        const latestBlockNumber = latestBlockInst
+            ? latestBlockInst.get().number
+            : 0;
+        includeArray = [
+            {
+                as: "usedTransaction",
+                model: models.Transaction,
+                required: false,
+                where: {
+                    blockNumber: {
+                        [Sequelize.Op.lte]:
+                            latestBlockNumber - confirmThreshold!
+                    }
+                }
+            }
+        ];
+    }
+    try {
+        return await models.UTXO.findAll({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            order: [["id", "DESC"]],
+            limit: itemsPerPage!,
+            offset: (page! - 1) * itemsPerPage!,
+            include: includeArray
         });
     } catch (err) {
         console.error(err);

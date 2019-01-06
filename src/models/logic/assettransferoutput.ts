@@ -9,7 +9,6 @@ import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
-import * as UTXOModel from "./utxo";
 
 export async function createAssetTransferOutput(
     transactionHash: H256,
@@ -36,7 +35,6 @@ export async function createAssetTransferOutput(
             assetScheme: params.assetScheme,
             owner
         });
-        await UTXOModel.createUTXO(owner, params.asset);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

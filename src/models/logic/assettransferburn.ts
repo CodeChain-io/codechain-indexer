@@ -5,7 +5,6 @@ import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferBurnInstance } from "../assettransferburn";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
-import * as UTXOModel from "./utxo";
 
 // FIXME: This is duplicated with asset transfer-input
 export async function createAssetTransferBurn(
@@ -46,14 +45,6 @@ export async function createAssetTransferBurn(
                 parameters: burn.prevOut.parameters
             }
         });
-        const utxoInst = await UTXOModel.getByTxHashIndex(
-            burn.prevOut.transactionHash,
-            burn.prevOut.index
-        );
-        if (!utxoInst) {
-            throw Exception.InvalidUTXO;
-        }
-        await UTXOModel.setUsed(utxoInst.get().id!, transactionHash);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

@@ -10,8 +10,9 @@ export interface UTXOAttribute {
     amount: string;
     transactionHash: string;
     transactionOutputIndex: number;
-    usedTransaction?: string;
+    usedTransactionHash?: string | null;
     assetScheme: AssetSchemeAttribute;
+    blockNumber: number;
 }
 
 export interface UTXOInstance extends Sequelize.Instance<UTXOAttribute> {}
@@ -66,13 +67,17 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-            usedTransaction: {
+            usedTransactionHash: {
                 type: DataTypes.STRING,
                 onDelete: "SET NULL",
                 references: {
                     model: "Transactions",
                     key: "hash"
                 }
+            },
+            blockNumber: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,
@@ -85,8 +90,12 @@ export default (
         },
         {}
     );
-    UTXO.associate = () => {
-        // associations can be defined here
+    UTXO.associate = models => {
+        UTXO.belongsTo(models.Transaction, {
+            foreignKey: "usedTransactionHash",
+            as: "usedTransaction",
+            onDelete: "SET NULL"
+        });
     };
     return UTXO;
 };

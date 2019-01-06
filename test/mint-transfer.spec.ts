@@ -249,7 +249,7 @@ test("Check utxo", async done => {
     );
 
     expect(utxoOfMintOwner.length).toEqual(1);
-    expect(utxoOfMintAssetInst!.get().usedTransaction).toBeTruthy();
+    expect(utxoOfMintAssetInst!.get().usedTransactionHash).toBeTruthy();
 
     const firstOutputOwner = transferOutputInst[0].get().owner;
     const UTXOInst = await UTXOModel.getByAddress(firstOutputOwner!);
@@ -320,7 +320,7 @@ test("Delete the block, parcel, action as cascade", async done => {
         0
     );
     expect(utxoOfMintOwner.length).toEqual(1);
-    expect(utxoOfMintAssetInst!.get().usedTransaction).toBeNull();
+    expect(utxoOfMintAssetInst!.get().usedTransactionHash).toBeNull();
 
     const mintTxRow = await BlockModel.deleteBlockByNumber(mintBlockNumber);
     expect(mintTxRow).toBeTruthy();

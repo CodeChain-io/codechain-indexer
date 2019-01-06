@@ -4,21 +4,25 @@ import {
     AssetDecomposeTransaction,
     AssetMintTransaction,
     AssetTransferTransaction,
+    H160,
     H256,
-    Transaction
+    Transaction,
+    U64
 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import models from "../index";
-import { TransactionInstance } from "../transaction";
+import { TransactionAttribute, TransactionInstance } from "../transaction";
 import * as AssetMintOutputModel from "./assetmintoutput";
 import * as AssetSchemeModel from "./assetscheme";
 import * as AssetTransferBurnModel from "./assettransferburn";
 import * as AssetTransferInputModel from "./assettransferinput";
 import * as AssetTransferOutputModel from "./assettransferoutput";
 import * as BlockModel from "./block";
+import * as AddressUtil from "./utils/address";
+import * as UTXOModel from "./utxo";
 
 export async function createTransaction(
     actionId: string,
@@ -244,6 +248,14 @@ export async function createTransaction(
         } else {
             throw Exception.InvalidTransaction;
         }
+
+        if (!isPending) {
+            const txInst = await getByHash(transaction.hash());
+            if (!txInst) {
+                throw Exception.InvalidTransaction;
+            }
+            await handleUTXO(txInst.get({ plain: true }), params.blockNumber!);
+        }
     } catch (err) {
         console.error(err);
         if (err.code === Exception.InvalidTransaction.code) {
@@ -335,6 +347,7 @@ async function getTxsQuery(params: {
     });
     return query;
 }
+
 export async function getTransactions(params: {
     address?: string | null;
     assetType?: H256 | null;
@@ -506,9 +519,184 @@ export async function updatePendingTransaction(
                 }
             }
         );
+        const txInst = await getByHash(hash);
+        if (!txInst) {
+            throw Exception.InvalidTransaction;
+        }
+        await handleUTXO(txInst.get({ plain: true }), params.blockNumber);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;
+    }
+}
+
+export async function handleUTXO(
+    transaction: TransactionAttribute,
+    blockNumber: number
+) {
+    const networkId = transaction.networkId;
+    if (transaction.type === "assetMint") {
+        const output = transaction.output;
+        if (output) {
+            const recipient = AddressUtil.getOwner(
+                new H160(output.lockScriptHash),
+                output.parameters,
+                networkId
+            );
+            await UTXOModel.createUTXO(
+                recipient,
+                {
+                    assetType: new H256(output.assetType),
+                    lockScriptHash: new H160(output.lockScriptHash),
+                    parameters: output.parameters,
+                    amount: new U64(output.amount),
+                    transactionHash: new H256(output.transactionHash),
+                    transactionOutputIndex: 0
+                },
+                blockNumber
+            );
+        }
+    } else if (transaction.type === "assetTransfer") {
+        const outputs = transaction.outputs;
+        if (outputs) {
+            await Promise.all(
+                outputs.map(async (output, index) => {
+                    const recipient = AddressUtil.getOwner(
+                        new H160(output.lockScriptHash),
+                        output.parameters,
+                        networkId
+                    );
+                    await UTXOModel.createUTXO(
+                        recipient,
+                        {
+                            assetType: new H256(output.assetType),
+                            lockScriptHash: new H160(output.lockScriptHash),
+                            parameters: output.parameters,
+                            amount: new U64(output.amount),
+                            transactionHash: new H256(output.transactionHash),
+                            transactionOutputIndex: index
+                        },
+                        blockNumber
+                    );
+                })
+            );
+        }
+        const inputs = transaction.inputs;
+        if (inputs) {
+            await Promise.all(
+                inputs.map(async input => {
+                    const utxoInst = await UTXOModel.getByTxHashIndex(
+                        new H256(input.prevOut.transactionHash),
+                        input.prevOut.index
+                    );
+                    if (!utxoInst) {
+                        throw Exception.InvalidUTXO;
+                    }
+                    await UTXOModel.setUsed(
+                        utxoInst.get().id!,
+                        new H256(transaction.hash)
+                    );
+                })
+            );
+        }
+        const burns = transaction.burns;
+        if (burns) {
+            await Promise.all(
+                burns.map(async burn => {
+                    const utxoInst = await UTXOModel.getByTxHashIndex(
+                        new H256(burn.prevOut.transactionHash),
+                        burn.prevOut.index
+                    );
+                    if (!utxoInst) {
+                        throw Exception.InvalidUTXO;
+                    }
+                    await UTXOModel.setUsed(
+                        utxoInst.get().id!,
+                        new H256(transaction.hash)
+                    );
+                })
+            );
+        }
+    } else if (transaction.type === "assetCompose") {
+        const output = transaction.output;
+        const inputs = transaction.inputs;
+        if (inputs) {
+            await Promise.all(
+                inputs.map(async input => {
+                    const utxoInst = await UTXOModel.getByTxHashIndex(
+                        new H256(input.prevOut.transactionHash),
+                        input.prevOut.index
+                    );
+                    if (!utxoInst) {
+                        throw Exception.InvalidUTXO;
+                    }
+                    await UTXOModel.setUsed(
+                        utxoInst.get().id!,
+                        new H256(transaction.hash)
+                    );
+                })
+            );
+        }
+        if (output) {
+            const recipient = AddressUtil.getOwner(
+                new H160(output.lockScriptHash),
+                output.parameters,
+                networkId
+            );
+            await UTXOModel.createUTXO(
+                recipient,
+                {
+                    assetType: new H256(output.assetType),
+                    lockScriptHash: new H160(output.lockScriptHash),
+                    parameters: output.parameters,
+                    amount: new U64(output.amount),
+                    transactionHash: new H256(output.transactionHash),
+                    transactionOutputIndex: 0
+                },
+                blockNumber
+            );
+        }
+    } else if (transaction.type === "assetDecompose") {
+        const outputs = transaction.outputs;
+        const input = transaction.input;
+        if (input) {
+            const utxoInst = await UTXOModel.getByTxHashIndex(
+                new H256(input.prevOut.transactionHash),
+                input.prevOut.index
+            );
+            if (!utxoInst) {
+                throw Exception.InvalidUTXO;
+            }
+            await UTXOModel.setUsed(
+                utxoInst.get().id!,
+                new H256(transaction.hash)
+            );
+        }
+        if (outputs) {
+            await Promise.all(
+                outputs.map(async (output, index) => {
+                    const recipient = AddressUtil.getOwner(
+                        new H160(output.lockScriptHash),
+                        output.parameters,
+                        networkId
+                    );
+                    await UTXOModel.createUTXO(
+                        recipient,
+                        {
+                            assetType: new H256(output.assetType),
+                            lockScriptHash: new H160(output.lockScriptHash),
+                            parameters: output.parameters,
+                            amount: new U64(output.amount),
+                            transactionHash: new H256(output.transactionHash),
+                            transactionOutputIndex: index
+                        },
+                        blockNumber
+                    );
+                })
+            );
+        }
+    } else {
+        throw Exception.InvalidTransaction;
     }
 }
 

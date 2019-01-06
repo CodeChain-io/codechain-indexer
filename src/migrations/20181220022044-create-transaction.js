@@ -7,6 +7,10 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.STRING
             },
+            type: {
+                type: Sequelize.STRING,
+                allowNull: false
+            },
             actionId: {
                 allowNull: false,
                 type: Sequelize.BIGINT,

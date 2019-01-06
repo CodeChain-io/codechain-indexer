@@ -45,13 +45,17 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.JSONB
             },
-            usedTransaction: {
+            usedTransactionHash: {
                 type: Sequelize.STRING,
                 onDelete: "SET NULL",
                 references: {
                     model: "Transactions",
                     key: "hash"
                 }
+            },
+            blockNumber: {
+                allowNull: false,
+                type: Sequelize.INTEGER
             },
             createdAt: {
                 allowNull: false,

@@ -95,6 +95,10 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            type: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
             actionId: {
                 allowNull: false,
                 type: DataTypes.BIGINT,

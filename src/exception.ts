@@ -53,3 +53,8 @@ export const NotImplmeneted: Exception = {
     code: 110,
     message: "NotImplemented"
 };
+
+export const InvalidDateParam: Exception = {
+    code: 111,
+    message: "InvalidDateParam"
+};
