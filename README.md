@@ -15,7 +15,7 @@ A blockchain data indexing tool for CodeChain
 The software dependencies required to install and run CodeChain-indexer are:
 
 - Latest version of the [CodeChain](https://github.com/CodeChain-io/codechain)
-- ElasticSearch [`v6.4.3`](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
+- PostgreSQL [`v11.*`](https://www.postgresql.org/download/)
 - Nodejs higher than version 8
 
 #### Download
@@ -40,65 +40,54 @@ yarn install
 #### Dependency
 
 - Get CodeChain ready with the CodeChain RPC server
-- Get ElasticSearch database ready for indexing block data
+- Get PostgreSQL database ready for indexing block data
 
-#### Processor description
+#### Create the database and user on the PostgreSQL
 
-- Indexer
+```
+# download postgresql with Homebrew
+brew install postgresql
+brew services start postgresql
 
-  - Client developed by react framework
+# Create the user and db with supporting sql script
+psql postgres -f create_user_and_db.sql
 
-- Server
-
-  - Restful API server for getting data from DB
+# Create the schema of the database
+yarn run migrate
+```
 
 ## Run
-
-### Indexer
 
 Run codechain-indexer to create indices on ElasticSearch
 
 ```
-yarn run start-indexer
+yarn run start
 
-// You can change the ElasticSearch and the CodeChain host URL using the environment variables.
-# CODECHAIN_CHAIN=huksy CODECHAIN_HOST=http://52.79.108.1:8080 ELASTICSEARCH_HOST=http://127.0.0.1:9200 yarn run start
+# You can change the host of CodeChain and DB host on the config/dev.json
 ```
 
-### Server
-
-Run CodeChain-indexer server to supply the restful API
+## Test
 
 ```
-# yarn run start-server
+# Create the test database
+NODE_ENV=test yarn run migrate
 
-// You can change ElasticSearch and CodeChain host URL using an environment variables.
-# CODECHAIN_HOST=http://52.79.108.1:8080 ELASTICSEARCH_HOST=http://127.0.0.1:9200 yarn run start-server
+# Start testing
+yarn run test
+```
+
+## API document
+
+```
+NODE_ENV=dev yarn run start
+
+# Swagger UI is running at "http://host:port/api-docs/"
 ```
 
 ## Tools
 
-#### Delete all indices from ElasticSearch
+#### Delete all database data
 
 ```
-yarn run clear
+yarn run reset
 ```
-
-## Custom Configuration
-
-#### Indexer
-
-|                      | Default               | Options             | Description |
-| -------------------- | --------------------- | ------------------- | ----------- |
-| CODECHAIN_HOST       | http://127.0.0.1:8080 |                     |             |
-| ELASTICSEARCH_HOST   | http://127.0.0.1:9200 |                     |             |
-| CODECHAIN_CHAIN      | solo                  | solo, husky, saluki |             |
-| CODECHAIN_NETWORK_ID | tc                    | tc, sc, wc          |             |
-
-#### Server
-
-|                    | Default               | Options | Description |
-| ------------------ | --------------------- | ------- | ----------- |
-| CODECHAIN_HOST     | http://127.0.0.1:8080 |         |             |
-| ELASTICSEARCH_HOST | http://127.0.0.1:9200 |         |             |
-| SERVER_PORT        | 8081                  |
