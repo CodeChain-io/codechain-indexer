@@ -22,7 +22,7 @@ test(
         await waitForSecond(2);
         await Helper.worker.sync();
 
-        const pendingParcelsInst = await ParcelModel.getPendingParcels();
+        const pendingParcelsInst = await ParcelModel.getPendingParcels({});
         expect(pendingParcelsInst.length).toEqual(1);
 
         const pendingParcel = await pendingParcelsInst![0]!.get();
@@ -31,7 +31,7 @@ test(
         await Helper.sdk.rpc.devel.startSealing();
         await Helper.worker.sync();
 
-        const newPendingParcelsInst = await ParcelModel.getPendingParcels();
+        const newPendingParcelsInst = await ParcelModel.getPendingParcels({});
         expect(newPendingParcelsInst.length).toEqual(0);
 
         const indexedParcelInst = await ParcelModel.getByHash(
