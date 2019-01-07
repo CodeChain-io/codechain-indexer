@@ -7,70 +7,58 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.STRING
             },
-            type: {
+            blockNumber: {
+                type: Sequelize.INTEGER
+            },
+            blockHash: {
                 type: Sequelize.STRING,
-                allowNull: false
+                onDelete: "CASCADE",
+                references: {
+                    model: "Blocks",
+                    key: "hash"
+                }
+            },
+            transactionIndex: {
+                type: Sequelize.INTEGER
             },
             actionId: {
                 allowNull: false,
-                type: Sequelize.BIGINT,
+                type: Sequelize.INTEGER,
                 onDelete: "CASCADE",
                 references: {
                     model: "Actions",
                     key: "id"
                 }
             },
-            output: {
-                type: Sequelize.JSONB
+            seq: {
+                allowNull: false,
+                type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
-            burns: {
-                type: Sequelize.JSONB
-            },
-            input: {
-                type: Sequelize.JSONB
-            },
-            inputs: {
-                type: Sequelize.JSONB
-            },
-            outputs: {
-                type: Sequelize.JSONB
-            },
-            networkId: {
-                type: Sequelize.STRING
-            },
-            shardId: {
-                type: Sequelize.INTEGER
-            },
-            metadata: {
-                type: Sequelize.STRING
-            },
-            approver: {
-                type: Sequelize.STRING
-            },
-            administrator: {
-                type: Sequelize.STRING
-            },
-            timestamp: {
-                type: Sequelize.INTEGER
-            },
-            assetName: {
-                type: Sequelize.STRING
-            },
-            parcelHash: {
+            fee: {
                 allowNull: false,
                 type: Sequelize.STRING
             },
-            blockNumber: {
-                type: Sequelize.INTEGER
+            networkId: {
+                allowNull: false,
+                type: Sequelize.STRING
             },
-            parcelIndex: {
-                type: Sequelize.INTEGER
+
+            sig: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
+            signer: {
+                allowNull: false,
+                type: Sequelize.STRING
             },
             invoice: {
                 type: Sequelize.BOOLEAN
             },
             errorType: {
                 type: Sequelize.STRING
+            },
+            timestamp: {
+                type: Sequelize.INTEGER
             },
             isPending: {
                 allowNull: false,
@@ -79,6 +67,7 @@ module.exports = {
             pendingTimestamp: {
                 type: Sequelize.INTEGER
             },
+
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

@@ -19,19 +19,14 @@ export const DBError: Exception = {
     message: "DBError"
 };
 
-export const InvalidParcel: Exception = {
+export const InvalidTransaction: Exception = {
     code: 104,
-    message: "InvalidParcel"
+    message: "InvalidTransaction"
 };
 
 export const InvalidAction: Exception = {
     code: 105,
     message: "InvalidAction"
-};
-
-export const InvalidTransaction: Exception = {
-    code: 106,
-    message: "InvalidTransaction"
 };
 
 export const InvalidBlockNumber: Exception = {

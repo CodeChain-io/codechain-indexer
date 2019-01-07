@@ -41,17 +41,14 @@ export const sendTransaction = async ({
 }: {
     transaction: Transaction;
 }) => {
-    const parcel = sdk.core.createAssetTransactionParcel({
-        transaction
-    });
-    const signedParcel = parcel.sign({
+    const signed = transaction.sign({
         secret: ACCOUNT_SECRET,
         seq: await sdk.rpc.chain.getSeq(ACCOUNT_ADDRESS),
         fee: 10
     });
-    const parcelHash = await sdk.rpc.chain.sendSignedParcel(signedParcel);
+    const hash = await sdk.rpc.chain.sendSignedTransaction(signed);
     return {
-        parcelHash
+        hash
     };
 };
 
@@ -83,14 +80,11 @@ export const mintAsset = async ({
     };
 };
 
-export const payment = async (params?: { inc_seq?: number }) => {
+export const pay = async (params?: { inc_seq?: number }) => {
     const { inc_seq = 0 } = params || {};
-    let seq = await sdk.rpc.chain.getSeq(ACCOUNT_ADDRESS);
-    for (let i = 0; i < inc_seq; i++) {
-        seq += 1;
-    }
-    const p = sdk.core
-        .createPaymentParcel({
+    const seq = (await sdk.rpc.chain.getSeq(ACCOUNT_ADDRESS))! + inc_seq;
+    const signed = sdk.core
+        .createPayTransaction({
             amount: 10,
             recipient: ACCOUNT_ADDRESS
         })
@@ -99,7 +93,7 @@ export const payment = async (params?: { inc_seq?: number }) => {
             fee: 10,
             seq
         });
-    return await sdk.rpc.chain.sendSignedParcel(p);
+    return await sdk.rpc.chain.sendSignedTransaction(signed);
 };
 
 export const runExample = (name: string) => {

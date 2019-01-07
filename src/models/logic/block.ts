@@ -4,13 +4,13 @@ import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { BlockInstance } from "../block";
 import models from "../index";
-import * as ParcelModel from "./parcel";
+import * as TxModel from "./transaction";
 
 export async function createBlock(
     block: Block,
     params: {
         miningReward: U64;
-        invoices: { invoice: boolean | null; errorType: string | null }[];
+        invoices: { invoice: boolean; errorType?: string | null }[];
     }
 ): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
@@ -21,7 +21,7 @@ export async function createBlock(
             number: block.number,
             author: block.author.value,
             extraData: block.extraData,
-            parcelsRoot: block.parcelsRoot.value,
+            transactionsRoot: block.transactionsRoot.value,
             stateRoot: block.stateRoot.value,
             invoicesRoot: block.invoicesRoot.value,
             score: block.score.value.toString(10),
@@ -30,23 +30,27 @@ export async function createBlock(
             miningReward: params.miningReward.value.toString(10)
         });
         await Promise.all(
-            block.parcels.map(async parcel => {
-                const invoice = params.invoices[parcel.parcelIndex!];
-                const parcelInst = await ParcelModel.getByHash(parcel.hash());
-                if (parcelInst) {
-                    await ParcelModel.updatePendingParcel(parcel.hash(), {
+            block.transactions.map(async tx => {
+                const invoice = params.invoices[tx.transactionIndex!];
+                // FIXME: fix tslint to allow ==
+                if (invoice === null || invoice === undefined) {
+                    throw Error("invalid invoice");
+                }
+                const txInst = await TxModel.getByHash(tx.hash());
+                if (txInst) {
+                    await TxModel.updatePendingTransaction(tx.hash(), {
                         timestamp: block.timestamp,
-                        invoice: invoice && invoice.invoice,
-                        errorType: invoice && invoice.errorType,
-                        parcelIndex: parcel.parcelIndex!,
-                        blockNumber: parcel.blockNumber!,
-                        blockHash: parcel.blockHash!
+                        invoice: invoice.invoice,
+                        errorType: invoice.errorType,
+                        transactionIndex: tx.transactionIndex!,
+                        blockNumber: tx.blockNumber!,
+                        blockHash: tx.blockHash!
                     });
                 } else {
-                    await ParcelModel.createParcel(parcel, false, {
+                    await TxModel.createTransaction(tx, false, {
                         timestamp: block.timestamp,
-                        invoice: invoice && invoice.invoice,
-                        errorType: invoice && invoice.errorType
+                        invoice: invoice.invoice,
+                        errorType: invoice.errorType
                     });
                 }
             })
@@ -66,34 +70,28 @@ export async function createBlock(
 
 const includeArray = [
     {
-        as: "parcels",
-        model: models.Parcel,
+        as: "transactions",
+        model: models.Transaction,
         include: [
             {
                 as: "action",
                 model: models.Action,
                 include: [
                     {
-                        as: "transaction",
-                        model: models.Transaction,
-                        include: [
-                            {
-                                as: "outputs",
-                                model: models.AssetTransferOutput
-                            },
-                            {
-                                as: "output",
-                                model: models.AssetMintOutput
-                            },
-                            {
-                                as: "inputs",
-                                model: models.AssetTransferInput
-                            },
-                            {
-                                as: "input",
-                                model: models.AssetDecomposeInput
-                            }
-                        ]
+                        as: "outputs",
+                        model: models.AssetTransferOutput
+                    },
+                    {
+                        as: "output",
+                        model: models.AssetMintOutput
+                    },
+                    {
+                        as: "inputs",
+                        model: models.AssetTransferInput
+                    },
+                    {
+                        as: "input",
+                        model: models.AssetDecomposeInput
                     }
                 ]
             }

@@ -1,13 +1,12 @@
 import { Asset, H256 } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
-import * as _ from "lodash";
 import * as Exception from "../../exception";
 import { AssetMintOutputInstance } from "../assetmintoutput";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
 
 export async function createAssetMintOutput(
-    transactionHash: H256,
+    actionId: number,
     output: AssetMintOutput,
     params: {
         assetType: H256;
@@ -17,15 +16,14 @@ export async function createAssetMintOutput(
         asset: Asset;
     }
 ): Promise<AssetMintOutputInstance> {
-    let assetMintOutputInstance: AssetMintOutputInstance;
     try {
         const recipient = AddressUtil.getOwner(
             output.lockScriptHash,
             output.parameters,
             params.networkId
         );
-        assetMintOutputInstance = await models.AssetMintOutput.create({
-            transactionHash: transactionHash.value,
+        return await models.AssetMintOutput.create({
+            actionId,
             lockScriptHash: output.lockScriptHash.value,
             parameters: output.parameters,
             amount: output.amount!.value.toString(10),
@@ -38,17 +36,16 @@ export async function createAssetMintOutput(
         console.error(err);
         throw Exception.DBError;
     }
-    return assetMintOutputInstance;
 }
 
 // This is for the cascade test
-export async function getByHash(
-    transactionHash: H256
+export async function getByActionId(
+    actionId: number
 ): Promise<AssetMintOutputInstance | null> {
     try {
         return await models.AssetMintOutput.findOne({
             where: {
-                transactionHash: transactionHash.value
+                actionId
             }
         });
     } catch (err) {

@@ -1,4 +1,4 @@
-import { Payment } from "codechain-sdk/lib/core/classes";
+import { Pay } from "codechain-sdk/lib/core/classes";
 import models from "../src/models";
 import * as AccountModel from "../src/models/logic/account";
 import * as BlockModel from "../src/models/logic/block";
@@ -6,7 +6,7 @@ import * as Helper from "./helper";
 
 beforeAll(async done => {
     await Helper.runExample("import-test-account");
-    await Helper.runExample("send-signed-parcel");
+    await Helper.runExample("send-signed-tx");
     done();
 });
 
@@ -32,6 +32,9 @@ test(
         const afterLatestBlockDoc = afterLatestBlockInst!.get();
         if (beforeLatestBlockInst) {
             const beforeLatestBlockDoc = beforeLatestBlockInst!.get();
+            expect(beforeLatestBlockDoc.number).not.toEqual(
+                afterLatestBlockDoc.number
+            );
             expect(beforeLatestBlockDoc.hash).not.toEqual(
                 afterLatestBlockDoc.hash
             );
@@ -61,15 +64,16 @@ test(
         const paymentBlock = await Helper.sdk.rpc.chain.getBlock(
             paymentBlockNumber
         );
-        const receiver = (paymentBlock!.parcels[0]!.unsigned.action as Payment)
-            .receiver.value;
+        expect(paymentBlock!.transactions[0]!.unsigned.type()).toEqual("pay");
+        // FIXME: remove any
+        const receiver = ((paymentBlock!.transactions[0]!.unsigned as Pay) as any).receiver.value;
         const receiverInst = await AccountModel.getByAddress(receiver);
-        const receiverBalance = receiverInst!.get();
-        await Helper.runExample("send-signed-parcel");
+        const receiverBalance = receiverInst!.get("balance");
+        await Helper.runExample("send-signed-tx");
         await Helper.worker.sync();
         const newReceiverInst = await AccountModel.getByAddress(receiver);
         const newReceiverBalance = newReceiverInst!.get();
-        expect(newReceiverBalance.balance).not.toEqual(receiverBalance.balance);
+        expect(newReceiverBalance.balance).not.toEqual(receiverBalance);
 
         done();
     },

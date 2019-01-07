@@ -1,5 +1,28 @@
+import { Timelock } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
-import { AssetTransferInputAttribute } from "./transaction";
+import { AssetSchemeAttribute } from "./assetscheme";
+
+export interface AssetTransferInputAttribute {
+    id?: string;
+    actionId: number;
+    prevOut: AssetOutPointAttribute;
+    timelock?: Timelock | null;
+    owner?: string | null;
+    assetType: string;
+    lockScript: Buffer;
+    unlockScript: Buffer;
+}
+
+export interface AssetOutPointAttribute {
+    transactionId: string;
+    index: number;
+    assetType: string;
+    assetScheme: AssetSchemeAttribute;
+    amount: string;
+    owner?: string | null;
+    lockScriptHash?: string | null;
+    parameters?: Buffer[] | null;
+}
 
 export interface AssetTransferInputInstance
     extends Sequelize.Instance<AssetTransferInputAttribute> {}
@@ -17,9 +40,14 @@ export default (
                 primaryKey: true,
                 type: DataTypes.BIGINT
             },
-            transactionHash: {
+            actionId: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.INTEGER,
+                onDelete: "CASCADE",
+                references: {
+                    model: "Actions",
+                    key: "id"
+                }
             },
             prevOut: {
                 allowNull: false,

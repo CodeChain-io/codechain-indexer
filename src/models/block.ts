@@ -1,22 +1,22 @@
 import * as Sequelize from "sequelize";
-import { ParcelAttribute } from "./parcel";
+import { TransactionAttribute } from "./transaction";
 
 export interface BlockAttribute {
+    hash: string;
     parentHash: string;
     timestamp: number;
     number: number;
     author: string;
     extraData: Buffer;
-    parcelsRoot: string;
+    transactionsRoot: string;
     stateRoot: string;
     invoicesRoot: string;
     score: string;
     seal: Buffer[];
-    hash: string;
     miningReward: string;
     createdAt?: string;
     updatedAt?: string;
-    parcels?: ParcelAttribute[];
+    transactions?: TransactionAttribute[];
 }
 
 export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
@@ -53,7 +53,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-            parcelsRoot: {
+            transactionsRoot: {
                 allowNull: false,
                 type: DataTypes.STRING
             },
@@ -89,9 +89,9 @@ export default (
         {}
     );
     Block.associate = models => {
-        Block.hasMany(models.Parcel, {
+        Block.hasMany(models.Transaction, {
             foreignKey: "blockHash",
-            as: "parcels",
+            as: "transactions",
             onDelete: "CASCADE"
         });
     };

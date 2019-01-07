@@ -1,7 +1,6 @@
 import * as _ from "lodash";
 import * as moment from "moment";
 import * as LogModel from "../../src/models/logic/log";
-import * as Type from "../../src/models/logic/utils/type";
 import { BlockAttribute } from "../models/block";
 import { LogType } from "../models/log";
 
@@ -18,119 +17,99 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         1,
         block.author
     );
-    const parcelCount = block.parcels!.length;
-    if (parcelCount > 0) {
-        await queryLog(
-            isRetracted,
-            dateString,
-            LogType.PARCEL_COUNT,
-            parcelCount
-        );
-        const paymentParcelCount = _.filter(
-            block.parcels,
-            p => p.action!.action === "payment"
+    const txCount = block.transactions!.length;
+    if (txCount > 0) {
+        await queryLog(isRetracted, dateString, LogType.TX_COUNT, txCount);
+
+        const mintAssetCount = _.filter(
+            block.transactions,
+            tx => tx!.action!.type === "mintAsset"
         ).length;
         await queryLog(
             isRetracted,
             dateString,
-            LogType.PARCEL_PAYMENT_COUNT,
-            paymentParcelCount
+            LogType.MINT_ASSET_COUNT,
+            mintAssetCount
         );
-        const setRegularKeyParcelCount = _.filter(
-            block.parcels,
-            p => p.action!.action === "setRegularKey"
+        const assetTransferTxCount = _.filter(
+            block.transactions,
+            tx => tx!.action!.type === "transferAsset"
         ).length;
         await queryLog(
             isRetracted,
             dateString,
-            LogType.PARCEL_SET_REGULAR_KEY_COUNT,
-            setRegularKeyParcelCount
+            LogType.TRANSFER_ASSET_COUNT,
+            assetTransferTxCount
         );
-        const assetTransactionGroupParcelCount = _.filter(
-            block.parcels,
-            p => p.action!.action === "assetTransaction"
+        const assetComposeTxCount = _.filter(
+            block.transactions,
+            tx => tx!.action!.type === "composeAsset"
         ).length;
         await queryLog(
             isRetracted,
             dateString,
-            LogType.PARCEL_ASSET_TRANSACTION_COUNT,
-            assetTransactionGroupParcelCount
+            LogType.COMPOSE_ASSET_COUNT,
+            assetComposeTxCount
         );
-        const setShardOwnersParcelCount = _.filter(
-            block.parcels,
-            p => p.action!.action === "setShardOwners"
+        const assetDecomposeTxCount = _.filter(
+            block.transactions,
+            tx => tx!.action!.type === "decomposeAsset"
         ).length;
         await queryLog(
             isRetracted,
             dateString,
-            LogType.PARCEL_SET_SHARD_OWNER_COUNT,
-            setShardOwnersParcelCount
-        );
-        const setShardUserParcelCount = _.filter(
-            block.parcels,
-            p => p.action!.action === "setShardUsers"
-        ).length;
-        await queryLog(
-            isRetracted,
-            dateString,
-            LogType.PARCEL_SET_SHARD_USER_COUNT,
-            setShardUserParcelCount
-        );
-        const createShardParcelCount = _.filter(
-            block.parcels,
-            p => p.action!.action === "createShard"
-        ).length;
-        await queryLog(
-            isRetracted,
-            dateString,
-            LogType.PARCEL_CREATE_SHARD_COUNT,
-            createShardParcelCount
+            LogType.DECOMPOSE_ASSET_COUNT,
+            assetDecomposeTxCount
         );
 
-        const transactions = Type.getTransactions(block);
-        const txCount = transactions.length;
+        const payCount = _.filter(
+            block.transactions,
+            p => p.action!.type === "pay"
+        ).length;
+        await queryLog(isRetracted, dateString, LogType.PAY_COUNT, payCount);
+        const setRegularKeyCount = _.filter(
+            block.transactions,
+            p => p.action!.type === "setRegularKey"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.SET_REGULAR_KEY_COUNT,
+            setRegularKeyCount
+        );
+        const setShardOwnersCount = _.filter(
+            block.transactions,
+            p => p.action!.type === "setShardOwners"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.SET_SHARD_OWNER_COUNT,
+            setShardOwnersCount
+        );
+        const setShardUserCount = _.filter(
+            block.transactions,
+            p => p.action!.type === "setShardUsers"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.SET_SHARD_USER_COUNT,
+            setShardUserCount
+        );
+        const createShardCount = _.filter(
+            block.transactions,
+            p => p.action!.type === "createShard"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.CREATE_SHARD_COUNT,
+            createShardCount
+        );
+
         if (txCount) {
             await queryLog(isRetracted, dateString, LogType.TX_COUNT, txCount);
-            const assetMintTxCount = _.filter(
-                transactions,
-                tx => tx!.type === "assetMint"
-            ).length;
-            await queryLog(
-                isRetracted,
-                dateString,
-                LogType.TX_ASSET_MINT_COUNT,
-                assetMintTxCount
-            );
-            const assetTransferTxCount = _.filter(
-                transactions,
-                tx => tx!.type === "assetTransfer"
-            ).length;
-            await queryLog(
-                isRetracted,
-                dateString,
-                LogType.TX_ASSET_TRANSFER_COUNT,
-                assetTransferTxCount
-            );
-            const assetComposeTxCount = _.filter(
-                transactions,
-                tx => tx!.type === "assetCompose"
-            ).length;
-            await queryLog(
-                isRetracted,
-                dateString,
-                LogType.TX_ASSET_COMPOSE_COUNT,
-                assetComposeTxCount
-            );
-            const assetDecomposeTxCount = _.filter(
-                transactions,
-                tx => tx!.type === "assetDecompose"
-            ).length;
-            await queryLog(
-                isRetracted,
-                dateString,
-                LogType.TX_ASSET_DECOMPOSE_COUNT,
-                assetDecomposeTxCount
-            );
         }
     }
 }

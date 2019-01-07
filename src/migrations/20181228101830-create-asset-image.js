@@ -2,15 +2,19 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable("AssetImages", {
-            assetType: {
+            assetSchemeId: {
                 primaryKey: true,
                 allowNull: false,
-                type: Sequelize.STRING,
+                type: Sequelize.INTEGER,
                 onDelete: "CASCADE",
                 references: {
                     model: "AssetSchemes",
-                    key: "assetType"
+                    key: "id"
                 }
+            },
+            assetType: {
+                allowNull: false,
+                type: Sequelize.STRING
             },
             image: {
                 allowNull: false,

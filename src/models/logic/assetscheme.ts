@@ -8,14 +8,14 @@ import * as AssetImageModel from "./assetimage";
 
 export async function createAssetScheme(
     assetType: H256,
-    transactionHash: H256,
+    actionId: number,
     assetScheme: AssetScheme
 ): Promise<AssetSchemeInstance> {
     let assetSchemeInstance: AssetSchemeInstance;
     try {
         assetSchemeInstance = await models.AssetScheme.create({
             assetType: assetType.value,
-            transactionHash: transactionHash.value,
+            actionId,
             metadata: assetScheme.metadata,
             approver: assetScheme.approver && assetScheme.approver.value,
             administrator:
@@ -33,6 +33,7 @@ export async function createAssetScheme(
         }
         if (metadataObj && metadataObj.icon_url) {
             await AssetImageModel.createAssetImage(
+                assetSchemeInstance.get("id"),
                 assetType,
                 metadataObj.icon_url
             );

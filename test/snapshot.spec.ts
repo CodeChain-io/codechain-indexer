@@ -1,8 +1,7 @@
 import {
-    AssetMintTransaction,
-    AssetTransaction,
     Block,
-    H256
+    H256,
+    MintAsset
 } from "codechain-sdk/lib/core/classes";
 import * as moment from "moment";
 import models from "../src/models";
@@ -31,8 +30,7 @@ test("Register snapshot", async done => {
     );
     mintBlock = mintBlockResponse!;
 
-    const assetMintTransaction = (mintBlock.parcels[0].unsigned
-        .action as AssetTransaction).transaction as AssetMintTransaction;
+    const assetMintTransaction = (mintBlock.transactions[0].unsigned as MintAsset);
 
     assetType = assetMintTransaction.getAssetSchemeAddress();
 
