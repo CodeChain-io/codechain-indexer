@@ -36,7 +36,7 @@ import * as UTXOModel from "../models/logic/utxo";
  *       content:
  *         type: string
  *         description: AssetScheme example
- *   AggUTXO:
+ *   AggsUTXO:
  *     type: object
  *     required:
  *       - content
@@ -194,6 +194,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *     summary: Returns aggregated utxo list (Not implemented)
      *     tags: [Asset]
      *     parameters:
+     *       - name: address
+     *         description: filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
      *       - name: assetType
      *         description: filter by assetType
      *         in: formData
@@ -226,9 +231,91 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: object
      *           $ref: '#/definitions/AggsUTXO'
      */
-    router.get("/aggs-utxo-list/:address", async (_A, _B, next) => {
+    router.get("/aggs-utxo", async (req, res, next) => {
+        const address = req.query.address;
+        const assetTypeString = req.query.assetType;
+        const page = req.query.page && parseInt(req.query.page, 10);
+        const itemsPerPage =
+            req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+        const onlyConfirmed =
+            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+        const confirmThreshold =
+            req.query.confirmThreshold &&
+            parseInt(req.query.confirmThreshold, 10);
+        let assetType;
         try {
-            throw Exception.NotImplmeneted;
+            if (assetTypeString) {
+                assetType = new H256(assetTypeString);
+            }
+            const aggsInst = await UTXOModel.getAggsUTXO({
+                address,
+                assetType,
+                page,
+                itemsPerPage,
+                onlyConfirmed,
+                confirmThreshold
+            });
+            const utxo = aggsInst.map(inst => inst.get({ plain: true }));
+            res.json(utxo);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    /**
+     * @swagger
+     * /aggs-utxo/count:
+     *   get:
+     *     summary: Returns aggregated utxo list (Not implemented)
+     *     tags: [Asset]
+     *     parameters:
+     *       - name: address
+     *         description: filter by address
+     *         in: formData
+     *         required: false
+     *         type: string
+     *       - name: assetType
+     *         description: filter by assetType
+     *         in: formData
+     *         required: false
+     *         type: string
+     *       - name: onlyConfirmed
+     *         description: returns only confirmed component
+     *         in: formData
+     *         required: false
+     *         type: boolean
+     *       - name: confirmThreshold
+     *         description: confirm threshold
+     *         in: formData
+     *         required: false
+     *         type: number
+     *     responses:
+     *       200:
+     *         description: aggregated utxo
+     *         schema:
+     *           type: object
+     *           $ref: '#/definitions/AggsUTXO'
+     */
+    router.get("/aggs-utxo/count", async (req, res, next) => {
+        const address = req.query.address;
+        const assetTypeString = req.query.assetType;
+        const onlyConfirmed =
+            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+        const confirmThreshold =
+            req.query.confirmThreshold &&
+            parseInt(req.query.confirmThreshold, 10);
+        let assetType;
+        try {
+            if (assetTypeString) {
+                assetType = new H256(assetTypeString);
+            }
+            const count = await UTXOModel.getCountOfAggsUTXO({
+                address,
+                assetType,
+                onlyConfirmed,
+                confirmThreshold
+            });
+            res.json(count);
         } catch (e) {
             next(e);
         }

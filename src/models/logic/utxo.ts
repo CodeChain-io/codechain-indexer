@@ -219,6 +219,133 @@ export async function getUTXO(params: {
     }
 }
 
+export async function getAggsUTXO(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    page?: number | null;
+    itemsPerPage?: number | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const {
+        address,
+        assetType,
+        page = 1,
+        itemsPerPage = 15,
+        onlyConfirmed = false,
+        confirmThreshold = 0
+    } = params;
+    const query: any = await getUTXOQuery({
+        address,
+        assetType,
+        onlyConfirmed,
+        confirmThreshold
+    });
+    let includeArray: any = [];
+    if (onlyConfirmed) {
+        const latestBlockInst = await BlockModel.getLatestBlock();
+        const latestBlockNumber = latestBlockInst
+            ? latestBlockInst.get().number
+            : 0;
+        includeArray = [
+            {
+                as: "usedTransaction",
+                model: models.Transaction,
+                required: false,
+                where: {
+                    blockNumber: {
+                        [Sequelize.Op.lte]:
+                            latestBlockNumber - confirmThreshold!
+                    }
+                },
+                attributes: []
+            }
+        ];
+    }
+    try {
+        return await models.UTXO.findAll({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            attributes: [
+                [
+                    Sequelize.fn("SUM", Sequelize.col("amount")),
+                    "totalAssetQuantity"
+                ],
+                "assetType",
+                [
+                    Sequelize.fn("COUNT", Sequelize.col("assetType")),
+                    "utxoQuantity"
+                ]
+            ],
+            order: Sequelize.literal(
+                `"totalAssetQuantity" DESC, "assetType" DESC`
+            ),
+            limit: itemsPerPage!,
+            offset: (page! - 1) * itemsPerPage!,
+            include: includeArray,
+            group: ["assetType"]
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getCountOfAggsUTXO(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+    onlyConfirmed?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    const {
+        address,
+        assetType,
+        onlyConfirmed = false,
+        confirmThreshold = 0
+    } = params;
+    const query: any = await getUTXOQuery({
+        address,
+        assetType,
+        onlyConfirmed,
+        confirmThreshold
+    });
+    let includeArray: any = [];
+    if (onlyConfirmed) {
+        const latestBlockInst = await BlockModel.getLatestBlock();
+        const latestBlockNumber = latestBlockInst
+            ? latestBlockInst.get().number
+            : 0;
+        includeArray = [
+            {
+                as: "usedTransaction",
+                model: models.Transaction,
+                required: false,
+                where: {
+                    blockNumber: {
+                        [Sequelize.Op.lte]:
+                            latestBlockNumber - confirmThreshold!
+                    }
+                },
+                attributes: []
+            }
+        ];
+    }
+    try {
+        return await models.UTXO.count({
+            where: {
+                [Sequelize.Op.and]: query
+            },
+            distinct: true,
+            col: "assetType",
+            include: includeArray
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
 export async function getByTxHashIndex(
     transactionHash: H256,
     outputIndex: number
