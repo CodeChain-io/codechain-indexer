@@ -3,15 +3,17 @@ import * as express from "express";
 import swaggerJSDoc = require("swagger-jsdoc");
 import * as swaggerUi from "swagger-ui-express";
 import { createApiRouter } from "./api";
+import { IndexerConfig } from "./config";
 import { IndexerContext } from "./context";
 import log from "./log";
 
+const httpPort = (require("config") as IndexerConfig).httpPort || 9001;
 const swaggerDefinition = {
     info: {
         title: "CodeChain Indexer API",
         version: "1.0.0"
     },
-    host: "localhost:3000",
+    host: `localhost:${httpPort}`,
     basePath: "/api"
 };
 
