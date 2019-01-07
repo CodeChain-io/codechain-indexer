@@ -1,5 +1,5 @@
 import * as Sequelize from "sequelize";
-import { AssetTransferInputAttribute } from "./transaction";
+import { AssetTransferInputAttribute } from "./assettransferinput";
 
 export interface AssetDecomposeInputInstance
     extends Sequelize.Instance<AssetTransferInputAttribute> {}
@@ -17,9 +17,14 @@ export default (
                 primaryKey: true,
                 type: DataTypes.BIGINT
             },
-            transactionHash: {
+            actionId: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.INTEGER,
+                onDelete: "CASCADE",
+                references: {
+                    model: "Actions",
+                    key: "id"
+                }
             },
             prevOut: {
                 allowNull: false,

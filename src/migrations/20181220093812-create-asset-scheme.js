@@ -2,18 +2,23 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable("AssetSchemes", {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER
+            },
             assetType: {
                 allowNull: false,
-                primaryKey: true,
                 type: Sequelize.STRING
             },
-            transactionHash: {
+            actionId: {
                 allowNull: false,
-                type: Sequelize.STRING,
+                type: Sequelize.INTEGER,
                 onDelete: "CASCADE",
                 references: {
-                    model: "Transactions",
-                    key: "hash"
+                    model: "Actions",
+                    key: "id"
                 }
             },
             metadata: {

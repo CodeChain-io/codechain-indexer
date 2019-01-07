@@ -1,15 +1,13 @@
-import { AssetTransferInput, H256 } from "codechain-sdk/lib/core/classes";
-import * as _ from "lodash";
+import { AssetTransferInput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
 import { AssetDecomposeInputInstance } from "../assetdecomposeinput";
 import { AssetSchemeAttribute } from "../assetscheme";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
-import * as UTXOModel from "./utxo";
 
 // FIXME: This is duplicated with asset transfer-input
 export async function createDecomposeInput(
-    transactionHash: H256,
+    actionId: number,
     input: AssetTransferInput,
     options: {
         networkId: string;
@@ -27,14 +25,14 @@ export async function createDecomposeInput(
                 options.networkId
             );
         assetDecomposeInputInstance = await models.AssetDecomposeInput.create({
-            transactionHash: transactionHash.value,
+            actionId,
             timelock: input.timelock,
             lockScript: input.lockScript,
             unlockScript: input.unlockScript,
             owner,
             assetType: input.prevOut.assetType.value,
             prevOut: {
-                transactionHash: input.prevOut.transactionHash.value,
+                transactionId: input.prevOut.transactionId.value,
                 index: input.prevOut.index,
                 assetType: input.prevOut.assetType.value,
                 assetScheme: options.assetScheme,
@@ -54,13 +52,13 @@ export async function createDecomposeInput(
 }
 
 // This is for the cascade test
-export async function getByHash(
-    transactionHash: H256
+export async function getByActionId(
+    actionId: number
 ): Promise<AssetDecomposeInputInstance | null> {
     try {
         return await models.AssetDecomposeInput.findOne({
             where: {
-                transactionHash: transactionHash.value
+                actionId
             }
         });
     } catch (err) {

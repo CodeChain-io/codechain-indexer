@@ -1,5 +1,4 @@
-import { AssetTransferInput, H256 } from "codechain-sdk/lib/core/classes";
-import * as _ from "lodash";
+import { AssetTransferInput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferBurnInstance } from "../assettransferburn";
@@ -8,7 +7,7 @@ import * as AddressUtil from "./utils/address";
 
 // FIXME: This is duplicated with asset transfer-input
 export async function createAssetTransferBurn(
-    transactionHash: H256,
+    actionId: number,
     burn: AssetTransferInput,
     options: {
         networkId: string;
@@ -26,14 +25,14 @@ export async function createAssetTransferBurn(
                 options.networkId
             );
         assetTransferBurnInstance = await models.AssetTransferBurn.create({
-            transactionHash: transactionHash.value,
+            actionId,
             timelock: burn.timelock,
             lockScript: burn.lockScript,
             unlockScript: burn.unlockScript,
             owner,
             assetType: burn.prevOut.assetType.value,
             prevOut: {
-                transactionHash: burn.prevOut.transactionHash.value,
+                transactionId: burn.prevOut.transactionId.value,
                 index: burn.prevOut.index,
                 assetType: burn.prevOut.assetType.value,
                 assetScheme: options.assetScheme,
@@ -53,13 +52,13 @@ export async function createAssetTransferBurn(
 }
 
 // This is for the cascade test
-export async function getByHash(
-    transactionHash: H256
+export async function getByActionId(
+    actionId: number
 ): Promise<AssetTransferBurnInstance[]> {
     try {
         return await models.AssetTransferBurn.findAll({
             where: {
-                transactionHash: transactionHash.value
+                actionId
             }
         });
     } catch (err) {

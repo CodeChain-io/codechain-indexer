@@ -1,55 +1,90 @@
 import * as Sequelize from "sequelize";
-import { TransactionAttribute } from "./transaction";
+import { AssetMintOutputAttribute } from "./assetmintoutput";
+import { AssetTransferInputAttribute } from "./assettransferinput";
+import { AssetTransferOutputAttribute } from "./assettransferoutput";
 
 export type ActionAttribute =
-    | AssetTransactionAttribute
-    | PaymentAttribute
+    | MintAssetAttribute
+    | TransferAssetAttribute
+    | ComposeAssetAttribute
+    | DecomposeAssetAttribute
+    | PayAttribute
     | SetRegularKeyAttribute
     | CreateShardAttribute
     | SetShardOwnersAttribute
     | SetShardUsersAttribute;
 
 interface ActionCommon {
-    id?: string;
-    invoice?: boolean | null;
-    errorType?: string | null;
+    id?: number;
 }
 
-export interface AssetTransactionAttribute extends ActionCommon {
-    action: "assetTransaction";
-    transaction?: TransactionAttribute;
-    parcelHash: string;
+export interface MintAssetAttribute extends ActionCommon {
+    type: "mintAsset";
+    networkId: string;
+    shardId: number;
+    metadata: string;
+    approver?: string | null;
+    administrator?: string | null;
     approvals: string[];
+    assetName?: string;
+    output?: AssetMintOutputAttribute;
 }
 
-export interface PaymentAttribute extends ActionCommon {
-    action: "payment";
-    parcelHash: string;
+export interface TransferAssetAttribute extends ActionCommon {
+    type: "transferAsset";
+    networkId: string;
+    approvals: string[];
+    inputs?: AssetTransferInputAttribute[];
+    burns?: AssetTransferInputAttribute[];
+    outputs?: AssetTransferOutputAttribute[];
+}
+
+export interface ComposeAssetAttribute extends ActionCommon {
+    type: "composeAsset";
+    networkId: string;
+    shardId: number;
+    metadata: string;
+    approver?: string | null;
+    administrator?: string | null;
+    approvals: string[];
+    assetName?: string;
+
+    inputs?: AssetTransferInputAttribute[];
+    output?: AssetTransferOutputAttribute;
+}
+
+export interface DecomposeAssetAttribute extends ActionCommon {
+    type: "decomposeAsset";
+    networkId: string;
+    approvals: string[];
+
+    input?: AssetTransferInputAttribute;
+    outputs?: AssetTransferOutputAttribute[];
+}
+
+export interface PayAttribute extends ActionCommon {
+    type: "pay";
     receiver: string;
     amount: string;
 }
 
 export interface SetRegularKeyAttribute extends ActionCommon {
-    action: "setRegularKey";
-    parcelHash: string;
+    type: "setRegularKey";
     key: string;
 }
 
 export interface CreateShardAttribute extends ActionCommon {
-    action: "createShard";
-    parcelHash: string;
+    type: "createShard";
 }
 
 export interface SetShardOwnersAttribute extends ActionCommon {
-    action: "setShardOwners";
-    parcelHash: string;
+    type: "setShardOwners";
     shardId: number;
     owners: string[];
 }
 
 export interface SetShardUsersAttribute extends ActionCommon {
-    action: "setShardUsers";
-    parcelHash: string;
+    type: "setShardUsers";
     shardId: number;
     users: string[];
 }
@@ -69,46 +104,52 @@ export default (
                 primaryKey: true,
                 type: DataTypes.INTEGER
             },
-            parcelHash: {
-                allowNull: false,
-                type: DataTypes.STRING,
-                onDelete: "CASCADE",
-                references: {
-                    model: "Parcels",
-                    key: "hash"
-                }
-            },
-            action: {
+            type: {
                 allowNull: false,
                 type: DataTypes.STRING
             },
+
+            networkId: {
+                type: Sequelize.STRING
+            },
+            shardId: {
+                type: Sequelize.INTEGER
+            },
+            metadata: {
+                type: Sequelize.STRING
+            },
+            approver: {
+                type: Sequelize.STRING
+            },
+            administrator: {
+                type: Sequelize.STRING
+            },
+
+            approvals: {
+                type: Sequelize.JSONB
+            },
+            assetName: {
+                type: Sequelize.STRING
+            },
+
             receiver: {
-                type: DataTypes.STRING
-            },
-            key: {
                 type: DataTypes.STRING
             },
             amount: {
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
-            shardId: {
-                type: DataTypes.INTEGER
+
+            key: {
+                type: DataTypes.STRING
             },
-            invoice: {
-                type: DataTypes.BOOLEAN
-            },
+
             owners: {
-                type: DataTypes.JSONB
-            },
-            approvals: {
                 type: DataTypes.JSONB
             },
             users: {
                 type: DataTypes.JSONB
             },
-            errorType: {
-                type: DataTypes.STRING
-            },
+
             createdAt: {
                 allowNull: false,
                 type: DataTypes.DATE
@@ -121,9 +162,29 @@ export default (
         {}
     );
     Action.associate = models => {
-        Action.hasOne(models.Transaction, {
+        Action.hasMany(models.AssetTransferOutput, {
             foreignKey: "actionId",
-            as: "transaction",
+            as: "outputs",
+            onDelete: "CASCADE"
+        });
+        Action.hasOne(models.AssetMintOutput, {
+            foreignKey: "actionId",
+            as: "output",
+            onDelete: "CASCADE"
+        });
+        Action.hasMany(models.AssetTransferInput, {
+            foreignKey: "actionId",
+            as: "inputs",
+            onDelete: "CASCADE"
+        });
+        Action.hasMany(models.AssetTransferBurn, {
+            foreignKey: "actionId",
+            as: "burns",
+            onDelete: "CASCADE"
+        });
+        Action.hasOne(models.AssetDecomposeInput, {
+            foreignKey: "actionId",
+            as: "input",
             onDelete: "CASCADE"
         });
     };

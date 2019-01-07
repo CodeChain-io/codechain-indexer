@@ -6,7 +6,6 @@ import * as Helper from "./helper";
 
 let date: string;
 let blockLogCount = 0;
-let parcelLogCount = 0;
 let txLogCount = 0;
 beforeAll(async done => {
     await Helper.worker.sync();
@@ -17,10 +16,6 @@ beforeAll(async done => {
     const blockLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
     if (blockLogInst) {
         blockLogCount = blockLogInst!.get().count;
-    }
-    const parcelLogInst = await LogModel.getLog(date, LogType.PARCEL_COUNT);
-    if (parcelLogInst) {
-        parcelLogCount = parcelLogInst!.get().count;
     }
     const txLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
     if (txLogInst) {
@@ -49,40 +44,32 @@ test("Check log block miner", async done => {
     done();
 });
 
-test("Check log parcel count", async done => {
-    const nextLogInst = await LogModel.getLog(date, LogType.PARCEL_COUNT);
-    expect(nextLogInst).toBeTruthy();
-    expect(nextLogInst!.get().count).toEqual(parcelLogCount + 2);
-
-    done();
-});
-
-test("Check log payment parcel count", async done => {
+test("Check log pay count", async done => {
     // TODO
     done();
 });
 
-test("Check log setRegularKey parcel count", async done => {
+test("Check log setRegularKey count", async done => {
     // TODO
     done();
 });
 
-test("Check log createShard parcel count", async done => {
+test("Check log createShard count", async done => {
     // TODO
     done();
 });
 
-test("Check log setShardUsers parcel count", async done => {
+test("Check log setShardUsers count", async done => {
     // TODO
     done();
 });
 
-test("Check log setShardOwners parcel count", async done => {
+test("Check log setShardOwners count", async done => {
     // TODO
     done();
 });
 
-test("Check log assetTransaciton parcel count", async done => {
+test("Check log assetTransaciton count", async done => {
     // TODO
     done();
 });
@@ -90,7 +77,7 @@ test("Check log assetTransaciton parcel count", async done => {
 test("Check log transaction count", async done => {
     const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
     expect(nextLogInst).toBeTruthy();
-    expect(nextLogInst!.get().count).toEqual(txLogCount + 2);
+    expect(nextLogInst!.get().count).toEqual(txLogCount + 4);
 
     done();
 });

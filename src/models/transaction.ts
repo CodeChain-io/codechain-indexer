@@ -1,87 +1,29 @@
-import { Timelock } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
-import { AssetMintOutputAttribute } from "./assetmintoutput";
-import { AssetSchemeAttribute } from "./assetscheme";
-import { AssetTransferOutputAttribute } from "./assettransferoutput";
+import { ActionAttribute, ActionInstance } from "./action";
 
-export type TransactionAttribute =
-    | AssetMintTransactionAttribute
-    | AssetTransferTransactionAttribute
-    | AssetComposeTransactionAttribute
-    | AssetDecomposeTransactionAttribute;
-
-interface TransactionCommon {
-    isPending: boolean;
-    pendingTimestamp?: number | null;
+export interface TransactionAttribute {
+    hash: string;
     blockNumber?: number | null;
-    parcelIndex?: number | null;
+    blockHash?: string | null;
+    transactionIndex?: number | null;
+    actionId?: number;
+    action?: ActionAttribute;
+    seq: number;
+    fee: string;
+    networkId: string;
+    sig: string;
+    signer: string;
     invoice?: boolean | null;
     errorType?: string | null;
     timestamp?: number | null;
-    hash: string;
-    parcelHash: string;
-    actionId: string;
-    networkId: string;
-}
-
-export interface AssetMintTransactionAttribute extends TransactionCommon {
-    type: "assetMint";
-    output?: AssetMintOutputAttribute;
-    shardId: number;
-    metadata: string;
-    approver?: string | null;
-    administrator?: string | null;
-    assetName?: string | null;
-}
-
-export interface AssetTransferInputAttribute {
-    id?: string;
-    transactionHash: string;
-    prevOut: AssetOutPointAttribute;
-    timelock?: Timelock | null;
-    owner?: string | null;
-    assetType: string;
-    lockScript: Buffer;
-    unlockScript: Buffer;
-}
-
-export interface AssetOutPointAttribute {
-    transactionHash: string;
-    index: number;
-    assetType: string;
-    assetScheme: AssetSchemeAttribute;
-    amount: string;
-    owner?: string | null;
-    lockScriptHash?: string | null;
-    parameters?: Buffer[] | null;
-}
-
-export interface AssetTransferTransactionAttribute extends TransactionCommon {
-    type: "assetTransfer";
-    burns?: AssetTransferInputAttribute[];
-    inputs?: AssetTransferInputAttribute[];
-    outputs?: AssetTransferOutputAttribute[];
-}
-
-export interface AssetComposeTransactionAttribute extends TransactionCommon {
-    type: "assetCompose";
-    shardId: number;
-    metadata: string;
-    approver?: string | null;
-    administrator?: string | null;
-    output?: AssetMintOutputAttribute;
-    inputs?: AssetTransferInputAttribute[];
-    assetName?: string | null;
-}
-
-export interface AssetDecomposeTransactionAttribute extends TransactionCommon {
-    type: "assetDecompose";
-    input?: AssetTransferInputAttribute;
-    outputs?: AssetTransferOutputAttribute[];
+    isPending: boolean;
+    pendingTimestamp?: number | null;
 }
 
 export interface TransactionInstance
-    extends Sequelize.Instance<TransactionAttribute> {}
+    extends Sequelize.Instance<TransactionAttribute> {
+    getAction: Sequelize.BelongsToGetAssociationMixin<ActionInstance>;
+}
 
 export default (
     sequelize: Sequelize.Sequelize,
@@ -95,59 +37,58 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            type: {
+            blockNumber: {
+                type: DataTypes.INTEGER
+            },
+            blockHash: {
                 type: DataTypes.STRING,
-                allowNull: false
+                onDelete: "CASCADE",
+                references: {
+                    model: "Blocks",
+                    key: "hash"
+                }
+            },
+            transactionIndex: {
+                type: DataTypes.INTEGER
             },
             actionId: {
                 allowNull: false,
-                type: DataTypes.BIGINT,
+                type: Sequelize.STRING,
                 onDelete: "CASCADE",
                 references: {
                     model: "Actions",
                     key: "id"
                 }
             },
-            networkId: {
-                type: DataTypes.STRING
-            },
-            shardId: {
+            seq: {
+                allowNull: false,
                 type: DataTypes.INTEGER
             },
-            metadata: {
+            fee: {
+                allowNull: false,
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+            networkId: {
+                allowNull: false,
                 type: DataTypes.STRING
             },
-            approver: {
+            sig: {
+                allowNull: false,
                 type: DataTypes.STRING
             },
-            administrator: {
+            signer: {
+                allowNull: false,
                 type: DataTypes.STRING
+            },
+
+            invoice: {
+                type: Sequelize.BOOLEAN
+            },
+            errorType: {
+                type: Sequelize.STRING
             },
             timestamp: {
                 type: DataTypes.INTEGER
-            },
-            assetName: {
-                type: DataTypes.STRING
-            },
-            parcelHash: {
-                allowNull: false,
-                type: DataTypes.STRING
-            },
-            blockNumber: {
-                type: DataTypes.INTEGER
-            },
-            parcelIndex: {
-                type: DataTypes.INTEGER
-            },
-            invoice: {
-                type: DataTypes.BOOLEAN
-            },
-            errorType: {
-                type: DataTypes.STRING
-            },
-            createdAt: {
-                allowNull: false,
-                type: DataTypes.DATE
             },
             isPending: {
                 allowNull: false,
@@ -155,6 +96,10 @@ export default (
             },
             pendingTimestamp: {
                 type: DataTypes.INTEGER
+            },
+            createdAt: {
+                allowNull: false,
+                type: DataTypes.DATE
             },
             updatedAt: {
                 allowNull: false,
@@ -164,25 +109,9 @@ export default (
         {}
     );
     Transaction.associate = models => {
-        Transaction.hasMany(models.AssetTransferOutput, {
-            foreignKey: "transactionHash",
-            as: "outputs",
-            onDelete: "CASCADE"
-        });
-        Transaction.hasOne(models.AssetMintOutput, {
-            foreignKey: "transactionHash",
-            as: "output",
-            onDelete: "CASCADE"
-        });
-        Transaction.hasMany(models.AssetTransferInput, {
-            foreignKey: "transactionHash",
-            as: "inputs",
-            onDelete: "CASCADE"
-        });
-        Transaction.hasOne(models.AssetDecomposeInput, {
-            foreignKey: "transactionHash",
-            as: "input",
-            onDelete: "CASCADE"
+        Transaction.belongsTo(models.Action, {
+            foreignKey: "actionId",
+            as: "action"
         });
     };
     return Transaction;

@@ -4,7 +4,7 @@ import { AssetSchemeAttribute } from "./assetscheme";
 
 export interface AssetTransferOutputAttribute {
     id?: string;
-    transactionHash: string;
+    actionId: number;
     lockScriptHash: string;
     parameters: Buffer[];
     assetType: string;
@@ -29,13 +29,13 @@ export default (
                 primaryKey: true,
                 type: DataTypes.BIGINT
             },
-            transactionHash: {
+            actionId: {
                 allowNull: false,
-                type: DataTypes.STRING,
+                type: DataTypes.INTEGER,
                 onDelete: "CASCADE",
                 references: {
-                    model: "Transactions",
-                    key: "hash"
+                    model: "Actions",
+                    key: "id"
                 }
             },
             lockScriptHash: {

@@ -18,21 +18,21 @@ export async function updateAccount(
             []
         );
         affectedAddresses.push(...genesisAccounts);
-    }
-    affectedAddresses.push(block.author);
-    const parcels = block.parcels!;
-    for (const parcel of parcels) {
-        affectedAddresses.push(parcel.signer);
-    }
-    const paymentParcels = parcels.filter(
-        parcel => parcel.action!.action === "payment"
-    );
-    paymentParcels.map(parcel => {
-        const paymentAction = parcel.action!;
-        if (paymentAction.action === "payment" && paymentAction.invoice) {
-            affectedAddresses.push(paymentAction.receiver);
+        affectedAddresses.push(block.author);
+    } else {
+        affectedAddresses.push(block.author);
+        const transactions = block.transactions!;
+        for (const tx of transactions) {
+            affectedAddresses.push(tx.signer);
         }
-    });
+        const payments = transactions.filter(tx => tx.action!.type === "pay");
+        payments.map(tx => {
+            const action = tx.action!;
+            if (action.type === "pay" && tx.invoice) {
+                affectedAddresses.push(action.receiver);
+            }
+        });
+    }
 
     return Promise.all(
         _.uniq(affectedAddresses).map(async affectedAddress => {

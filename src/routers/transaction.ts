@@ -1,7 +1,7 @@
 import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
-import * as TransactionModel from "../models/logic/transaction";
+import * as TxModel from "../models/logic/transaction";
 
 /**
  * @swagger
@@ -83,7 +83,7 @@ export function handle(_C: IndexerContext, router: Router) {
             if (assetTypeString) {
                 assetType = new H256(assetTypeString);
             }
-            const txInsts = await TransactionModel.getTransactions({
+            const txInsts = await TxModel.getTransactions({
                 address,
                 assetType,
                 page,
@@ -145,7 +145,7 @@ export function handle(_C: IndexerContext, router: Router) {
             if (assetTypeString) {
                 assetType = new H256(assetTypeString);
             }
-            const count = await TransactionModel.getCountOfTransactions({
+            const count = await TxModel.getNumberOfTransactions({
                 address,
                 assetType,
                 onlyConfirmed,
@@ -174,7 +174,7 @@ export function handle(_C: IndexerContext, router: Router) {
         const hashString = req.params.hash;
         try {
             const hash = new H256(hashString);
-            const txInst = await TransactionModel.getByHash(hash);
+            const txInst = await TxModel.getByHash(hash);
             res.json(txInst ? txInst.get({ plain: true }) : null);
         } catch (e) {
             next(e);
@@ -211,12 +211,10 @@ export function handle(_C: IndexerContext, router: Router) {
         const assetTypeString = req.query.assetType;
         try {
             const assetType = new H256(assetTypeString);
-            const pendingTxInsts = await TransactionModel.getPendingTransactions(
-                {
-                    address,
-                    assetType
-                }
-            );
+            const pendingTxInsts = await TxModel.getPendingTransactions({
+                address,
+                assetType
+            });
             const pendingTxs = pendingTxInsts.map(tx =>
                 tx.get({ plain: true })
             );
@@ -254,7 +252,7 @@ export function handle(_C: IndexerContext, router: Router) {
         const assetTypeString = req.query.assetType;
         try {
             const assetType = new H256(assetTypeString);
-            const count = await TransactionModel.getCountOfPendingTransactions({
+            const count = await TxModel.getNumberOfPendingTransactions({
                 address,
                 assetType
             });

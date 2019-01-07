@@ -28,7 +28,7 @@ module.exports = {
                     allowNull: false,
                     type: Sequelize.JSONB
                 },
-                parcelsRoot: {
+                transactionsRoot: {
                     allowNull: false,
                     type: Sequelize.STRING
                 },

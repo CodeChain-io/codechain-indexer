@@ -8,46 +8,52 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.BIGINT
             },
-            parcelHash: {
-                allowNull: false,
-                type: Sequelize.STRING,
-                onDelete: "CASCADE",
-                references: {
-                    model: "Parcels",
-                    key: "hash"
-                }
-            },
-            action: {
+            type: {
                 allowNull: false,
                 type: Sequelize.STRING
             },
+            networkId: {
+                type: Sequelize.STRING
+            },
+            shardId: {
+                type: Sequelize.INTEGER
+            },
+            metadata: {
+                type: Sequelize.STRING
+            },
+            approver: {
+                type: Sequelize.STRING
+            },
+            administrator: {
+                type: Sequelize.STRING
+            },
+            approvals: {
+                type: Sequelize.JSONB
+            },
+
+            assetName: {
+                type: Sequelize.STRING
+            },
+
             receiver: {
-                type: Sequelize.STRING
-            },
-            key: {
                 type: Sequelize.STRING
             },
             amount: {
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
-            shardId: {
-                type: Sequelize.INTEGER
+
+            key: {
+                type: Sequelize.STRING
             },
-            invoice: {
-                type: Sequelize.BOOLEAN
-            },
+
             owners: {
                 type: Sequelize.JSONB
             },
-            approvals: {
-                type: Sequelize.JSONB
-            },
+
             users: {
                 type: Sequelize.JSONB
             },
-            errorType: {
-                type: Sequelize.STRING
-            },
+
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

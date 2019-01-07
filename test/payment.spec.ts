@@ -5,7 +5,7 @@ import * as Helper from "./helper";
 
 beforeAll(async done => {
     await Helper.runExample("import-test-account");
-    await Helper.runExample("send-signed-parcel");
+    await Helper.runExample("send-signed-tx");
     done();
 });
 
@@ -28,7 +28,7 @@ test("Create payment block", async done => {
     expect(miningRewardResponse).toBeTruthy();
     await BlockModel.createBlock(paymentBlock!, {
         miningReward: new U64("1000"),
-        invoices: []
+        invoices: [{ invoice: true}]
     });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();

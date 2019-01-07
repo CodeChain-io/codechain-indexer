@@ -1,9 +1,4 @@
-import {
-    Asset,
-    AssetTransferOutput,
-    H256
-} from "codechain-sdk/lib/core/classes";
-import * as _ from "lodash";
+import { Asset, AssetTransferOutput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
@@ -11,7 +6,7 @@ import models from "../index";
 import * as AddressUtil from "./utils/address";
 
 export async function createAssetTransferOutput(
-    transactionHash: H256,
+    actionId: number,
     output: AssetTransferOutput,
     params: {
         networkId: string;
@@ -27,7 +22,7 @@ export async function createAssetTransferOutput(
             params.networkId
         );
         assetTransferOuputInstance = await models.AssetTransferOutput.create({
-            transactionHash: transactionHash.value,
+            actionId,
             lockScriptHash: output.lockScriptHash.value,
             parameters: output.parameters,
             assetType: output.assetType.value,
@@ -43,13 +38,13 @@ export async function createAssetTransferOutput(
 }
 
 // This is for the cascade test
-export async function getByHash(
-    hash: H256
+export async function getByActionId(
+    actionId: number
 ): Promise<AssetTransferOutputInstance[]> {
     try {
         return await models.AssetTransferOutput.findAll({
             where: {
-                transactionHash: hash.value
+                actionId
             }
         });
     } catch (err) {

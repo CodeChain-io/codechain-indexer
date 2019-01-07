@@ -1,7 +1,7 @@
 import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
-import * as ParcelModel from "../models/logic/parcel";
+import * as ParcelModel from "../models/logic/transaction";
 
 /**
  * @swagger
@@ -73,7 +73,7 @@ export function handle(_C: IndexerContext, router: Router) {
             req.query.confirmThreshold &&
             parseInt(req.query.confirmThreshold, 10);
         try {
-            const parcelInsts = await ParcelModel.getParcels({
+            const parcelInsts = await ParcelModel.getTransactions({
                 address,
                 page,
                 itemsPerPage,
@@ -124,7 +124,7 @@ export function handle(_C: IndexerContext, router: Router) {
             req.query.confirmThreshold &&
             parseInt(req.query.confirmThreshold, 10);
         try {
-            const count = await ParcelModel.getCountOfParcels({
+            const count = await ParcelModel.getNumberOfTransactions({
                 address,
                 onlyConfirmed,
                 confirmThreshold
@@ -182,9 +182,11 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/pending-parcel", async (req, res, next) => {
         const address = req.query.address;
         try {
-            const pendingParcelInsts = await ParcelModel.getPendingParcels({
-                address
-            });
+            const pendingParcelInsts = await ParcelModel.getPendingTransactions(
+                {
+                    address
+                }
+            );
             const pendingParcels = pendingParcelInsts.map(p =>
                 p.get({ plain: true })
             );
@@ -216,7 +218,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/pending-parcel/count", async (req, res, next) => {
         const address = req.query.address;
         try {
-            const count = await ParcelModel.getCountOfPendingParcels({
+            const count = await ParcelModel.getNumberOfPendingTransactions({
                 address
             });
             res.json(count);

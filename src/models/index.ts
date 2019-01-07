@@ -13,23 +13,21 @@ import {
 } from "./assetmintoutput";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import { AssetTransferBurnInstance } from "./assettransferburn";
-import { AssetTransferInputInstance } from "./assettransferinput";
+import {
+    AssetTransferInputAttribute,
+    AssetTransferInputInstance
+} from "./assettransferinput";
 import {
     AssetTransferOutputAttribute,
     AssetTransferOutputInstance
 } from "./assettransferoutput";
 import { BlockAttribute, BlockInstance } from "./block";
 import { LogAttribute, LogInstance } from "./log";
-import { ParcelAttribute, ParcelInstance } from "./parcel";
 import {
     SnapshotRequestAttribute,
     SnapshotRequestInstance
 } from "./snapshotrequest";
-import {
-    AssetTransferInputAttribute,
-    TransactionAttribute,
-    TransactionInstance
-} from "./transaction";
+import { TransactionAttribute, TransactionInstance } from "./transaction";
 import { UTXOAttribute, UTXOInstance } from "./utxo";
 import { UTXOSnapshotAttribute, UTXOSnapshotInstance } from "./utxosnapshot";
 
@@ -70,9 +68,8 @@ interface DB {
     sequelize: Sequelize.Sequelize;
     Sequelize: Sequelize.SequelizeStatic;
     Block: Sequelize.Model<BlockInstance, BlockAttribute>;
-    Parcel: Sequelize.Model<ParcelInstance, ParcelAttribute>;
-    Action: Sequelize.Model<ActionInstance, ActionAttribute>;
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
+    Action: Sequelize.Model<ActionInstance, ActionAttribute>;
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
     Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
     UTXO: Sequelize.Model<UTXOInstance, UTXOAttribute>;

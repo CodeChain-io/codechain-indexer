@@ -1,8 +1,9 @@
 import * as Sequelize from "sequelize";
 
 export interface AssetSchemeAttribute {
+    id?: number;
     assetType: string;
-    transactionHash: string;
+    actionId: number;
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
@@ -21,14 +22,19 @@ export default (
     const AssetScheme = sequelize.define(
         "AssetScheme",
         {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: DataTypes.INTEGER
+            },
             assetType: {
                 allowNull: false,
-                primaryKey: true,
                 type: DataTypes.STRING
             },
-            transactionHash: {
+            actionId: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.INTEGER
             },
             metadata: {
                 allowNull: false,
