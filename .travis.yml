@@ -10,8 +10,9 @@ before_script:
   - psql -c "CREATE USER \"user\" WITH ENCRYPTED PASSWORD 'password';" -U postgres
   - docker ps -a
 script:
-  - yarn run lint
-  - NODE_ENV=test yarn migrate && yarn run test
+  - yarn run lint || exit 1
+  - NODE_ENV=test yarn migrate || exit 1
+  - yarn run test
 services:
   - docker
   - postgresql
