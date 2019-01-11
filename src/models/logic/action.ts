@@ -262,6 +262,14 @@ export async function createAction(tx: Transaction): Promise<ActionInstance> {
                 signature: (tx as any).signature
             });
         }
+        if (type === "custom") {
+            const { handlerId, buffer } = tx.toJSON();
+            return models.Action.create({
+                type,
+                handlerId,
+                content: buffer
+            });
+        }
         console.error(`${type} is not an expected action type`);
     } catch (err) {
         console.error(err);
