@@ -2,6 +2,7 @@ language: node_js
 node_js:
   - "10"
 before_install:
+  - npm install -g yarn
   - yarn install
 before_script:
   - docker pull kodebox/codechain:d669b841f36ada2ec509f62a35147243e00f1bdc
