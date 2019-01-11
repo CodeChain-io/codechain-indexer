@@ -54,6 +54,20 @@ module.exports = {
                 type: Sequelize.JSONB
             },
 
+            content: {
+                type: Sequelize.STRING
+            },
+            certifier: {
+                type: Sequelize.STRING
+            },
+            signature: {
+                type: Sequelize.STRING
+            },
+
+            textHash: {
+                type: Sequelize.STRING
+            },
+
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

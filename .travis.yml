@@ -21,6 +21,7 @@ script:
   - yarn run test --testRegex payment.spec.ts
   - yarn run test --testRegex pending-tx.spec.ts
   - yarn run test --testRegex snapshot.spec.ts
+  - yarn run test --testRegex store-and-remove.spec.ts
   - yarn run test --testRegex worker.spec.ts
 services:
   - docker

@@ -12,7 +12,9 @@ export type ActionAttribute =
     | SetRegularKeyAttribute
     | CreateShardAttribute
     | SetShardOwnersAttribute
-    | SetShardUsersAttribute;
+    | SetShardUsersAttribute
+    | StoreAttribute
+    | RemoveAttribute;
 
 interface ActionCommon {
     id?: number;
@@ -89,6 +91,19 @@ export interface SetShardUsersAttribute extends ActionCommon {
     users: string[];
 }
 
+export interface StoreAttribute extends ActionCommon {
+    type: "store";
+    content: string;
+    certifier: string;
+    signature: string;
+}
+
+export interface RemoveAttribute extends ActionCommon {
+    type: "remove";
+    textHash: string;
+    signature: string;
+}
+
 export interface ActionInstance extends Sequelize.Instance<ActionAttribute> {}
 
 export default (
@@ -148,6 +163,20 @@ export default (
             },
             users: {
                 type: DataTypes.JSONB
+            },
+
+            content: {
+                type: DataTypes.STRING
+            },
+            certifier: {
+                type: DataTypes.STRING
+            },
+            signature: {
+                type: DataTypes.STRING
+            },
+
+            textHash: {
+                type: DataTypes.STRING
             },
 
             createdAt: {
