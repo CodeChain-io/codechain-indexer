@@ -15,6 +15,7 @@ script:
   - yarn run lint
   - NODE_ENV=test yarn migrate
   - yarn run test --testRegex compose-decompose.spec.ts
+  - yarn run test --testRegex custom.spec.ts
   - yarn run test --testRegex db-block-interface.spec.ts
   - yarn run test --testRegex log.spec.ts
   - yarn run test --testRegex mint-transfer.spec.ts

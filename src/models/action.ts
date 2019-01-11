@@ -14,7 +14,8 @@ export type ActionAttribute =
     | SetShardOwnersAttribute
     | SetShardUsersAttribute
     | StoreAttribute
-    | RemoveAttribute;
+    | RemoveAttribute
+    | CustomAttribute;
 
 interface ActionCommon {
     id?: number;
@@ -104,6 +105,12 @@ export interface RemoveAttribute extends ActionCommon {
     signature: string;
 }
 
+export interface CustomAttribute extends ActionCommon {
+    type: "custom";
+    handlerId: number;
+    content: string;
+}
+
 export interface ActionInstance extends Sequelize.Instance<ActionAttribute> {}
 
 export default (
@@ -177,6 +184,10 @@ export default (
 
             textHash: {
                 type: DataTypes.STRING
+            },
+
+            handlerId: {
+                type: DataTypes.INTEGER
             },
 
             createdAt: {
