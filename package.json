@@ -4,6 +4,10 @@
   "description": "Data synchronizing tool between CodeChain and DB",
   "repository": "https://github.com/CodeChain-io/codechain-indexer",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=10",
+    "yarn": "^1.10.0"
+  },
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
