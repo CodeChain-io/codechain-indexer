@@ -245,6 +245,23 @@ export async function createAction(tx: Transaction): Promise<ActionInstance> {
                 )
             });
         }
+        if (type === "store") {
+            return models.Action.create({
+                type,
+                // FIXME: remove any
+                content: (tx as any).content,
+                certifier: (tx as any).certifier.value,
+                signature: (tx as any).signature
+            });
+        }
+        if (type === "remove") {
+            return models.Action.create({
+                type,
+                // FIXME: remove any
+                textHash: (tx as any)._hash.value,
+                signature: (tx as any).signature
+            });
+        }
         console.error(`${type} is not an expected action type`);
     } catch (err) {
         console.error(err);
