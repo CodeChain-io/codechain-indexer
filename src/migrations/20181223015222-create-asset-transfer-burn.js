@@ -22,6 +22,13 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.JSONB
             },
+            owner: {
+                type: Sequelize.STRING
+            },
+            assetType: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
             timelock: {
                 type: Sequelize.JSONB
             },

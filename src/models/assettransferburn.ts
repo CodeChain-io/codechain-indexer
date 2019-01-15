@@ -30,6 +30,13 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
+            owner: {
+                type: DataTypes.STRING
+            },
+            assetType: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
             timelock: {
                 type: DataTypes.JSONB
             },
