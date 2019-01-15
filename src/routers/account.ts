@@ -18,12 +18,12 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: page
      *         description: page for the pagination
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *     responses:
