@@ -130,6 +130,10 @@ const includeArray = [
             {
                 as: "input",
                 model: models.AssetDecomposeInput
+            },
+            {
+                as: "burns",
+                model: models.AssetTransferBurn
             }
         ]
     }
@@ -320,14 +324,28 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
     }
 }
 
-function getPendingTransactionsQuery(params: { address?: string | null }) {
-    const { address } = params;
+function getPendingTransactionsQuery(params: {
+    address?: string | null;
+    assetType?: H256 | null;
+}) {
+    const { address, assetType } = params;
     const query = [];
     if (address) {
         query.push({
             [Sequelize.Op.or]: [
                 { signer: address },
                 { "$action.receiver$": address }
+            ]
+        });
+    }
+    if (assetType) {
+        query.push({
+            [Sequelize.Op.or]: [
+                { "$action.output.assetType$": assetType.value },
+                { "$action.inputs.assetType$": assetType.value },
+                { "$action.outputs.assetType$": assetType.value },
+                { "$action.input.assetType$": assetType.value },
+                { "$action.burns.assetType$": assetType.value }
             ]
         });
     }
@@ -339,9 +357,10 @@ function getPendingTransactionsQuery(params: { address?: string | null }) {
 
 export async function getPendingTransactions(params: {
     address?: string | null;
+    assetType?: H256 | null;
 }) {
-    const { address } = params;
-    const query = getPendingTransactionsQuery({ address });
+    const { address, assetType } = params;
+    const query = getPendingTransactionsQuery({ address, assetType });
     try {
         return await models.Transaction.findAll({
             where: {
@@ -358,9 +377,10 @@ export async function getPendingTransactions(params: {
 
 export async function getNumberOfPendingTransactions(params: {
     address?: string | null;
+    assetType?: H256 | null;
 }) {
-    const { address } = params;
-    const query = getPendingTransactionsQuery({ address });
+    const { address, assetType } = params;
+    const query = getPendingTransactionsQuery({ address, assetType });
     try {
         return await models.Transaction.count({
             where: {
@@ -391,16 +411,28 @@ export async function getByHash(
 
 async function getTransactionsQuery(params: {
     address?: string | null;
+    assetType?: H256 | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, onlyConfirmed, confirmThreshold } = params;
+    const { address, assetType, onlyConfirmed, confirmThreshold } = params;
     const query = [];
     if (address) {
         query.push({
             [Sequelize.Op.or]: [
                 { signer: address },
                 { "$action.receiver$": address }
+            ]
+        });
+    }
+    if (assetType) {
+        query.push({
+            [Sequelize.Op.or]: [
+                { "$action.output.assetType$": assetType.value },
+                { "$action.inputs.assetType$": assetType.value },
+                { "$action.outputs.assetType$": assetType.value },
+                { "$action.input.assetType$": assetType.value },
+                { "$action.burns.assetType$": assetType.value }
             ]
         });
     }
@@ -423,6 +455,7 @@ async function getTransactionsQuery(params: {
 
 export async function getTransactions(params: {
     address?: string | null;
+    assetType?: H256 | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -430,6 +463,7 @@ export async function getTransactions(params: {
 }) {
     const {
         address,
+        assetType,
         page = 1,
         itemsPerPage = 15,
         onlyConfirmed = false,
@@ -437,6 +471,7 @@ export async function getTransactions(params: {
     } = params;
     const query = await getTransactionsQuery({
         address,
+        assetType,
         onlyConfirmed,
         confirmThreshold
     });
@@ -459,12 +494,19 @@ export async function getTransactions(params: {
 
 export async function getNumberOfTransactions(params: {
     address?: string | null;
+    assetType?: H256 | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, onlyConfirmed = false, confirmThreshold = 0 } = params;
+    const {
+        address,
+        assetType,
+        onlyConfirmed = false,
+        confirmThreshold = 0
+    } = params;
     const query = await getTransactionsQuery({
         address,
+        assetType,
         onlyConfirmed,
         confirmThreshold
     });
