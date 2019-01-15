@@ -54,7 +54,7 @@ test("Register snapshot", async done => {
     done();
 }, 30_000);
 
-test("Check snapshot working", async done => {
+test.skip("Check snapshot working", async done => {
     await Helper.worker.sync();
     const snapshotRequestsInst = await SnapshotModel.getSnapshotRequests();
     expect(snapshotRequestsInst.length).toEqual(0);
