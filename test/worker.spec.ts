@@ -5,6 +5,7 @@ import * as BlockModel from "../src/models/logic/block";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
+    await Helper.setupDb();
     await Helper.runExample("import-test-account");
     await Helper.runExample("send-signed-tx");
     done();
@@ -12,6 +13,7 @@ beforeAll(async done => {
 
 afterAll(async done => {
     await models.sequelize.close();
+    await Helper.dropDb();
     done();
 });
 
@@ -42,7 +44,7 @@ test(
         expect(afterLatestBlockDoc.hash).toEqual(paymentBlock!.hash.value);
         done();
     },
-    1000 * 20
+    1000 * 30
 );
 
 test(
@@ -69,13 +71,15 @@ test(
         const receiver = ((paymentBlock!.transactions[0]!.unsigned as Pay) as any).receiver.value;
         const receiverInst = await AccountModel.getByAddress(receiver);
         const receiverBalance = receiverInst!.get("balance");
+
         await Helper.runExample("send-signed-tx");
         await Helper.worker.sync();
+
         const newReceiverInst = await AccountModel.getByAddress(receiver);
         const newReceiverBalance = newReceiverInst!.get();
         expect(newReceiverBalance.balance).not.toEqual(receiverBalance);
 
         done();
     },
-    1000 * 20
+    1000 * 30
 );

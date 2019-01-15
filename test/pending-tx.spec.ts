@@ -4,6 +4,7 @@ import * as TxModel from "../src/models/logic/transaction";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
+    await Helper.setupDb();
     await Helper.runExample("import-test-account");
     done();
 });
@@ -11,6 +12,7 @@ beforeAll(async done => {
 afterAll(async done => {
     await Helper.sdk.rpc.devel.startSealing();
     await models.sequelize.close();
+    await Helper.dropDb();
     done();
 });
 

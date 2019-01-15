@@ -1,4 +1,4 @@
-import { execFile } from "child_process";
+import { exec, execFile } from "child_process";
 import { SDK } from "codechain-sdk";
 import { Transaction } from "codechain-sdk/lib/core/classes";
 import { readFileSync, writeFile } from "fs";
@@ -129,6 +129,30 @@ export const runExample = (name: string) => {
                 }
                 resolve();
             });
+        });
+    });
+};
+
+export const setupDb = () => {
+    return new Promise((resolve, reject) => {
+        exec("yarn run migrate", err => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+};
+
+export const dropDb = () => {
+    return new Promise((resolve, reject) => {
+        exec("yarn run drop", err => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
         });
     });
 };

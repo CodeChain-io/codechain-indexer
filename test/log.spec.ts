@@ -4,15 +4,14 @@ import { LogType } from "../src/models/log";
 import * as LogModel from "../src/models/logic/log";
 import * as Helper from "./helper";
 
-let date: string;
 let blockLogCount = 0;
 let txLogCount = 0;
 beforeAll(async done => {
-    await Helper.worker.sync();
-    await Helper.runExample("import-test-account");
-    await Helper.runExample("mint-and-transfer");
+    await Helper.setupDb();
+    const date = moment().format("YYYY-MM-DD");
 
-    date = moment().format("YYYY-MM-DD");
+    await Helper.worker.sync();
+
     const blockLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
     if (blockLogInst) {
         blockLogCount = blockLogInst!.get().count;
@@ -22,16 +21,21 @@ beforeAll(async done => {
         txLogCount = txLogInst!.get().count;
     }
 
+    await Helper.runExample("mint-and-transfer");
+
     await Helper.worker.sync();
+
     done();
 });
 
 afterAll(async done => {
     await models.sequelize.close();
+    await Helper.dropDb();
     done();
 });
 
 test("Check log block count", async done => {
+    const date = moment().format("YYYY-MM-DD");
     const nextLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
     expect(nextLogInst).toBeTruthy();
     expect(nextLogInst!.get().count).toEqual(blockLogCount + 2);
@@ -75,6 +79,7 @@ test("Check log assetTransaciton count", async done => {
 });
 
 test("Check log transaction count", async done => {
+    const date = moment().format("YYYY-MM-DD");
     const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
     expect(nextLogInst).toBeTruthy();
     expect(nextLogInst!.get().count).toEqual(txLogCount + 4);
