@@ -334,7 +334,12 @@ function getPendingTransactionsQuery(params: {
         query.push({
             [Sequelize.Op.or]: [
                 { signer: address },
-                { "$action.receiver$": address }
+                { "$action.receiver$": address },
+                { "$action.output.recipient$": address },
+                { "$action.inputs.owner$": address },
+                { "$action.outputs.owner$": address },
+                { "$action.input.owner$": address },
+                { "$action.burns.owner$": address }
             ]
         });
     }
@@ -421,7 +426,12 @@ async function getTransactionsQuery(params: {
         query.push({
             [Sequelize.Op.or]: [
                 { signer: address },
-                { "$action.receiver$": address }
+                { "$action.receiver$": address },
+                { "$action.output.recipient$": address },
+                { "$action.inputs.owner$": address },
+                { "$action.outputs.owner$": address },
+                { "$action.input.owner$": address },
+                { "$action.burns.owner$": address }
             ]
         });
     }

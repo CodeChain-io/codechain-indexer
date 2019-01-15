@@ -30,7 +30,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     tags: [Transaction]
      *     parameters:
      *       - name: address
-     *         description: input, output, shard user, shard owner filter by address
+     *         description: sender, receiver, input, output, shard user, shard owner filter by address
      *         in: query
      *         required: false
      *         type: string
@@ -106,7 +106,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     tags: [Transaction]
      *     parameters:
      *       - name: address
-     *         description: input, output, shard user, shard owner filter by address
+     *         description: sender, receiver, input, output, shard user, shard owner filter by address
      *         in: query
      *         required: false
      *         type: string
@@ -189,7 +189,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     tags: [Transaction]
      *     parameters:
      *       - name: address
-     *         description: input, output, shard user, shard owner filter by address
+     *         description: sender, receiver, input, output, shard user, shard owner filter by address
      *         in: query
      *         required: false
      *         type: string
