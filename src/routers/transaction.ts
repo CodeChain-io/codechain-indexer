@@ -31,32 +31,32 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: input, output, shard user, shard owner filter by address
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: assetType
      *         description: filter by assetType
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: page
      *         description: page for the pagination
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: boolean
      *       - name: confirmThreshold
      *         description: confirm threshold
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *     responses:
@@ -107,22 +107,22 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: input, output, shard user, shard owner filter by address
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: assetType
      *         description: filter by assetType
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: boolean
      *       - name: confirmThreshold
      *         description: confirm threshold
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *     responses:
@@ -190,12 +190,12 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: input, output, shard user, shard owner filter by address
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: assetType
      *         description: filter by assetType
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *     responses:
@@ -232,12 +232,12 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: input, output, shard user, shard owner filter by address
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: assetType
      *         description: filter by assetType
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *     responses:

@@ -94,17 +94,17 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: Author filter by address
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *       - name: page
      *         description: page for the pagination (default 1)
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: number
      *     responses:
@@ -145,7 +145,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: Author filter by address
-     *         in: formData
+     *         in: query
      *         required: false
      *         type: string
      *     responses:
