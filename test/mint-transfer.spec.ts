@@ -19,6 +19,7 @@ import * as UTXOModel from "../src/models/logic/utxo";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
+    await Helper.setupDb();
     await Helper.runExample("import-test-account");
     await Helper.runExample("mint-and-transfer");
     done();
@@ -26,6 +27,7 @@ beforeAll(async done => {
 
 afterAll(async done => {
     await models.sequelize.close();
+    await Helper.dropDb();
     done();
 });
 

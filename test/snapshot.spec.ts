@@ -9,13 +9,17 @@ import * as SnapshotModel from "../src/models/logic/snapshot";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
+    await Helper.setupDb();
+    await Helper.runExample("send-signed-tx");
     await Helper.runExample("import-test-account");
     await Helper.runExample("mint-and-transfer");
+    await Helper.worker.sync();
     done();
-});
+}, 30_000);
 
 afterAll(async done => {
     await models.sequelize.close();
+    await Helper.dropDb();
     done();
 });
 
@@ -48,7 +52,7 @@ test("Register snapshot", async done => {
         beforeSnapshotRequestsInst.length + 1
     );
     done();
-});
+}, 30_000);
 
 test("Check snapshot working", async done => {
     await Helper.worker.sync();
@@ -60,4 +64,4 @@ test("Check snapshot working", async done => {
     const UTXOSnapshot = UTXOSnapshotInst!.get().snapshot;
     expect(UTXOSnapshot.length).not.toEqual(0);
     done();
-});
+}, 30_000);

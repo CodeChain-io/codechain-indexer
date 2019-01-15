@@ -31,6 +31,7 @@
   },
   "scripts": {
     "reset": "sequelize db:migrate:undo:all && sequelize db:migrate",
+    "drop": "sequelize db:migrate:undo:all",
     "migrate": "sequelize db:migrate",
     "start": "ts-node src/index.ts",
     "test": "jest --env node --runInBand",
