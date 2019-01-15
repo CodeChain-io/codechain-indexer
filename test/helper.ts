@@ -119,7 +119,10 @@ export const runExample = (name: string) => {
                 reject(err);
                 return;
             }
-            execFile("node", [testPath], error => {
+            execFile("node", [testPath], (error, _stdout, stderr) => {
+                if (stderr) {
+                    console.error(stderr);
+                }
                 if (error) {
                     reject(error);
                     return;
