@@ -45,6 +45,7 @@ async function check(blockNumber: number, typeName: string, typeInstance: any) {
     expect(txInst).toBeTruthy();
     const tx = txInst.get({ plain: true });
     expect(tx.hash).toEqual(signed.hash().value);
+    expect(tx.type).toEqual(typeName);
 }
 
 test("store", async done => {

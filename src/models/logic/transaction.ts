@@ -33,6 +33,7 @@ export async function createTransaction(
         }).id;
         const txInstance = await models.Transaction.create({
             hash: tx.hash().value,
+            type: tx.unsigned.type(),
             actionId,
             blockNumber: tx.blockNumber,
             blockHash: tx.blockHash && tx.blockHash.value,
