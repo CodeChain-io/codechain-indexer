@@ -6,6 +6,7 @@ export interface TransactionAttribute {
     blockNumber?: number | null;
     blockHash?: string | null;
     transactionIndex?: number | null;
+    type?: string;
     actionId?: number;
     action?: ActionAttribute;
     seq: number;
@@ -50,6 +51,10 @@ export default (
             },
             transactionIndex: {
                 type: DataTypes.INTEGER
+            },
+            type: {
+                allowNull: false,
+                type: Sequelize.STRING
             },
             actionId: {
                 allowNull: false,

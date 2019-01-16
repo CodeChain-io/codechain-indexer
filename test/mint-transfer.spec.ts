@@ -114,7 +114,9 @@ test("Check transaction", async done => {
     const transferDoc = transferInstance.get({ plain: true });
 
     expect(mintDoc.hash).toEqual(signedMint.hash().value);
+    expect(mintDoc.type).toEqual("mintAsset");
     expect(transferDoc.hash).toEqual(signedTransfer.hash().value);
+    expect(transferDoc.type).toEqual("transferAsset");
 
     done();
 });
@@ -280,11 +282,13 @@ test("Get block document containing action, transaction, output, input", async d
         "transferAsset"
     );
 
+    expect(savedTransferBlockDoc.transactions![0].type).toBe("transferAsset");
     expect(savedTransferBlockDoc.transactions![0].action!.type).toBe("transferAsset");
     // @ts-ignore
     const savedTransferTransactionDoc = (savedTransferBlockDoc.transactions![0].action) as TransferAssetAttribute;
     expect(savedTransferTransactionDoc).toBeTruthy();
 
+    expect(savedMintBlockDoc.transactions![0].type).toBe("mintAsset");
     expect(savedMintBlockDoc.transactions![0].action!.type).toBe("mintAsset");
     const savedMintTransactionDoc = (savedMintBlockDoc.transactions![0].action) as MintAssetAttribute;
     expect(savedMintTransactionDoc).toBeTruthy();

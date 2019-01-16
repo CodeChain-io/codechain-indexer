@@ -21,6 +21,10 @@ module.exports = {
             transactionIndex: {
                 type: Sequelize.INTEGER
             },
+            type: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
             actionId: {
                 allowNull: false,
                 type: Sequelize.INTEGER,
