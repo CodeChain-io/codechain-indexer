@@ -17,13 +17,13 @@ export default (
                 primaryKey: true,
                 type: DataTypes.BIGINT
             },
-            actionId: {
+            transactionHash: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
+                type: DataTypes.STRING,
                 onDelete: "CASCADE",
                 references: {
-                    model: "Actions",
-                    key: "id"
+                    model: "Transactions",
+                    key: "hash"
                 }
             },
             prevOut: {

@@ -4,7 +4,7 @@ import { AssetSchemeAttribute } from "./assetscheme";
 
 export interface AssetTransferInputAttribute {
     id?: string;
-    actionId: number;
+    transactionHash: string;
     prevOut: AssetOutPointAttribute;
     timelock?: Timelock | null;
     owner?: string | null;
@@ -40,13 +40,13 @@ export default (
                 primaryKey: true,
                 type: DataTypes.BIGINT
             },
-            actionId: {
+            transactionHash: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
+                type: DataTypes.STRING,
                 onDelete: "CASCADE",
                 references: {
-                    model: "Actions",
-                    key: "id"
+                    model: "Transactions",
+                    key: "hash"
                 }
             },
             prevOut: {

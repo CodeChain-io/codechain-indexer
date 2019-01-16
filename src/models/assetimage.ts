@@ -1,7 +1,7 @@
 import * as Sequelize from "sequelize";
 
 export interface AssetImageAttribute {
-    assetSchemeId: number;
+    transactionHash: string;
     assetType: string;
     image: string;
 }
@@ -16,14 +16,14 @@ export default (
     const AssetImage = sequelize.define(
         "AssetImage",
         {
-            assetSchemeId: {
+            transactionHash: {
                 primaryKey: true,
                 allowNull: false,
-                type: DataTypes.INTEGER,
+                type: DataTypes.STRING,
                 onDelete: "CASCADE",
                 references: {
                     model: "AssetSchemes",
-                    key: "id"
+                    key: "transactionHash"
                 }
             },
             assetType: {

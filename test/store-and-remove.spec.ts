@@ -1,6 +1,5 @@
 import { Remove, Store, U64 } from "codechain-sdk/lib/core/classes";
 import models from "../src/models";
-import * as ActionModel from "../src/models/logic/action";
 import { createBlock } from "../src/models/logic/block";
 import * as TransactionModel from "../src/models/logic/transaction";
 import * as Helper from "./helper";
@@ -32,12 +31,6 @@ async function check(blockNumber: number, typeName: string, typeInstance: any) {
     const signed = blockResponse.transactions[0]!;
     const unsigned = signed.unsigned;
     expect(unsigned).toBeInstanceOf(typeInstance);
-
-    const actionInst = (await ActionModel.getByHash(signed.hash()))!;
-    expect(actionInst).toBeTruthy();
-    const action = actionInst.get({ plain: true });
-    expect(action.type).toEqual(typeName);
-    expect(action.id).toBeTruthy();
 
     const txInst = (await TransactionModel.getByHash(
         signed.hash()

@@ -1,5 +1,22 @@
 import * as Sequelize from "sequelize";
-import { ActionAttribute, ActionInstance } from "./action";
+import { ComposeAssetAttribute, ComposeAssetInstance } from "./composeAsset";
+import { CreateShardAttribute, CreateShardInstance } from "./createShard";
+import { CustomAttribute, CustomInstance } from "./custom";
+import {
+    DecomposeAssetAttribute,
+    DecomposeAssetInstance
+} from "./decomposeAsset";
+import { MintAssetAttribute, MintAssetInstance } from "./mintAsset";
+import { PayAttribute, PayInstance } from "./pay";
+import { RemoveAttribute, RemoveInstance } from "./remove";
+import { SetRegularKeyAttribute, SetRegularKeyInstance } from "./setRegularKey";
+import {
+    SetShardOwnersAttribute,
+    SetShardOwnersInstance
+} from "./setShardOwners";
+import { SetShardUsersAttribute, SetShardUsersInstance } from "./setShardUsers";
+import { StoreAttribute, StoreInstance } from "./store";
+import { TransferAssetAttribute, TransferAssetInstance } from "./transferAsset";
 
 export interface TransactionAttribute {
     hash: string;
@@ -7,8 +24,18 @@ export interface TransactionAttribute {
     blockHash?: string | null;
     transactionIndex?: number | null;
     type?: string;
-    actionId?: number;
-    action?: ActionAttribute;
+    pay?: PayAttribute;
+    mintAsset?: MintAssetAttribute;
+    transferAsset?: TransferAssetAttribute;
+    composeAsset?: ComposeAssetAttribute;
+    decomposeAsset?: DecomposeAssetAttribute;
+    setRegularKey?: SetRegularKeyAttribute;
+    createShard?: CreateShardAttribute;
+    setShardOwners?: SetShardOwnersAttribute;
+    setShardUses?: SetShardUsersAttribute;
+    store?: StoreAttribute;
+    remove?: RemoveAttribute;
+    custom?: CustomAttribute;
     seq: number;
     fee: string;
     networkId: string;
@@ -23,7 +50,28 @@ export interface TransactionAttribute {
 
 export interface TransactionInstance
     extends Sequelize.Instance<TransactionAttribute> {
-    getAction: Sequelize.BelongsToGetAssociationMixin<ActionInstance>;
+    getMintAsset: Sequelize.HasOneGetAssociationMixin<MintAssetInstance>;
+    getTransferAsset: Sequelize.HasOneGetAssociationMixin<
+        TransferAssetInstance
+    >;
+    getComposeAsset: Sequelize.HasOneGetAssociationMixin<ComposeAssetInstance>;
+    getDecomposeAsset: Sequelize.HasOneGetAssociationMixin<
+        DecomposeAssetInstance
+    >;
+    getPay: Sequelize.HasOneGetAssociationMixin<PayInstance>;
+    getSetRegularKey: Sequelize.HasOneGetAssociationMixin<
+        SetRegularKeyInstance
+    >;
+    getCreateShard: Sequelize.HasOneGetAssociationMixin<CreateShardInstance>;
+    getSetShardOwners: Sequelize.HasOneGetAssociationMixin<
+        SetShardOwnersInstance
+    >;
+    getSetShardUsers: Sequelize.HasOneGetAssociationMixin<
+        SetShardUsersInstance
+    >;
+    getStore: Sequelize.HasOneGetAssociationMixin<StoreInstance>;
+    getRemove: Sequelize.HasOneGetAssociationMixin<RemoveInstance>;
+    getCustom: Sequelize.HasOneGetAssociationMixin<CustomInstance>;
 }
 
 export default (
@@ -55,15 +103,6 @@ export default (
             type: {
                 allowNull: false,
                 type: Sequelize.STRING
-            },
-            actionId: {
-                allowNull: false,
-                type: Sequelize.STRING,
-                onDelete: "CASCADE",
-                references: {
-                    model: "Actions",
-                    key: "id"
-                }
             },
             seq: {
                 allowNull: false,
@@ -114,9 +153,65 @@ export default (
         {}
     );
     Transaction.associate = models => {
-        Transaction.belongsTo(models.Action, {
-            foreignKey: "actionId",
-            as: "action"
+        Transaction.hasOne(models.MintAsset, {
+            foreignKey: "transactionHash",
+            as: "mintAsset",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.TransferAsset, {
+            foreignKey: "transactionHash",
+            as: "transferAsset",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.ComposeAsset, {
+            foreignKey: "transactionHash",
+            as: "composeAsset",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.DecomposeAsset, {
+            foreignKey: "transactionHash",
+            as: "decomposeAsset",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.Pay, {
+            foreignKey: "transactionHash",
+            as: "pay",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.SetRegularKey, {
+            foreignKey: "transactionHash",
+            as: "setRegularKey",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.CreateShard, {
+            foreignKey: "transactionHash",
+            as: "createShard",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.SetShardOwners, {
+            foreignKey: "transactionHash",
+            as: "setShardOwners",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.SetShardUsers, {
+            foreignKey: "transactionHash",
+            as: "setShardUsers",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.Store, {
+            foreignKey: "transactionHash",
+            as: "store",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.Remove, {
+            foreignKey: "transactionHash",
+            as: "remove",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.Custom, {
+            foreignKey: "transactionHash",
+            as: "custom",
+            onDelete: "CASCADE"
         });
     };
     return Transaction;

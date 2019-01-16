@@ -7,15 +7,15 @@ import models from "../index";
 import * as AssetImageModel from "./assetimage";
 
 export async function createAssetScheme(
-    assetType: H256,
-    actionId: number,
+    assetType: string,
+    transactionHash: string,
     assetScheme: AssetScheme
 ): Promise<AssetSchemeInstance> {
     let assetSchemeInstance: AssetSchemeInstance;
     try {
         assetSchemeInstance = await models.AssetScheme.create({
-            assetType: assetType.value,
-            actionId,
+            transactionHash,
+            assetType,
             metadata: assetScheme.metadata,
             approver: assetScheme.approver && assetScheme.approver.value,
             administrator:
@@ -33,7 +33,7 @@ export async function createAssetScheme(
         }
         if (metadataObj && metadataObj.icon_url) {
             await AssetImageModel.createAssetImage(
-                assetSchemeInstance.get("id"),
+                transactionHash,
                 assetType,
                 metadataObj.icon_url
             );

@@ -6,7 +6,7 @@ import models from "../index";
 import * as AddressUtil from "./utils/address";
 
 export async function createAssetTransferOutput(
-    actionId: number,
+    transactionHash: string,
     output: AssetTransferOutput,
     params: {
         networkId: string;
@@ -22,7 +22,7 @@ export async function createAssetTransferOutput(
             params.networkId
         );
         assetTransferOuputInstance = await models.AssetTransferOutput.create({
-            actionId,
+            transactionHash,
             lockScriptHash: output.lockScriptHash.value,
             parameters: output.parameters,
             assetType: output.assetType.value,
@@ -38,13 +38,13 @@ export async function createAssetTransferOutput(
 }
 
 // This is for the cascade test
-export async function getByActionId(
-    actionId: number
+export async function getByTransactionHash(
+    transactionHash: string
 ): Promise<AssetTransferOutputInstance[]> {
     try {
         return await models.AssetTransferOutput.findAll({
             where: {
-                actionId
+                transactionHash
             }
         });
     } catch (err) {
