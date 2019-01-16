@@ -7,7 +7,7 @@ import * as AddressUtil from "./utils/address";
 
 // FIXME: This is duplicated with asset transfer-input
 export async function createAssetTransferBurn(
-    actionId: number,
+    transactionHash: string,
     burn: AssetTransferInput,
     options: {
         networkId: string;
@@ -25,7 +25,7 @@ export async function createAssetTransferBurn(
                 options.networkId
             );
         assetTransferBurnInstance = await models.AssetTransferBurn.create({
-            actionId,
+            transactionHash,
             timelock: burn.timelock,
             lockScript: burn.lockScript,
             unlockScript: burn.unlockScript,
@@ -52,13 +52,13 @@ export async function createAssetTransferBurn(
 }
 
 // This is for the cascade test
-export async function getByActionId(
-    actionId: number
+export async function getByTransactionHash(
+    transactionHash: string
 ): Promise<AssetTransferBurnInstance[]> {
     try {
         return await models.AssetTransferBurn.findAll({
             where: {
-                actionId
+                transactionHash
             }
         });
     } catch (err) {

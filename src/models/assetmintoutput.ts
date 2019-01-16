@@ -2,7 +2,7 @@ import * as Sequelize from "sequelize";
 
 export interface AssetMintOutputAttribute {
     id?: number;
-    actionId: number;
+    transactionHash: string;
     lockScriptHash: string;
     parameters: Buffer[];
     amount: string;
@@ -28,13 +28,13 @@ export default (
                 primaryKey: true,
                 type: DataTypes.BIGINT
             },
-            actionId: {
+            transactionHash: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
+                type: DataTypes.STRING,
                 onDelete: "CASCADE",
                 references: {
-                    model: "Actions",
-                    key: "id"
+                    model: "Transactions",
+                    key: "hash"
                 }
             },
             lockScriptHash: {

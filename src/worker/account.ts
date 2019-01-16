@@ -25,11 +25,10 @@ export async function updateAccount(
         for (const tx of transactions) {
             affectedAddresses.push(tx.signer);
         }
-        const payments = transactions.filter(tx => tx.action!.type === "pay");
+        const payments = transactions.filter(tx => tx.type === "pay");
         payments.map(tx => {
-            const action = tx.action!;
-            if (action.type === "pay" && tx.invoice) {
-                affectedAddresses.push(action.receiver);
+            if (tx.type === "pay" && tx.invoice) {
+                affectedAddresses.push(tx.pay!.receiver);
             }
         });
     }

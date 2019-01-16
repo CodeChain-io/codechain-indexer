@@ -23,7 +23,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
 
         const mintAssetCount = _.filter(
             block.transactions,
-            tx => tx!.action!.type === "mintAsset"
+            tx => tx!.type === "mintAsset"
         ).length;
         await queryLog(
             isRetracted,
@@ -33,7 +33,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         );
         const assetTransferTxCount = _.filter(
             block.transactions,
-            tx => tx!.action!.type === "transferAsset"
+            tx => tx!.type === "transferAsset"
         ).length;
         await queryLog(
             isRetracted,
@@ -43,7 +43,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         );
         const assetComposeTxCount = _.filter(
             block.transactions,
-            tx => tx!.action!.type === "composeAsset"
+            tx => tx!.type === "composeAsset"
         ).length;
         await queryLog(
             isRetracted,
@@ -53,7 +53,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         );
         const assetDecomposeTxCount = _.filter(
             block.transactions,
-            tx => tx!.action!.type === "decomposeAsset"
+            tx => tx!.type === "decomposeAsset"
         ).length;
         await queryLog(
             isRetracted,
@@ -62,14 +62,12 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
             assetDecomposeTxCount
         );
 
-        const payCount = _.filter(
-            block.transactions,
-            p => p.action!.type === "pay"
-        ).length;
+        const payCount = _.filter(block.transactions, p => p.type === "pay")
+            .length;
         await queryLog(isRetracted, dateString, LogType.PAY_COUNT, payCount);
         const setRegularKeyCount = _.filter(
             block.transactions,
-            p => p.action!.type === "setRegularKey"
+            p => p.type === "setRegularKey"
         ).length;
         await queryLog(
             isRetracted,
@@ -79,7 +77,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         );
         const setShardOwnersCount = _.filter(
             block.transactions,
-            p => p.action!.type === "setShardOwners"
+            p => p.type === "setShardOwners"
         ).length;
         await queryLog(
             isRetracted,
@@ -89,7 +87,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         );
         const setShardUserCount = _.filter(
             block.transactions,
-            p => p.action!.type === "setShardUsers"
+            p => p.type === "setShardUsers"
         ).length;
         await queryLog(
             isRetracted,
@@ -99,7 +97,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
         );
         const createShardCount = _.filter(
             block.transactions,
-            p => p.action!.type === "createShard"
+            p => p.type === "createShard"
         ).length;
         await queryLog(
             isRetracted,

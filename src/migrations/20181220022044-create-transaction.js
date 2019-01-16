@@ -25,15 +25,6 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
-            actionId: {
-                allowNull: false,
-                type: Sequelize.INTEGER,
-                onDelete: "CASCADE",
-                references: {
-                    model: "Actions",
-                    key: "id"
-                }
-            },
             seq: {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })

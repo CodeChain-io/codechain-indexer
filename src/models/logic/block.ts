@@ -74,26 +74,80 @@ const includeArray = [
         model: models.Transaction,
         include: [
             {
-                as: "action",
-                model: models.Action,
+                as: "mintAsset",
+                model: models.MintAsset,
+                include: [
+                    {
+                        as: "output",
+                        model: models.AssetMintOutput
+                    }
+                ]
+            },
+            {
+                as: "transferAsset",
+                model: models.TransferAsset,
                 include: [
                     {
                         as: "outputs",
                         model: models.AssetTransferOutput
                     },
                     {
-                        as: "output",
-                        model: models.AssetMintOutput
-                    },
-                    {
                         as: "inputs",
                         model: models.AssetTransferInput
                     },
                     {
-                        as: "input",
-                        model: models.AssetDecomposeInput
+                        as: "burns",
+                        model: models.AssetTransferBurn
                     }
                 ]
+            },
+            {
+                as: "composeAsset",
+                model: models.ComposeAsset,
+                include: [
+                    {
+                        as: "output",
+                        model: models.AssetTransferOutput
+                    },
+                    {
+                        as: "inputs",
+                        model: models.AssetTransferInput
+                    }
+                ]
+            },
+            {
+                as: "decomposeAsset",
+                model: models.DecomposeAsset,
+                include: [
+                    {
+                        as: "outputs",
+                        model: models.AssetTransferOutput
+                    }
+                ]
+            },
+            {
+                as: "pay",
+                model: models.Pay
+            },
+            {
+                as: "setRegularKey",
+                model: models.SetRegularKey
+            },
+            {
+                as: "createShard",
+                model: models.CreateShard
+            },
+            {
+                as: "store",
+                model: models.Store
+            },
+            {
+                as: "remove",
+                model: models.Remove
+            },
+            {
+                as: "custom",
+                model: models.Custom
             }
         ]
     }

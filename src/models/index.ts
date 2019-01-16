@@ -4,7 +4,6 @@ import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
-import { ActionAttribute, ActionInstance } from "./action";
 import { AssetDecomposeInputInstance } from "./assetdecomposeinput";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import {
@@ -22,12 +21,30 @@ import {
     AssetTransferOutputInstance
 } from "./assettransferoutput";
 import { BlockAttribute, BlockInstance } from "./block";
+import { ComposeAssetAttribute, ComposeAssetInstance } from "./composeAsset";
+import { CreateShardAttribute, CreateShardInstance } from "./createShard";
+import { CustomAttribute, CustomInstance } from "./custom";
+import {
+    DecomposeAssetAttribute,
+    DecomposeAssetInstance
+} from "./decomposeAsset";
 import { LogAttribute, LogInstance } from "./log";
+import { MintAssetAttribute, MintAssetInstance } from "./mintAsset";
+import { PayAttribute, PayInstance } from "./pay";
+import { RemoveAttribute, RemoveInstance } from "./remove";
+import { SetRegularKeyAttribute, SetRegularKeyInstance } from "./setRegularKey";
+import {
+    SetShardOwnersAttribute,
+    SetShardOwnersInstance
+} from "./setShardOwners";
+import { SetShardUsersAttribute, SetShardUsersInstance } from "./setShardUsers";
 import {
     SnapshotRequestAttribute,
     SnapshotRequestInstance
 } from "./snapshotrequest";
+import { StoreAttribute, StoreInstance } from "./store";
 import { TransactionAttribute, TransactionInstance } from "./transaction";
+import { TransferAssetAttribute, TransferAssetInstance } from "./transferAsset";
 import { UTXOAttribute, UTXOInstance } from "./utxo";
 import { UTXOSnapshotAttribute, UTXOSnapshotInstance } from "./utxosnapshot";
 
@@ -69,7 +86,33 @@ interface DB {
     Sequelize: Sequelize.SequelizeStatic;
     Block: Sequelize.Model<BlockInstance, BlockAttribute>;
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
-    Action: Sequelize.Model<ActionInstance, ActionAttribute>;
+    MintAsset: Sequelize.Model<MintAssetInstance, MintAssetAttribute>;
+    TransferAsset: Sequelize.Model<
+        TransferAssetInstance,
+        TransferAssetAttribute
+    >;
+    ComposeAsset: Sequelize.Model<ComposeAssetInstance, ComposeAssetAttribute>;
+    DecomposeAsset: Sequelize.Model<
+        DecomposeAssetInstance,
+        DecomposeAssetAttribute
+    >;
+    Pay: Sequelize.Model<PayInstance, PayAttribute>;
+    SetRegularKey: Sequelize.Model<
+        SetRegularKeyInstance,
+        SetRegularKeyAttribute
+    >;
+    CreateShard: Sequelize.Model<CreateShardInstance, CreateShardAttribute>;
+    SetShardOwners: Sequelize.Model<
+        SetShardOwnersInstance,
+        SetShardOwnersAttribute
+    >;
+    SetShardUsers: Sequelize.Model<
+        SetShardUsersInstance,
+        SetShardUsersAttribute
+    >;
+    Store: Sequelize.Model<StoreInstance, StoreAttribute>;
+    Remove: Sequelize.Model<RemoveInstance, RemoveAttribute>;
+    Custom: Sequelize.Model<CustomInstance, CustomAttribute>;
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
     Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
     UTXO: Sequelize.Model<UTXOInstance, UTXOAttribute>;

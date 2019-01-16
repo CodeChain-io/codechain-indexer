@@ -8,13 +8,13 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.BIGINT
             },
-            actionId: {
+            transactionHash: {
                 allowNull: false,
-                type: Sequelize.INTEGER,
+                type: Sequelize.STRING,
                 onDelete: "CASCADE",
                 references: {
-                    model: "Actions",
-                    key: "id"
+                    model: "Transactions",
+                    key: "hash"
                 }
             },
             lockScriptHash: {

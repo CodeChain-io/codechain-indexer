@@ -5,8 +5,8 @@ import models from "..";
 import * as Exception from "../../exception";
 
 export async function createAssetImage(
-    assetSchemeId: number,
-    assetType: H256,
+    transactionHash: string,
+    assetType: string,
     assetURL: string
 ): Promise<void> {
     let imageDataBuffer;
@@ -24,8 +24,8 @@ export async function createAssetImage(
     if (imageDataBuffer) {
         try {
             await models.AssetImage.upsert({
-                assetSchemeId,
-                assetType: assetType.value,
+                transactionHash,
+                assetType,
                 image: imageDataBuffer.toString("base64")
             });
         } catch (err) {

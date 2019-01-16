@@ -1,19 +1,31 @@
 import {
+    ComposeAsset,
+    DecomposeAsset,
     H160,
     H256,
+    MintAsset,
     SignedTransaction,
+    TransferAsset,
     U64
 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
-import { ActionInstance } from "../action";
-import { AssetTransferInputAttribute } from "../assettransferinput";
 import { AssetTransferOutputAttribute } from "../assettransferoutput";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
-import * as ActionModel from "./action";
 import * as BlockModel from "./block";
+import { createComposeAsset } from "./composeAsset";
+import { createCustom } from "./custom";
+import { createDecomposeAsset } from "./decomposeAsset";
+import { createMintAsset } from "./mintAsset";
+import { createPay } from "./pay";
+import { createRemove } from "./remove";
+import { createSetRegularKey } from "./setRegularKey";
+import { createSetShardOwners } from "./setShardOwners";
+import { createSetShardUsers } from "./setShardUsers";
+import { createStore } from "./store";
+import { createTransferAsset } from "./transferAsset";
 import { getOwner } from "./utils/address";
 import { createUTXO, getByTxHashIndex, setUsed } from "./utxo";
 
@@ -28,13 +40,11 @@ export async function createTransaction(
 ): Promise<TransactionInstance> {
     const { timestamp = null, invoice = null, errorType = null } = params || {};
     try {
-        const actionId = (await ActionModel.createAction(tx.unsigned)).get({
-            plain: true
-        }).id;
+        const type = tx.unsigned.type();
+        const hash = tx.hash().value;
         const txInstance = await models.Transaction.create({
-            hash: tx.hash().value,
-            type: tx.unsigned.type(),
-            actionId,
+            hash,
+            type,
             blockNumber: tx.blockNumber,
             blockHash: tx.blockHash && tx.blockHash.value,
             transactionIndex: tx.transactionIndex,
@@ -51,6 +61,82 @@ export async function createTransaction(
             isPending,
             pendingTimestamp: isPending ? +new Date() / 1000 : null
         });
+        switch (type) {
+            case "mintAsset": {
+                const mintAsset = tx.unsigned as MintAsset;
+                await createMintAsset(
+                    hash,
+                    mintAsset.getMintedAsset(),
+                    mintAsset.getAssetScheme(),
+                    tx.toJSON().action
+                );
+                break;
+            }
+            case "transferAsset": {
+                const transferAsset = tx.unsigned as TransferAsset;
+                await createTransferAsset(
+                    hash,
+                    transferAsset,
+                    tx.toJSON().action
+                );
+                break;
+            }
+            case "composeAsset": {
+                const composeAsset = tx.unsigned as ComposeAsset;
+                await createComposeAsset(
+                    hash,
+                    composeAsset,
+                    tx.toJSON().action
+                );
+                break;
+            }
+            case "decomposeAsset": {
+                const decomposeAsset = tx.unsigned as DecomposeAsset;
+                await createDecomposeAsset(
+                    hash,
+                    decomposeAsset,
+                    tx.toJSON().action
+                );
+                break;
+            }
+            case "pay": {
+                const { amount, receiver } = tx.toJSON().action;
+                await createPay(hash, amount, receiver);
+                break;
+            }
+            case "setRegularKey": {
+                const { key } = tx.toJSON().action;
+                await createSetRegularKey(hash, key);
+                break;
+            }
+            case "setShardOwners": {
+                const { shardId, owners } = tx.toJSON().action;
+                await createSetShardOwners(hash, shardId, owners);
+                break;
+            }
+            case "setShardUsers": {
+                const { shardId, users } = tx.toJSON().action;
+                await createSetShardUsers(hash, shardId, users);
+                break;
+            }
+            case "store": {
+                const { content, certifier, signature } = tx.toJSON().action;
+                await createStore(hash, content, certifier, signature);
+                break;
+            }
+            case "remove": {
+                const action = tx.toJSON().action;
+                await createRemove(hash, action.hash, action.signature);
+                break;
+            }
+            case "custom": {
+                const { handleId, buffer } = tx.toJSON().action;
+                await createCustom(hash, handleId, buffer);
+                break;
+            }
+            default:
+                throw new Error(`${type} is not an expected transaction type`);
+        }
 
         if (!isPending) {
             const txInst = await getByHash(tx.hash());
@@ -113,42 +199,91 @@ export async function updatePendingTransaction(
 
 const includeArray = [
     {
-        as: "action",
-        model: models.Action,
+        as: "mintAsset",
+        model: models.MintAsset,
+        include: [
+            {
+                as: "output",
+                model: models.AssetMintOutput
+            }
+        ]
+    },
+    {
+        as: "transferAsset",
+        model: models.TransferAsset,
         include: [
             {
                 as: "outputs",
                 model: models.AssetTransferOutput
             },
             {
-                as: "output",
-                model: models.AssetMintOutput
-            },
-            {
                 as: "inputs",
                 model: models.AssetTransferInput
-            },
-            {
-                as: "input",
-                model: models.AssetDecomposeInput
             },
             {
                 as: "burns",
                 model: models.AssetTransferBurn
             }
         ]
+    },
+    {
+        as: "composeAsset",
+        model: models.ComposeAsset,
+        include: [
+            {
+                as: "output",
+                model: models.AssetTransferOutput
+            },
+            {
+                as: "inputs",
+                model: models.AssetTransferInput
+            }
+        ]
+    },
+    {
+        as: "decomposeAsset",
+        model: models.DecomposeAsset,
+        include: [
+            {
+                as: "outputs",
+                model: models.AssetTransferOutput
+            }
+        ]
+    },
+    {
+        as: "pay",
+        model: models.Pay
+    },
+    {
+        as: "setRegularKey",
+        model: models.SetRegularKey
+    },
+    {
+        as: "createShard",
+        model: models.CreateShard
+    },
+    {
+        as: "store",
+        model: models.Store
+    },
+    {
+        as: "remove",
+        model: models.Remove
+    },
+    {
+        as: "custom",
+        model: models.Custom
     }
 ];
 
 async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
     const tx = txInst.get({ plain: true });
-    const actionInst: ActionInstance = (await txInst.getAction())!;
-    const action = actionInst.get({ plain: true });
     const networkId = tx.networkId;
     const transactionHash = new H256(tx.hash);
-    const actionType = action.type;
-    if (actionType === "mintAsset") {
-        const output = (await (actionInst as any).getOutput()).get({
+    const txType = tx.type;
+    if (txType === "mintAsset") {
+        const mintAsset = (await txInst.getMintAsset())!;
+        const output = (await mintAsset.getOutput())!.get({
             plain: true
         });
         const lockScriptHash = new H160(output.lockScriptHash);
@@ -170,8 +305,11 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             blockNumber
         );
     }
-    if (actionType === "transferAsset") {
-        const outputs = await (actionInst as any).getOutputs();
+    if (txType === "transferAsset") {
+        const transferAsset = (await txInst.getTransferAsset())!;
+        const outputs = (await transferAsset.getOutputs())!.map(output =>
+            output.get({ plain: true })
+        );
         await Promise.all(
             outputs!.map(
                 (
@@ -202,10 +340,11 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 }
             )
         );
-        const inputs = await (actionInst as any).getInputs();
+        const inputs = await transferAsset.getInputs();
         if (inputs) {
             await Promise.all(
-                inputs.map(async (input: AssetTransferInputAttribute) => {
+                inputs.map(async inputInst => {
+                    const input = inputInst.get({ plain: true })!;
                     const utxoInst = await getByTxHashIndex(
                         transactionHash,
                         input.prevOut.index
@@ -217,10 +356,11 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 })
             );
         }
-        const burns = await (actionInst as any).getBurns();
+        const burns = await transferAsset.getBurns();
         if (burns) {
             await Promise.all(
-                burns.map(async (burn: AssetTransferInputAttribute) => {
+                burns.map(async burnInst => {
+                    const burn = burnInst.get({ plain: true })!;
                     const utxoInst = await getByTxHashIndex(
                         transactionHash,
                         burn.prevOut.index
@@ -234,12 +374,12 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         }
         return;
     }
-    if (actionType === "composeAsset") {
-        const inputs = (await (actionInst as any).getInputs()).get({
-            plain: true
-        });
+    if (txType === "composeAsset") {
+        const composeAsset = (await txInst.getComposeAsset())!;
+        const inputs = (await composeAsset.getInputs())!;
         await Promise.all(
-            inputs!.map(async (input: AssetTransferInputAttribute) => {
+            inputs!.map(async inputInst => {
+                const input = inputInst.get({ plain: true });
                 const utxoInst = await getByTxHashIndex(
                     transactionHash,
                     input.prevOut.index
@@ -250,9 +390,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 return setUsed(utxoInst.get("id"), transactionHash);
             })
         );
-        const output = (await (actionInst as any).getOutput()).get({
-            plain: true
-        });
+        const output = (await composeAsset.getOutput())!.get({ plain: true });
         const recipient = getOwner(
             new H160(output.lockScriptHash),
             output.parameters,
@@ -276,10 +414,9 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             blockNumber
         );
     }
-    if (actionType === "decomposeAsset") {
-        const input = (await (actionInst as any).getInput()).get({
-            plain: true
-        });
+    if (txType === "decomposeAsset") {
+        const decomposeAsset = (await txInst.getDecomposeAsset())!;
+        const input = (await decomposeAsset.getInput())!.get({ plain: true });
         const utxoInst = await getByTxHashIndex(
             transactionHash,
             input.prevOut.index
@@ -289,38 +426,32 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         }
         await setUsed(utxoInst.get("id"), transactionHash);
 
-        const outputs = (await (actionInst as any).getOutputs()).get({
-            plain: true
-        });
+        const outputs = (await decomposeAsset.getOutputs())!;
         return await Promise.all(
-            outputs!.map(
-                (
-                    output: AssetTransferOutputAttribute,
-                    transactionOutputIndex: number
-                ) => {
-                    const recipient = getOwner(
-                        new H160(output.lockScriptHash),
-                        output.parameters,
-                        networkId
-                    );
-                    const assetType = new H256(output.assetType);
-                    const lockScriptHash = new H160(output.lockScriptHash);
-                    const parameters = output.parameters;
-                    const amount = new U64(output.amount);
-                    return createUTXO(
-                        recipient,
-                        {
-                            assetType,
-                            lockScriptHash,
-                            parameters,
-                            amount,
-                            transactionHash,
-                            transactionOutputIndex
-                        },
-                        blockNumber
-                    );
-                }
-            )
+            outputs!.map((outputInst, transactionOutputIndex: number) => {
+                const output = outputInst.get({ plain: true });
+                const recipient = getOwner(
+                    new H160(output.lockScriptHash),
+                    output.parameters,
+                    networkId
+                );
+                const assetType = new H256(output.assetType);
+                const lockScriptHash = new H160(output.lockScriptHash);
+                const parameters = output.parameters;
+                const amount = new U64(output.amount);
+                return createUTXO(
+                    recipient,
+                    {
+                        assetType,
+                        lockScriptHash,
+                        parameters,
+                        amount,
+                        transactionHash,
+                        transactionOutputIndex
+                    },
+                    blockNumber
+                );
+            })
         );
     }
 }
