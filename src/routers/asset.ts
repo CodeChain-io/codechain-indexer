@@ -381,7 +381,9 @@ export function handle(_C: IndexerContext, router: Router) {
             if (!moment(date).isValid()) {
                 throw Exception.InvalidDateParam;
             }
-            const unixTimestamp = moment(date).unix();
+            const unixTimestamp = moment(date)
+                .utc()
+                .unix();
             const snapshotInst = await SnapshotModel.createSnapshotRequests(
                 assetType,
                 unixTimestamp

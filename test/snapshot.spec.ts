@@ -42,6 +42,7 @@ test("Register snapshot", async done => {
     const snapshotInst = await SnapshotModel.createSnapshotRequests(
         assetType,
         moment()
+            .utc()
             .subtract(60, "seconds")
             .unix()
     );
