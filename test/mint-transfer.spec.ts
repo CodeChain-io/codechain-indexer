@@ -140,7 +140,7 @@ test.skip("Check utxo", async done => {
         0
     );
 
-    expect(utxoOfMintOwner.length).toEqual(2);
+    expect(utxoOfMintOwner.length).toEqual(1);
     expect(utxoOfMintAssetInst!.get().usedTransactionHash).toBeTruthy();
 
     const firstOutputOwner = transferOutputInst[0].get("owner");
