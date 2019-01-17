@@ -26,7 +26,7 @@ beforeAll(async done => {
     await Helper.worker.sync();
 
     done();
-});
+}, 60_000);
 
 afterAll(async done => {
     await models.sequelize.close();
