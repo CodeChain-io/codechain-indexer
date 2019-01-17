@@ -8,7 +8,9 @@ let blockLogCount = 0;
 let txLogCount = 0;
 beforeAll(async done => {
     await Helper.setupDb();
-    const date = moment().format("YYYY-MM-DD");
+    const date = moment()
+        .utc()
+        .format("YYYY-MM-DD");
 
     await Helper.worker.sync();
 
@@ -35,7 +37,9 @@ afterAll(async done => {
 });
 
 test("Check log block count", async done => {
-    const date = moment().format("YYYY-MM-DD");
+    const date = moment()
+        .utc()
+        .format("YYYY-MM-DD");
     const nextLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
     expect(nextLogInst).toBeTruthy();
     expect(nextLogInst!.get().count).toEqual(blockLogCount + 2);
@@ -79,7 +83,7 @@ test("Check log assetTransaciton count", async done => {
 });
 
 test("Check log transaction count", async done => {
-    const date = moment().format("YYYY-MM-DD");
+    const date = moment().utc().format("YYYY-MM-DD");
     const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
     expect(nextLogInst).toBeTruthy();
     expect(nextLogInst!.get().count).toEqual(txLogCount + 4);
