@@ -8,6 +8,7 @@ import {
     TransferAsset,
     U64
 } from "codechain-sdk/lib/core/classes";
+import { AssetTransaction } from "codechain-sdk/lib/core/Transaction";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
@@ -42,11 +43,21 @@ export async function createTransaction(
     try {
         const type = tx.unsigned.type();
         const hash = tx.hash().value;
+        // FIXME: Add a method to SDK
+        const isAssetTransaction =
+            type === "mintAsset" ||
+            type === "transferAsset" ||
+            type === "composeAsset" ||
+            type === "decomposeAsset";
+        const tracker = isAssetTransaction
+            ? ((tx.unsigned as any) as AssetTransaction).id().value
+            : null;
         const txInstance = await models.Transaction.create({
             hash,
             type,
             blockNumber: tx.blockNumber,
             blockHash: tx.blockHash && tx.blockHash.value,
+            tracker,
             transactionIndex: tx.transactionIndex,
             seq: tx.unsigned.seq()!,
             fee: tx.unsigned.fee()!.toString(10)!,

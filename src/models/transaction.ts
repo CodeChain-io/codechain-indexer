@@ -22,6 +22,7 @@ export interface TransactionAttribute {
     hash: string;
     blockNumber?: number | null;
     blockHash?: string | null;
+    tracker?: string | null;
     transactionIndex?: number | null;
     type?: string;
     pay?: PayAttribute;
@@ -97,6 +98,11 @@ export default (
                     key: "hash"
                 }
             },
+
+            tracker: {
+                type: DataTypes.STRING
+            },
+
             transactionIndex: {
                 type: DataTypes.INTEGER
             },

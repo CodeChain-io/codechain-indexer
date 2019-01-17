@@ -18,6 +18,11 @@ module.exports = {
                     key: "hash"
                 }
             },
+
+            tracker: {
+                type: Sequelize.STRING
+            },
+
             transactionIndex: {
                 type: Sequelize.INTEGER
             },
