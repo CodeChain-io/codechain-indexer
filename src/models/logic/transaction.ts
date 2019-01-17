@@ -356,8 +356,15 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             await Promise.all(
                 inputs.map(async inputInst => {
                     const input = inputInst.get({ plain: true })!;
+                    const prevTracker = input.prevOut.transactionId;
+                    const prevTransaction = await getSuccessfulTransaction(
+                        prevTracker
+                    );
+                    if (!prevTransaction) {
+                        throw Exception.InvalidUTXO;
+                    }
                     const utxoInst = await getByTxHashIndex(
-                        transactionHash,
+                        new H256(prevTransaction.get("hash")),
                         input.prevOut.index
                     );
                     if (!utxoInst) {
@@ -372,8 +379,15 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             await Promise.all(
                 burns.map(async burnInst => {
                     const burn = burnInst.get({ plain: true })!;
+                    const prevTracker = burn.prevOut.transactionId;
+                    const prevTransaction = await getSuccessfulTransaction(
+                        prevTracker
+                    );
+                    if (!prevTransaction) {
+                        throw Exception.InvalidUTXO;
+                    }
                     const utxoInst = await getByTxHashIndex(
-                        transactionHash,
+                        new H256(prevTransaction.get("hash")),
                         burn.prevOut.index
                     );
                     if (!utxoInst) {
@@ -391,8 +405,15 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         await Promise.all(
             inputs!.map(async inputInst => {
                 const input = inputInst.get({ plain: true });
+                const prevTracker = input.prevOut.transactionId;
+                const prevTransaction = await getSuccessfulTransaction(
+                    prevTracker
+                );
+                if (!prevTransaction) {
+                    throw Exception.InvalidUTXO;
+                }
                 const utxoInst = await getByTxHashIndex(
-                    transactionHash,
+                    new H256(prevTransaction.get("hash")),
                     input.prevOut.index
                 );
                 if (!utxoInst) {
@@ -428,8 +449,13 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
     if (txType === "decomposeAsset") {
         const decomposeAsset = (await txInst.getDecomposeAsset())!;
         const input = (await decomposeAsset.getInput())!.get({ plain: true });
+        const prevTracker = input.prevOut.transactionId;
+        const prevTransaction = await getSuccessfulTransaction(prevTracker);
+        if (!prevTransaction) {
+            throw Exception.InvalidUTXO;
+        }
         const utxoInst = await getByTxHashIndex(
-            transactionHash,
+            new H256(prevTransaction.get("hash")),
             input.prevOut.index
         );
         if (!utxoInst) {
@@ -684,6 +710,22 @@ export async function deleteByHash(hash: H256) {
         });
     } catch (err) {
         console.log(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getSuccessfulTransaction(
+    tracker: string
+): Promise<TransactionInstance | null> {
+    try {
+        return await models.Transaction.findOne({
+            where: {
+                tracker,
+                invoice: true
+            }
+        });
+    } catch (err) {
+        console.error(err);
         throw Exception.DBError;
     }
 }

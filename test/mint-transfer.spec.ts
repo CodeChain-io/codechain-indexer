@@ -123,7 +123,7 @@ test("Check assetTransfer input output", async done => {
     done();
 });
 
-test.skip("Check utxo", async done => {
+test("Check utxo", async done => {
     const mintHash = mintBlock.transactions[0].hash();
     const mintOutputInst = await AssetMintOutputModel.getByTransactionHash(
         mintHash.value
