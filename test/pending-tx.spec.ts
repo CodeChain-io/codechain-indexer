@@ -3,6 +3,7 @@ import models from "../src/models";
 import * as TxModel from "../src/models/logic/transaction";
 import * as Helper from "./helper";
 
+let p: Promise<any> | null = null;
 beforeAll(async done => {
     await Helper.setupDb();
     await Helper.runExample("import-test-account");
@@ -11,6 +12,9 @@ beforeAll(async done => {
 
 afterAll(async done => {
     await Helper.sdk.rpc.devel.startSealing();
+    if (p !== null) {
+        await p;
+    }
     await models.sequelize.close();
     await Helper.dropDb();
     done();
@@ -20,7 +24,7 @@ test(
     "Check pending transactions",
     async done => {
         await Helper.sdk.rpc.devel.stopSealing();
-        Helper.runExample("send-signed-tx");
+        p = Helper.runExample("send-signed-tx");
         await waitForSecond(2);
         await Helper.worker.sync();
 
@@ -31,6 +35,10 @@ test(
         expect(pendingTx.isPending).toEqual(true);
 
         await Helper.sdk.rpc.devel.startSealing();
+        while ((await Helper.sdk.rpc.chain.getPendingTransactions()).length !== 0) {
+            await waitForSecond(1);
+            console.log("waiting ...");
+        }
         await Helper.worker.sync();
 
         const newPendingTransactions = await TxModel.getPendingTransactions({});
