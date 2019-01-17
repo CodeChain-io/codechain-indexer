@@ -4,7 +4,6 @@ import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
-import { AssetDecomposeInputInstance } from "./assetdecomposeinput";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import {
     AssetMintOutputAttribute,
@@ -130,10 +129,6 @@ interface DB {
     >;
     AssetTransferBurn: Sequelize.Model<
         AssetTransferBurnInstance,
-        AssetTransferInputAttribute
-    >;
-    AssetDecomposeInput: Sequelize.Model<
-        AssetDecomposeInputInstance,
         AssetTransferInputAttribute
     >;
     SnapshotRequest: Sequelize.Model<
