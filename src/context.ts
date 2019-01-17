@@ -8,7 +8,7 @@ export class IndexerContext {
         const context = new IndexerContext(options);
 
         process.on("SIGINT", async () => {
-            console.log("Caught interrupt signal. Destroying the context...");
+            console.log("Caught interrupt signal.");
             await context.destroy();
             process.exit();
         });
@@ -27,6 +27,7 @@ export class IndexerContext {
     }
 
     public destroy = async () => {
+        console.log("Destroying the context...");
         await models.sequelize.close();
     };
 }
