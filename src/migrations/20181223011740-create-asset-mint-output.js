@@ -25,7 +25,7 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.JSONB
             },
-            amount: {
+            supply: {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },

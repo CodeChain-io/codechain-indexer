@@ -41,9 +41,9 @@ export async function createDecomposeAsset(
                     assetType: output.assetType,
                     lockScriptHash: output.lockScriptHash,
                     parameters: output.parameters,
-                    amount: output.amount,
+                    quantity: output.quantity,
                     orderHash: null,
-                    transactionId: decompose.id(),
+                    tracker: decompose.tracker(),
                     transactionOutputIndex
                 }),
                 assetScheme

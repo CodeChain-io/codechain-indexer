@@ -26,7 +26,7 @@ module.exports = {
             administrator: {
                 type: Sequelize.STRING
             },
-            amount: {
+            supply: {
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
             networkId: {

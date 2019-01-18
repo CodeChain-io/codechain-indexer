@@ -6,7 +6,7 @@ export interface AssetSchemeAttribute {
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
-    amount?: string | null;
+    supply?: string | null;
     networkId?: string | null;
     shardId?: number | null;
 }
@@ -45,7 +45,7 @@ export default (
             administrator: {
                 type: DataTypes.STRING
             },
-            amount: {
+            supply: {
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             networkId: {

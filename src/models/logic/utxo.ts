@@ -12,8 +12,8 @@ export async function createUTXO(
     utxo: {
         assetType: H256;
         lockScriptHash: H160;
-        parameters: Buffer[];
-        amount: U64;
+        parameters: string[];
+        quantity: U64;
         orderHash?: H256 | null;
         transactionHash: H256;
         transactionOutputIndex: number;
@@ -28,7 +28,7 @@ export async function createUTXO(
             assetType: utxo.assetType.value,
             lockScriptHash: utxo.lockScriptHash.value,
             parameters: utxo.parameters,
-            amount: utxo.amount.value.toString(10),
+            quantity: utxo.quantity.value.toString(10),
             transactionHash: utxo.transactionHash.value,
             transactionOutputIndex: utxo.transactionOutputIndex,
             assetScheme,
@@ -269,7 +269,7 @@ export async function getAggsUTXO(params: {
             },
             attributes: [
                 [
-                    Sequelize.fn("SUM", Sequelize.col("amount")),
+                    Sequelize.fn("SUM", Sequelize.col("quantity")),
                     "totalAssetQuantity"
                 ],
                 "assetType",

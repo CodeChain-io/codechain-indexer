@@ -3,13 +3,15 @@ import { PayInstance } from "../pay";
 
 export async function createPay(
     transactionHash: string,
-    amount: string,
+    quantity: string,
     receiver: string
 ): Promise<PayInstance> {
-    const numericAmount = amount.startsWith("0x") ? amount.slice(2) : amount;
+    const numericQuantity = quantity.startsWith("0x")
+        ? quantity.slice(2)
+        : quantity;
     return await models.Pay.create({
         transactionHash,
-        amount: numericAmount,
+        quantity: numericQuantity,
         receiver
     });
 }

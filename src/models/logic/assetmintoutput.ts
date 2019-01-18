@@ -17,16 +17,17 @@ export async function createAssetMintOutput(
     }
 ): Promise<AssetMintOutputInstance> {
     try {
+        const parameters = output.parameters.map(p => p.toString("hex"));
         const recipient = AddressUtil.getOwner(
             output.lockScriptHash,
-            output.parameters,
+            parameters,
             params.networkId
         );
         return await models.AssetMintOutput.create({
             transactionHash,
             lockScriptHash: output.lockScriptHash.value,
-            parameters: output.parameters,
-            amount: output.amount!.value.toString(10),
+            parameters,
+            supply: output.supply!.value.toString(10),
             assetType: params.assetType,
             approver: params.approver,
             administrator: params.administrator,
