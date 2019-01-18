@@ -32,6 +32,11 @@ module.exports = {
             administrator: {
                 type: DataTypes.STRING
             },
+            allowedScriptHashes: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+
             approvals: {
                 allowNull: false,
                 type: DataTypes.JSONB

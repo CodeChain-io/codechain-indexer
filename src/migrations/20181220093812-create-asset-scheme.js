@@ -26,6 +26,11 @@ module.exports = {
             administrator: {
                 type: Sequelize.STRING
             },
+            allowedScriptHashes: {
+                allowNull: false,
+                type: Sequelize.JSONB
+            },
+
             supply: {
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },

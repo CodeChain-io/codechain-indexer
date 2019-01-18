@@ -16,6 +16,7 @@ export async function createComposeAsset(
         metadata: string;
         approver?: string | null;
         administrator?: string | null;
+        allowedScriptHashes: string[];
         approvals: string[];
         inputs: any[];
         output: any;
@@ -28,6 +29,7 @@ export async function createComposeAsset(
         approver = null,
         administrator = null,
         approvals,
+        allowedScriptHashes,
         output,
         inputs
     } = params;
@@ -42,6 +44,7 @@ export async function createComposeAsset(
         metadata,
         approver,
         administrator,
+        allowedScriptHashes,
         approvals,
         assetName
     });
@@ -61,6 +64,7 @@ export async function createComposeAsset(
         assetType,
         approver,
         administrator,
+        allowedScriptHashes,
         networkId,
         asset
     });
