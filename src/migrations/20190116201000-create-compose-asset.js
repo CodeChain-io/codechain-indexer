@@ -42,7 +42,28 @@ module.exports = {
                 type: DataTypes.JSONB
             },
 
+            lockScriptHash: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            parameters: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            supply: {
+                allowNull: false,
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+
             assetName: {
+                type: DataTypes.STRING
+            },
+            recipient: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            assetType: {
+                allowNull: false,
                 type: DataTypes.STRING
             },
 

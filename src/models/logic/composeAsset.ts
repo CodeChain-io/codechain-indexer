@@ -2,9 +2,9 @@ import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOut
 import { ComposeAsset } from "codechain-sdk/lib/core/transaction/ComposeAsset";
 import { ComposeAssetInstance } from "../composeAsset";
 import models from "../index";
-import { createAssetMintOutput } from "./assetmintoutput";
 import { createAssetScheme } from "./assetscheme";
 import { createAssetTransferInput } from "./assettransferinput";
+import { getOwner } from "./utils/address";
 import { getAssetName, getAssetScheme } from "./utils/asset";
 
 export async function createComposeAsset(
@@ -37,6 +37,15 @@ export async function createComposeAsset(
 
     const asset = compose.getComposedAsset();
     const assetType = asset.assetType.value;
+    const composedOutput = AssetMintOutput.fromJSON(output);
+    const { lockScriptHash, parameters } = output;
+    const supply = composedOutput.supply!.toString(10);
+    const recipient = getOwner(
+        composedOutput.lockScriptHash,
+        parameters,
+        networkId
+    );
+
     const result = await models.ComposeAsset.create({
         transactionHash,
         networkId,
@@ -46,10 +55,14 @@ export async function createComposeAsset(
         administrator,
         allowedScriptHashes,
         approvals,
-        assetName
+        lockScriptHash,
+        parameters,
+        supply,
+        assetName,
+        assetType,
+        recipient
     });
 
-    const composedOutput = AssetMintOutput.fromJSON(output);
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
             const input = compose.input(index)!;
@@ -60,14 +73,7 @@ export async function createComposeAsset(
             });
         })
     );
-    await createAssetMintOutput(transactionHash, composedOutput, {
-        assetType,
-        approver,
-        administrator,
-        allowedScriptHashes,
-        networkId,
-        asset
-    });
+
     await createAssetScheme(
         assetType,
         transactionHash,

@@ -1,8 +1,4 @@
 import * as Sequelize from "sequelize";
-import {
-    AssetMintOutputAttribute,
-    AssetMintOutputInstance
-} from "./assetmintoutput";
 
 export interface MintAssetAttribute {
     transactionHash: string;
@@ -14,14 +10,17 @@ export interface MintAssetAttribute {
     allowedScriptHashes: string[];
     approvals: string[];
 
+    lockScriptHash: string;
+    parameters: string[];
+    supply: string;
+
     assetName?: string;
-    output?: AssetMintOutputAttribute;
+    assetType: string;
+    recipient: string;
 }
 
 export interface MintAssetInstance
-    extends Sequelize.Instance<MintAssetAttribute> {
-    getOutput: Sequelize.HasOneGetAssociationMixin<AssetMintOutputInstance>;
-}
+    extends Sequelize.Instance<MintAssetAttribute> {}
 
 export default (
     sequelize: Sequelize.Sequelize,
@@ -53,6 +52,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+
             approver: {
                 type: DataTypes.STRING
             },
@@ -69,7 +69,28 @@ export default (
                 type: DataTypes.JSONB
             },
 
+            lockScriptHash: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            parameters: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            supply: {
+                allowNull: false,
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+
             assetName: {
+                type: DataTypes.STRING
+            },
+            assetType: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            recipient: {
+                allowNull: false,
                 type: DataTypes.STRING
             },
 
@@ -84,12 +105,5 @@ export default (
         },
         {}
     );
-    Action.associate = models => {
-        Action.hasOne(models.AssetMintOutput, {
-            foreignKey: "transactionHash",
-            as: "output",
-            onDelete: "CASCADE"
-        });
-    };
     return Action;
 };
