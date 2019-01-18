@@ -133,26 +133,19 @@ export const runExample = (name: string) => {
     });
 };
 
-export const setupDb = () => {
-    return new Promise((resolve, reject) => {
-        exec("yarn run migrate", err => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve();
-        });
-    });
-};
-
-export const dropDb = () => {
+export const resetDb = () => {
     return new Promise((resolve, reject) => {
         exec("yarn run drop", err => {
             if (err) {
-                reject(err);
-                return;
+                console.error(`Cannot drop a database: ${err}`);
             }
-            resolve();
+            exec("yarn run migrate", err => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
         });
     });
 };

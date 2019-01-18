@@ -18,7 +18,6 @@ let mintBlock: Block;
 let transferBlock: Block;
 
 beforeAll(async done => {
-    await Helper.setupDb();
     await Helper.runExample("import-test-account");
     await Helper.runExample("mint-and-transfer");
     bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
@@ -189,6 +188,5 @@ test("Get block document containing action, transaction, output, input", async d
 
 afterAll(async done => {
     await models.sequelize.close();
-    await Helper.dropDb();
     done();
 });

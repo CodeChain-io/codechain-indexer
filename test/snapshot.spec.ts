@@ -9,7 +9,6 @@ import * as SnapshotModel from "../src/models/logic/snapshot";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
-    await Helper.setupDb();
     await Helper.runExample("send-signed-tx");
     await Helper.runExample("import-test-account");
     await Helper.runExample("mint-and-transfer");
@@ -19,7 +18,6 @@ beforeAll(async done => {
 
 afterAll(async done => {
     await models.sequelize.close();
-    await Helper.dropDb();
     done();
 });
 
