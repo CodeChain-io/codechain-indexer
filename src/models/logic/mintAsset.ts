@@ -17,6 +17,7 @@ export async function createMintAsset(
         metadata: string;
         approver?: string | null;
         administrator?: string | null;
+        allowedScriptHashes: string[];
         approvals: string[];
         output: any;
     }
@@ -28,6 +29,7 @@ export async function createMintAsset(
         approver = null,
         administrator = null,
         approvals,
+        allowedScriptHashes,
         output
     } = params;
     const assetName = getAssetName(metadata);
@@ -38,6 +40,7 @@ export async function createMintAsset(
         metadata,
         approver,
         administrator,
+        allowedScriptHashes,
         approvals,
         assetName
     });
@@ -47,6 +50,7 @@ export async function createMintAsset(
         assetType,
         approver,
         administrator,
+        allowedScriptHashes,
         networkId,
         asset
     });

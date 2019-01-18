@@ -8,6 +8,7 @@ export interface AssetMintOutputAttribute {
     supply: string;
     approver?: string | null;
     administrator?: string | null;
+    allowedScriptHashes: string[];
     assetType: string;
     recipient: string;
 }
@@ -54,6 +55,10 @@ export default (
             },
             administrator: {
                 type: DataTypes.STRING
+            },
+            allowedScriptHashes: {
+                allowNull: false,
+                type: DataTypes.JSON
             },
             assetType: {
                 allowNull: false,

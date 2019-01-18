@@ -35,6 +35,11 @@ module.exports = {
             administrator: {
                 type: Sequelize.STRING
             },
+            allowedScriptHashes: {
+                allowNull: false,
+                type: Sequelize.JSON
+            },
+
             recipient: {
                 allowNull: false,
                 type: Sequelize.STRING

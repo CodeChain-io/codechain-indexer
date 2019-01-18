@@ -11,7 +11,9 @@ export interface MintAssetAttribute {
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
+    allowedScriptHashes: string[];
     approvals: string[];
+
     assetName?: string;
     output?: AssetMintOutputAttribute;
 }
@@ -57,6 +59,11 @@ export default (
             administrator: {
                 type: DataTypes.STRING
             },
+            allowedScriptHashes: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+
             approvals: {
                 allowNull: false,
                 type: DataTypes.JSONB

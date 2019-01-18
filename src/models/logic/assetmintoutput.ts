@@ -12,6 +12,7 @@ export async function createAssetMintOutput(
         assetType: string;
         approver: string | null;
         administrator: string | null;
+        allowedScriptHashes: string[];
         networkId: string;
         asset: Asset;
     }
@@ -31,6 +32,7 @@ export async function createAssetMintOutput(
             assetType: params.assetType,
             approver: params.approver,
             administrator: params.administrator,
+            allowedScriptHashes: params.allowedScriptHashes,
             recipient
         });
     } catch (err) {

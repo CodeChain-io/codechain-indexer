@@ -20,6 +20,9 @@ export async function createAssetScheme(
             approver: assetScheme.approver && assetScheme.approver.value,
             administrator:
                 assetScheme.administrator && assetScheme.administrator.value,
+            allowedScriptHashes: assetScheme.allowedScriptHashes.map(
+                hash => hash.value
+            ),
             supply: assetScheme.supply.value.toString(10),
             networkId: assetScheme.networkId,
             shardId: assetScheme.shardId

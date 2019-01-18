@@ -15,6 +15,8 @@ export interface ComposeAssetAttribute {
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
+    allowedScriptHashes: string[];
+
     approvals: string[];
     assetName?: string;
     inputs?: AssetTransferInputAttribute[];
@@ -66,6 +68,11 @@ export default (
             administrator: {
                 type: DataTypes.STRING
             },
+            allowedScriptHashes: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+
             approvals: {
                 type: DataTypes.JSONB
             },
