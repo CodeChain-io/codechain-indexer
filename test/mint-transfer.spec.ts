@@ -4,7 +4,6 @@ import {
     U64
 } from "codechain-sdk/lib/core/classes";
 import models from "../src/models";
-import * as AssetMintOutputModel from "../src/models/logic/assetmintoutput";
 import * as AssetSchemeModel from "../src/models/logic/assetscheme";
 import * as AssetTransferInputModel from "../src/models/logic/assettransferinput";
 import * as AssetTransferOutputModel from "../src/models/logic/assettransferoutput";
@@ -96,16 +95,6 @@ test("Check assetScheme", async done => {
     done();
 });
 
-test("Check assetMintOutput", async done => {
-    const signed = mintBlock.transactions[0];
-    const mintOutputInst = await AssetMintOutputModel.getByTransactionHash(
-        signed.hash().value
-    );
-    expect(mintOutputInst).toBeTruthy();
-
-    done();
-});
-
 test("Check assetTransfer input output", async done => {
     const signed = transferBlock.transactions[0];
     const transferOutputInst = await AssetTransferOutputModel.getByTransactionHash(
@@ -124,16 +113,16 @@ test("Check assetTransfer input output", async done => {
 
 test("Check utxo", async done => {
     const mintHash = mintBlock.transactions[0].hash();
-    const mintOutputInst = await AssetMintOutputModel.getByTransactionHash(
-        mintHash.value
-    );
+    const txInst = (await TransactionModel.getByHash(mintHash))!;
 
     const transferHash = transferBlock.transactions[0].hash().value;
     const transferOutputInst = await AssetTransferOutputModel.getByTransactionHash(
         transferHash
     );
 
-    const mintOwner = mintOutputInst!.get("recipient");
+    expect(await txInst.get("type")).toEqual("mintAsset");
+    const mintOwner = (await txInst.getMintAsset())!.get("recipient");
+    console.log("mint owner", mintOwner);
     const utxoOfMintOwner = await UTXOModel.getByAddress(mintOwner);
     const utxoOfMintAssetInst = await UTXOModel.getByTxHashIndex(
         mintHash,
@@ -150,7 +139,7 @@ test("Check utxo", async done => {
     done();
 });
 
-test("Get block document containing action, transaction, output, input", async done => {
+test("Get block document containing action, transaction, input", async done => {
     const mintBlockInst = (await BlockModel.getByNumber(
         bestBlockNumber - 1
     ))!;
@@ -161,7 +150,6 @@ test("Get block document containing action, transaction, output, input", async d
     expect(mintBlockDoc.transactions![0].type).toEqual(
         "mintAsset"
     );
-    expect(mintBlockDoc.transactions![0].mintAsset!.output).toBeTruthy();
 
 
     const transferBlockInst = (await BlockModel.getByNumber(

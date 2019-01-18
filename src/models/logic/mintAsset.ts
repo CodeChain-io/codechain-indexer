@@ -3,8 +3,8 @@ import { AssetScheme } from "codechain-sdk/lib/core/AssetScheme";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import models from "../index";
 import { MintAssetInstance } from "../mintAsset";
-import { createAssetMintOutput } from "./assetmintoutput";
 import { createAssetScheme } from "./assetscheme";
+import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
 
 export async function createMintAsset(
@@ -33,6 +33,16 @@ export async function createMintAsset(
         output
     } = params;
     const assetName = getAssetName(metadata);
+    const mintOutput = AssetMintOutput.fromJSON(output);
+    const assetType = asset.assetType.value;
+    const { lockScriptHash, parameters } = output;
+    const supply = mintOutput.supply!.toString(10);
+
+    const recipient = getOwner(
+        mintOutput.lockScriptHash,
+        parameters,
+        networkId
+    );
     const inst = await models.MintAsset.create({
         transactionHash,
         networkId,
@@ -42,18 +52,23 @@ export async function createMintAsset(
         administrator,
         allowedScriptHashes,
         approvals,
-        assetName
-    });
-    const mintOutput = AssetMintOutput.fromJSON(output);
-    const assetType = asset.assetType.value;
-    await createAssetMintOutput(transactionHash, mintOutput, {
+        lockScriptHash,
+        parameters,
+        supply,
+        assetName,
         assetType,
-        approver,
-        administrator,
-        allowedScriptHashes,
-        networkId,
-        asset
+        recipient
     });
     await createAssetScheme(assetType, transactionHash, assetScheme);
     return inst;
+}
+
+export async function getByTransactionHash(
+    transactionHash: string
+): Promise<MintAssetInstance | null> {
+    return await models.MintAsset.findOne({
+        where: {
+            transactionHash
+        }
+    });
 }

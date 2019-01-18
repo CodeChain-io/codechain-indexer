@@ -5,10 +5,6 @@ import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
-import {
-    AssetMintOutputAttribute,
-    AssetMintOutputInstance
-} from "./assetmintoutput";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import { AssetTransferBurnInstance } from "./assettransferburn";
 import {
@@ -115,10 +111,6 @@ interface DB {
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
     Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
     UTXO: Sequelize.Model<UTXOInstance, UTXOAttribute>;
-    AssetMintOutput: Sequelize.Model<
-        AssetMintOutputInstance,
-        AssetMintOutputAttribute
-    >;
     AssetTransferInput: Sequelize.Model<
         AssetTransferInputInstance,
         AssetTransferInputAttribute

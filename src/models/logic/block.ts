@@ -75,13 +75,7 @@ const includeArray = [
         include: [
             {
                 as: "mintAsset",
-                model: models.MintAsset,
-                include: [
-                    {
-                        as: "output",
-                        model: models.AssetMintOutput
-                    }
-                ]
+                model: models.MintAsset
             },
             {
                 as: "transferAsset",
@@ -105,10 +99,6 @@ const includeArray = [
                 as: "composeAsset",
                 model: models.ComposeAsset,
                 include: [
-                    {
-                        as: "output",
-                        model: models.AssetTransferOutput
-                    },
                     {
                         as: "inputs",
                         model: models.AssetTransferInput

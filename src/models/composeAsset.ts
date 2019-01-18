@@ -3,10 +3,6 @@ import {
     AssetTransferInputAttribute,
     AssetTransferInputInstance
 } from "./assettransferinput";
-import {
-    AssetTransferOutputAttribute,
-    AssetTransferOutputInstance
-} from "./assettransferoutput";
 
 export interface ComposeAssetAttribute {
     transactionHash: string;
@@ -18,9 +14,16 @@ export interface ComposeAssetAttribute {
     allowedScriptHashes: string[];
 
     approvals: string[];
+
+    lockScriptHash: string;
+    parameters: string[];
+    supply: string;
+
     assetName?: string;
+    assetType: string;
+    recipient: string;
+
     inputs?: AssetTransferInputAttribute[];
-    output?: AssetTransferOutputAttribute;
 }
 
 export interface ComposeAssetInstance
@@ -28,7 +31,6 @@ export interface ComposeAssetInstance
     getInputs: Sequelize.HasManyGetAssociationsMixin<
         AssetTransferInputInstance
     >;
-    getOutput: Sequelize.HasOneGetAssociationMixin<AssetTransferOutputInstance>;
 }
 
 export default (
@@ -77,7 +79,28 @@ export default (
                 type: DataTypes.JSONB
             },
 
+            lockScriptHash: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            parameters: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            supply: {
+                allowNull: false,
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+
             assetName: {
+                type: DataTypes.STRING
+            },
+            assetType: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            recipient: {
+                allowNull: false,
                 type: DataTypes.STRING
             },
 
@@ -96,11 +119,6 @@ export default (
         Action.hasMany(models.AssetTransferInput, {
             foreignKey: "transactionHash",
             as: "inputs",
-            onDelete: "CASCADE"
-        });
-        Action.hasOne(models.AssetTransferOutput, {
-            foreignKey: "transactionHash",
-            as: "output",
             onDelete: "CASCADE"
         });
     };

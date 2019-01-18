@@ -211,13 +211,7 @@ export async function updatePendingTransaction(
 const includeArray = [
     {
         as: "mintAsset",
-        model: models.MintAsset,
-        include: [
-            {
-                as: "output",
-                model: models.AssetMintOutput
-            }
-        ]
+        model: models.MintAsset
     },
     {
         as: "transferAsset",
@@ -241,10 +235,6 @@ const includeArray = [
         as: "composeAsset",
         model: models.ComposeAsset,
         include: [
-            {
-                as: "output",
-                model: models.AssetTransferOutput
-            },
             {
                 as: "inputs",
                 model: models.AssetTransferInput
@@ -293,15 +283,12 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
     const transactionHash = new H256(tx.hash);
     const txType = tx.type;
     if (txType === "mintAsset") {
-        const mintAsset = (await txInst.getMintAsset())!;
-        const output = (await mintAsset.getOutput())!.get({
-            plain: true
-        });
-        const lockScriptHash = new H160(output.lockScriptHash);
-        const parameters = output.parameters;
+        const mintAsset = (await txInst.getMintAsset())!.get();
+        const lockScriptHash = new H160(mintAsset.lockScriptHash);
+        const parameters = mintAsset.parameters;
         const recipient = getOwner(lockScriptHash, parameters, networkId);
-        const assetType = new H256(output.assetType);
-        const quantity = new U64(output.supply);
+        const assetType = new H256(mintAsset.assetType);
+        const quantity = new U64(mintAsset.supply);
         const transactionOutputIndex = 0;
         return await createUTXO(
             recipient,
@@ -422,7 +409,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 return setUsed(utxoInst.get("id"), transactionHash);
             })
         );
-        const output = (await composeAsset.getOutput())!.get({ plain: true });
+        const output = (await composeAsset.get())!;
         const recipient = getOwner(
             new H160(output.lockScriptHash),
             output.parameters,
@@ -431,7 +418,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         const assetType = new H256(output.assetType);
         const lockScriptHash = new H160(output.lockScriptHash);
         const parameters = output.parameters;
-        const quantity = new U64(output.quantity);
+        const quantity = new U64(output.supply);
         const transactionOutputIndex = 0;
         return createUTXO(
             recipient,
