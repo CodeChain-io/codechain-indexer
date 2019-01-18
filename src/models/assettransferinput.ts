@@ -14,14 +14,14 @@ export interface AssetTransferInputAttribute {
 }
 
 export interface AssetOutPointAttribute {
-    transactionId: string;
+    tracker: string;
     index: number;
     assetType: string;
     assetScheme: AssetSchemeAttribute;
-    amount: string;
+    quantity: string;
     owner?: string | null;
     lockScriptHash?: string | null;
-    parameters?: Buffer[] | null;
+    parameters?: string[] | null;
 }
 
 export interface AssetTransferInputInstance

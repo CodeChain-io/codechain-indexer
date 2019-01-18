@@ -47,7 +47,7 @@ async function check(blockResponse: Block, type: string) {
     const tx = txByHashInst.get({ plain: true });
     expect(tx.hash).toEqual(signed.hash().value);
     expect(tx.type).toEqual(type);
-    expect(tx.tracker).toEqual((signed.unsigned as any).id().value);
+    expect(tx.tracker).toEqual((signed.unsigned as any).tracker().value);
 }
 
 test("mint", async done => {

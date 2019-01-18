@@ -20,7 +20,7 @@ export async function createAssetScheme(
             approver: assetScheme.approver && assetScheme.approver.value,
             administrator:
                 assetScheme.administrator && assetScheme.administrator.value,
-            amount: assetScheme.amount.value.toString(10),
+            supply: assetScheme.supply.value.toString(10),
             networkId: assetScheme.networkId,
             shardId: assetScheme.shardId
         });

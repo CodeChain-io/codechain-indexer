@@ -3,7 +3,7 @@ import * as Sequelize from "sequelize";
 export interface PayAttribute {
     transactionHash: string;
     receiver: string;
-    amount: string;
+    quantity: string;
 }
 
 export interface PayInstance extends Sequelize.Instance<PayAttribute> {}
@@ -29,7 +29,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            amount: {
+            quantity: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },

@@ -16,17 +16,18 @@ export async function createAssetTransferOutput(
 ): Promise<AssetTransferOutputInstance> {
     let assetTransferOuputInstance: AssetTransferOutputInstance;
     try {
+        const parameters = output.parameters.map(p => p.toString("hex"));
         const owner = AddressUtil.getOwner(
             output.lockScriptHash,
-            output.parameters,
+            parameters,
             params.networkId
         );
         assetTransferOuputInstance = await models.AssetTransferOutput.create({
             transactionHash,
             lockScriptHash: output.lockScriptHash.value,
-            parameters: output.parameters,
+            parameters,
             assetType: output.assetType.value,
-            amount: output.amount.value.toString(10),
+            quantity: output.quantity.value.toString(10),
             assetScheme: params.assetScheme,
             owner
         });

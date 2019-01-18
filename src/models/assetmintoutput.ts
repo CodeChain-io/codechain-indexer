@@ -4,8 +4,8 @@ export interface AssetMintOutputAttribute {
     id?: number;
     transactionHash: string;
     lockScriptHash: string;
-    parameters: Buffer[];
-    amount: string;
+    parameters: string[];
+    supply: string;
     approver?: string | null;
     administrator?: string | null;
     assetType: string;
@@ -45,7 +45,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-            amount: {
+            supply: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },

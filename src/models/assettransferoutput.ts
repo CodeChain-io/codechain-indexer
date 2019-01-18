@@ -6,9 +6,9 @@ export interface AssetTransferOutputAttribute {
     id?: string;
     transactionHash: string;
     lockScriptHash: string;
-    parameters: Buffer[];
+    parameters: string[];
     assetType: string;
-    amount: string;
+    quantity: string;
     owner?: string | null;
     assetScheme: AssetSchemeAttribute;
 }
@@ -50,7 +50,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            amount: {
+            quantity: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },

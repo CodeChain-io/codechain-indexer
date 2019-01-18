@@ -56,9 +56,9 @@ export async function createTransferAsset(
                     assetType: output.assetType,
                     lockScriptHash: output.lockScriptHash,
                     parameters: output.parameters,
-                    amount: output.amount,
+                    quantity: output.quantity,
                     orderHash: null,
-                    transactionId: transfer.id(),
+                    tracker: transfer.tracker(),
                     transactionOutputIndex
                 })
             });

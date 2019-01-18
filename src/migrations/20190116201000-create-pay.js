@@ -18,7 +18,7 @@ module.exports = {
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            amount: {
+            quantity: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },

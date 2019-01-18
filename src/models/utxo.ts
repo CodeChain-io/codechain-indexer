@@ -6,8 +6,8 @@ export interface UTXOAttribute {
     address: string;
     assetType: string;
     lockScriptHash: string;
-    parameters: Buffer[];
-    amount: string;
+    parameters: string[];
+    quantity: string;
     transactionHash: string;
     transactionOutputIndex: number;
     usedTransactionHash?: string | null;
@@ -46,7 +46,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-            amount: {
+            quantity: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },

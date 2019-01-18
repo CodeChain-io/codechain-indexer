@@ -50,7 +50,7 @@ export async function createTransaction(
             type === "composeAsset" ||
             type === "decomposeAsset";
         const tracker = isAssetTransaction
-            ? ((tx.unsigned as any) as AssetTransaction).id().value
+            ? ((tx.unsigned as any) as AssetTransaction).tracker().value
             : null;
         const txInstance = await models.Transaction.create({
             hash,
@@ -111,8 +111,8 @@ export async function createTransaction(
                 break;
             }
             case "pay": {
-                const { amount, receiver } = tx.toJSON().action;
-                await createPay(hash, amount, receiver);
+                const { quantity, receiver } = tx.toJSON().action;
+                await createPay(hash, quantity, receiver);
                 break;
             }
             case "setRegularKey": {
@@ -301,7 +301,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         const parameters = output.parameters;
         const recipient = getOwner(lockScriptHash, parameters, networkId);
         const assetType = new H256(output.assetType);
-        const amount = new U64(output.amount);
+        const quantity = new U64(output.supply);
         const transactionOutputIndex = 0;
         return await createUTXO(
             recipient,
@@ -309,7 +309,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 assetType,
                 lockScriptHash,
                 parameters,
-                amount,
+                quantity,
                 transactionHash,
                 transactionOutputIndex
             },
@@ -335,14 +335,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     const assetType = new H256(output.assetType);
                     const lockScriptHash = new H160(output.lockScriptHash);
                     const parameters = output.parameters;
-                    const amount = new U64(output.amount);
+                    const quantity = new U64(output.quantity);
                     return createUTXO(
                         recipient,
                         {
                             assetType,
                             lockScriptHash,
                             parameters,
-                            amount,
+                            quantity,
                             transactionHash,
                             transactionOutputIndex
                         },
@@ -356,7 +356,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             await Promise.all(
                 inputs.map(async inputInst => {
                     const input = inputInst.get({ plain: true })!;
-                    const prevTracker = input.prevOut.transactionId;
+                    const prevTracker = input.prevOut.tracker;
                     const prevTransaction = await getSuccessfulTransaction(
                         prevTracker
                     );
@@ -379,7 +379,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             await Promise.all(
                 burns.map(async burnInst => {
                     const burn = burnInst.get({ plain: true })!;
-                    const prevTracker = burn.prevOut.transactionId;
+                    const prevTracker = burn.prevOut.tracker;
                     const prevTransaction = await getSuccessfulTransaction(
                         prevTracker
                     );
@@ -405,7 +405,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         await Promise.all(
             inputs!.map(async inputInst => {
                 const input = inputInst.get({ plain: true });
-                const prevTracker = input.prevOut.transactionId;
+                const prevTracker = input.prevOut.tracker;
                 const prevTransaction = await getSuccessfulTransaction(
                     prevTracker
                 );
@@ -431,7 +431,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         const assetType = new H256(output.assetType);
         const lockScriptHash = new H160(output.lockScriptHash);
         const parameters = output.parameters;
-        const amount = new U64(output.amount);
+        const quantity = new U64(output.quantity);
         const transactionOutputIndex = 0;
         return createUTXO(
             recipient,
@@ -439,7 +439,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 assetType,
                 lockScriptHash,
                 parameters,
-                amount,
+                quantity,
                 transactionHash,
                 transactionOutputIndex
             },
@@ -449,7 +449,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
     if (txType === "decomposeAsset") {
         const decomposeAsset = (await txInst.getDecomposeAsset())!;
         const input = (await decomposeAsset.getInput())!.get({ plain: true });
-        const prevTracker = input.prevOut.transactionId;
+        const prevTracker = input.prevOut.tracker;
         const prevTransaction = await getSuccessfulTransaction(prevTracker);
         if (!prevTransaction) {
             throw Exception.InvalidUTXO;
@@ -475,14 +475,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 const assetType = new H256(output.assetType);
                 const lockScriptHash = new H160(output.lockScriptHash);
                 const parameters = output.parameters;
-                const amount = new U64(output.amount);
+                const quantity = new U64(output.quantity);
                 return createUTXO(
                     recipient,
                     {
                         assetType,
                         lockScriptHash,
                         parameters,
-                        amount,
+                        quantity,
                         transactionHash,
                         transactionOutputIndex
                     },

@@ -16,12 +16,15 @@ export async function createAssetTransferInput(
 ): Promise<AssetTransferInputInstance> {
     let assetTransferInputInstance: AssetTransferInputInstance;
     try {
+        const parameters = input.prevOut.parameters
+            ? input.prevOut.parameters.map(p => p.toString("hex"))
+            : [];
         const owner =
             input.prevOut.lockScriptHash &&
             input.prevOut.parameters &&
             AddressUtil.getOwner(
                 input.prevOut.lockScriptHash,
-                input.prevOut.parameters,
+                parameters,
                 options.networkId
             );
         assetTransferInputInstance = await models.AssetTransferInput.create({
@@ -32,16 +35,16 @@ export async function createAssetTransferInput(
             owner,
             assetType: input.prevOut.assetType.value,
             prevOut: {
-                transactionId: input.prevOut.transactionId.value,
+                tracker: input.prevOut.tracker.value,
                 index: input.prevOut.index,
                 assetType: input.prevOut.assetType.value,
                 assetScheme: options.assetScheme,
-                amount: input.prevOut.amount.value.toString(10),
+                quantity: input.prevOut.quantity.value.toString(10),
                 owner,
                 lockScriptHash:
                     input.prevOut.lockScriptHash &&
                     input.prevOut.lockScriptHash.value,
-                parameters: input.prevOut.parameters
+                parameters
             }
         });
     } catch (err) {

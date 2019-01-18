@@ -16,12 +16,15 @@ export async function createAssetTransferBurn(
 ): Promise<AssetTransferBurnInstance> {
     let assetTransferBurnInstance: AssetTransferBurnInstance;
     try {
+        const parameters = burn.prevOut.parameters
+            ? burn.prevOut.parameters.map(p => p.toString("hex"))
+            : [];
         const owner =
             burn.prevOut.lockScriptHash &&
             burn.prevOut.parameters &&
             AddressUtil.getOwner(
                 burn.prevOut.lockScriptHash,
-                burn.prevOut.parameters,
+                parameters,
                 options.networkId
             );
         assetTransferBurnInstance = await models.AssetTransferBurn.create({
@@ -32,16 +35,16 @@ export async function createAssetTransferBurn(
             owner,
             assetType: burn.prevOut.assetType.value,
             prevOut: {
-                transactionId: burn.prevOut.transactionId.value,
+                tracker: burn.prevOut.tracker.value,
                 index: burn.prevOut.index,
                 assetType: burn.prevOut.assetType.value,
                 assetScheme: options.assetScheme,
-                amount: burn.prevOut.amount.value.toString(10),
+                quantity: burn.prevOut.quantity.value.toString(10),
                 owner,
                 lockScriptHash:
                     burn.prevOut.lockScriptHash &&
                     burn.prevOut.lockScriptHash.value,
-                parameters: burn.prevOut.parameters
+                parameters
             }
         });
     } catch (err) {

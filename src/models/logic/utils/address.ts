@@ -5,14 +5,14 @@ const P2PKHBURN = "37572bdcc22d39a59c0d12d301f6271ba3fdd451";
 
 export function getOwner(
     lockScriptHash: H160,
-    parameters: Buffer[],
+    parameters: string[],
     networkId: string
 ) {
     let owner = "";
     if (lockScriptHash.value === P2PKH) {
         owner = AssetTransferAddress.fromTypeAndPayload(
             1,
-            new H160(Buffer.from(parameters[0]).toString("hex")),
+            new H160(parameters[0]),
             {
                 networkId
             }
@@ -20,7 +20,7 @@ export function getOwner(
     } else if (lockScriptHash.value === P2PKHBURN) {
         owner = AssetTransferAddress.fromTypeAndPayload(
             2,
-            new H160(Buffer.from(parameters[0]).toString("hex")),
+            new H160(parameters[0]),
             {
                 networkId
             }
