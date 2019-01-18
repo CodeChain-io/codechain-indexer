@@ -106,10 +106,10 @@ export function handle(context: IndexerContext, router: Router) {
      *             codechainBestBlockHash:
      *               type: string
      *               example: "c76ef861a4d4e93057b84425f996e9cd9e1a3b88"
-     *             explorerLastBlockNumber:
+     *             indexedBlockNumber:
      *               type: number
      *               example: 5555
-     *             explorerLastBlockHash:
+     *             indexedBlockHash:
      *               type: string
      *               example: "c76ef861a4d4e93057b84425f996e9cd9e1a3b88"
      */

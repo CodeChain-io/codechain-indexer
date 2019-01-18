@@ -1,0 +1,41 @@
+{
+  "name": "codechain-indexer-e2e-test",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=10",
+    "yarn": "^1.10.0"
+  },
+  "scripts": {
+    "test": "mocha -r ts-node/register --timeout 10000 src/test/*.test.ts",
+    "lint": "tslint -p . && prettier '{src, scripts}/**/*.{ts,js,json}' -l",
+    "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write",
+    "create-fixture": "ts-node scripts/createFixture.ts",
+    "pull-docker": "ts-node scripts/pullCodeChainDocker.ts"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^2.5.10",
+    "@types/inquirer": "^0.0.43",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.18",
+    "@types/request": "^2.48.1",
+    "@types/request-promise": "^4.1.42",
+    "@types/winston": "^2.4.4",
+    "mocha": "^5.2.0",
+    "prettier": "^1.14.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "codechain-sdk": "https://github.com/jhs7jhs/codechain-sdk-js.git#add-transfer-metadata-lib",
+    "dockerode": "^2.5.8",
+    "inquirer": "^6.2.1",
+    "is-port-reachable": "^2.0.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "tree-kill": "^1.2.1",
+    "winston": "^3.1.0"
+  }
+}
