@@ -1,0 +1,11 @@
+{
+  "pg": {
+    "user": "user",
+    "password": "password",
+    "database": "codechain-indexer-test-int",
+    "port": 5432
+  },
+  "sequelize": {
+    "logging": false
+  }
+}
