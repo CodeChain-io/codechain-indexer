@@ -55,7 +55,10 @@ const models: any = {};
 
 fs.readdirSync(__dirname)
     .filter(file => {
-        const extension = _.includes(["dev", "test"], process.env.NODE_ENV)
+        const extension = _.includes(
+            ["dev", "test", "test-int"],
+            process.env.NODE_ENV
+        )
             ? ".ts"
             : ".js";
         return (
