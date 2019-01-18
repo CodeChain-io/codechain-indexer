@@ -7,7 +7,7 @@ import * as Helper from "./helper";
 let blockLogCount = 0;
 let txLogCount = 0;
 beforeAll(async done => {
-    await Helper.setupDb();
+    await Helper.resetDb();
     const date = moment()
         .utc()
         .format("YYYY-MM-DD");
@@ -32,7 +32,6 @@ beforeAll(async done => {
 
 afterAll(async done => {
     await models.sequelize.close();
-    await Helper.dropDb();
     done();
 });
 

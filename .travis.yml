@@ -14,16 +14,7 @@ script:
   - set -e
   - yarn run lint
   - NODE_ENV=test yarn migrate
-  - yarn run test --testRegex compose-decompose.spec.ts
-  - yarn run test --testRegex custom.spec.ts
-  - yarn run test --testRegex db-block-interface.spec.ts
-  - yarn run test --testRegex log.spec.ts
-  - yarn run test --testRegex mint-transfer.spec.ts
-  - yarn run test --testRegex payment.spec.ts
-  - yarn run test --testRegex pending-tx.spec.ts
-  - yarn run test --testRegex snapshot.spec.ts
-  - yarn run test --testRegex store-and-remove.spec.ts
-  - yarn run test --testRegex worker.spec.ts
+  - yarn run test
 services:
   - docker
   - postgresql

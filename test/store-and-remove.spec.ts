@@ -5,7 +5,6 @@ import * as TransactionModel from "../src/models/logic/transaction";
 import * as Helper from "./helper";
 
 beforeAll(async done => {
-    await Helper.setupDb();
     await Helper.runExample("import-test-account");
     await Helper.runExample("store-and-remove");
 
@@ -56,6 +55,5 @@ test("remove", async done => {
 
 afterAll(async done => {
     await models.sequelize.close();
-    await Helper.dropDb();
     done();
 });

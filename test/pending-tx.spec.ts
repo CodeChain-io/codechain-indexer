@@ -5,7 +5,6 @@ import * as Helper from "./helper";
 
 let p: Promise<any> | null = null;
 beforeAll(async done => {
-    await Helper.setupDb();
     await Helper.runExample("import-test-account");
     done();
 });
@@ -16,7 +15,6 @@ afterAll(async done => {
         await p;
     }
     await models.sequelize.close();
-    await Helper.dropDb();
     done();
 });
 
