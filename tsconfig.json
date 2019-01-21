@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es2018",
     "types": ["node", "jest"],
     "module": "commonjs",
     "declaration": true,
