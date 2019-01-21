@@ -6,7 +6,9 @@ import {
     MintAsset,
     SignedTransaction,
     TransferAsset,
-    U64
+    U64,
+    UnwrapCCC,
+    WrapCCC
 } from "codechain-sdk/lib/core/classes";
 import { AssetTransaction } from "codechain-sdk/lib/core/Transaction";
 import * as _ from "lodash";
@@ -27,8 +29,10 @@ import { createSetShardOwners } from "./setShardOwners";
 import { createSetShardUsers } from "./setShardUsers";
 import { createStore } from "./store";
 import { createTransferAsset } from "./transferAsset";
+import { createUnwrapCCC } from "./unwrapCCC";
 import { getOwner } from "./utils/address";
 import { createUTXO, getByTxHashIndex, setUsed } from "./utxo";
+import { createWrapCCC } from "./wrapCCC";
 
 export async function createTransaction(
     tx: SignedTransaction,
@@ -48,7 +52,9 @@ export async function createTransaction(
             type === "mintAsset" ||
             type === "transferAsset" ||
             type === "composeAsset" ||
-            type === "decomposeAsset";
+            type === "decomposeAsset" ||
+            type === "wrapCCC" ||
+            type === "unwrapCCC";
         const tracker = isAssetTransaction
             ? ((tx.unsigned as any) as AssetTransaction).tracker().value
             : null;
@@ -108,6 +114,16 @@ export async function createTransaction(
                     decomposeAsset,
                     tx.toJSON().action
                 );
+                break;
+            }
+            case "wrapCCC": {
+                const wrap = tx.unsigned as WrapCCC;
+                await createWrapCCC(hash, wrap.toJSON().action);
+                break;
+            }
+            case "unwrapCCC": {
+                const unwrap = tx.unsigned as UnwrapCCC;
+                await createUnwrapCCC(hash, unwrap, tx.unsigned.networkId());
                 break;
             }
             case "pay": {
@@ -248,6 +264,20 @@ const includeArray = [
             {
                 as: "outputs",
                 model: models.AssetTransferOutput
+            }
+        ]
+    },
+    {
+        as: "wrapCCC",
+        model: models.WrapCCC
+    },
+    {
+        as: "unwrapCCC",
+        model: models.UnwrapCCC,
+        include: [
+            {
+                as: "burn",
+                model: models.AssetTransferBurn
             }
         ]
     },
@@ -477,6 +507,56 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 );
             })
         );
+    }
+    if (txType === "wrapCCC") {
+        const wrapCCC = (await txInst.getWrapCCC())!.get();
+
+        const recipient = getOwner(
+            new H160(wrapCCC.lockScriptHash),
+            wrapCCC.parameters,
+            networkId
+        );
+
+        const shardId = wrapCCC.shardId.toString(16).padStart(4, "0");
+
+        const assetType = new H256(
+            `5300${shardId}00000000000000000000000000000000000000000000000000000000`
+        );
+        const lockScriptHash = new H160(wrapCCC.lockScriptHash);
+        const parameters = wrapCCC.parameters;
+        const quantity = new U64(wrapCCC.quantity);
+        const transactionOutputIndex = 0;
+        return createUTXO(
+            recipient,
+            {
+                assetType,
+                lockScriptHash,
+                parameters,
+                quantity,
+                transactionHash,
+                transactionOutputIndex
+            },
+            blockNumber
+        );
+    }
+    if (txType === "unwrapCCC") {
+        const prevOut = (await (await txInst.getUnwrapCCC())!.getBurn())!.get(
+            "prevOut"
+        );
+        const prevTracker = prevOut.tracker;
+        const prevTransaction = await getSuccessfulTransaction(prevTracker);
+
+        if (!prevTransaction) {
+            throw Exception.InvalidUTXO;
+        }
+        const utxoInst = await getByTxHashIndex(
+            new H256(prevTransaction.get("hash")),
+            prevOut.index
+        );
+        if (!utxoInst) {
+            throw Exception.InvalidUTXO;
+        }
+        await setUsed(utxoInst.get("id"), transactionHash);
     }
 }
 

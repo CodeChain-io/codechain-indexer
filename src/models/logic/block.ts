@@ -116,6 +116,20 @@ const includeArray = [
                 ]
             },
             {
+                as: "wrapCCC",
+                model: models.WrapCCC
+            },
+            {
+                as: "unwrapCCC",
+                model: models.UnwrapCCC,
+                include: [
+                    {
+                        as: "burn",
+                        model: models.AssetTransferBurn
+                    }
+                ]
+            },
+            {
                 as: "pay",
                 model: models.Pay
             },
