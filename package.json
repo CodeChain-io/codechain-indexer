@@ -66,6 +66,7 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testPathIgnorePatterns": ["<rootDir>/e2e-test/", "/node_modules/"],
     "moduleFileExtensions": [
       "ts",
       "tsx",
