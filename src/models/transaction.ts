@@ -17,6 +17,8 @@ import {
 import { SetShardUsersAttribute, SetShardUsersInstance } from "./setShardUsers";
 import { StoreAttribute, StoreInstance } from "./store";
 import { TransferAssetAttribute, TransferAssetInstance } from "./transferAsset";
+import { UnwrapCCCAttribute, UnwrapCCCInstance } from "./unwrapCCC";
+import { WrapCCCAttribute, WrapCCCInstance } from "./wrapCCC";
 
 export interface TransactionAttribute {
     hash: string;
@@ -30,6 +32,8 @@ export interface TransactionAttribute {
     transferAsset?: TransferAssetAttribute;
     composeAsset?: ComposeAssetAttribute;
     decomposeAsset?: DecomposeAssetAttribute;
+    wrapCCC?: WrapCCCAttribute;
+    unwrapCCC?: UnwrapCCCAttribute;
     setRegularKey?: SetRegularKeyAttribute;
     createShard?: CreateShardAttribute;
     setShardOwners?: SetShardOwnersAttribute;
@@ -59,6 +63,8 @@ export interface TransactionInstance
     getDecomposeAsset: Sequelize.HasOneGetAssociationMixin<
         DecomposeAssetInstance
     >;
+    getWrapCCC: Sequelize.HasOneGetAssociationMixin<WrapCCCInstance>;
+    getUnwrapCCC: Sequelize.HasOneGetAssociationMixin<UnwrapCCCInstance>;
     getPay: Sequelize.HasOneGetAssociationMixin<PayInstance>;
     getSetRegularKey: Sequelize.HasOneGetAssociationMixin<
         SetRegularKeyInstance
@@ -177,6 +183,16 @@ export default (
         Transaction.hasOne(models.DecomposeAsset, {
             foreignKey: "transactionHash",
             as: "decomposeAsset",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.WrapCCC, {
+            foreignKey: "transactionHash",
+            as: "wrapCCC",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.UnwrapCCC, {
+            foreignKey: "transactionHash",
+            as: "unwrapCCC",
             onDelete: "CASCADE"
         });
         Transaction.hasOne(models.Pay, {

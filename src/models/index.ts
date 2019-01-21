@@ -40,8 +40,10 @@ import {
 import { StoreAttribute, StoreInstance } from "./store";
 import { TransactionAttribute, TransactionInstance } from "./transaction";
 import { TransferAssetAttribute, TransferAssetInstance } from "./transferAsset";
+import { UnwrapCCCAttribute, UnwrapCCCInstance } from "./unwrapCCC";
 import { UTXOAttribute, UTXOInstance } from "./utxo";
 import { UTXOSnapshotAttribute, UTXOSnapshotInstance } from "./utxosnapshot";
+import { WrapCCCAttribute, WrapCCCInstance } from "./wrapCCC";
 
 const basename = path.basename(__filename);
 process.env.NODE_ENV = process.env.NODE_ENV || "dev";
@@ -91,6 +93,8 @@ interface DB {
         DecomposeAssetInstance,
         DecomposeAssetAttribute
     >;
+    WrapCCC: Sequelize.Model<WrapCCCInstance, WrapCCCAttribute>;
+    UnwrapCCC: Sequelize.Model<UnwrapCCCInstance, UnwrapCCCAttribute>;
     Pay: Sequelize.Model<PayInstance, PayAttribute>;
     SetRegularKey: Sequelize.Model<
         SetRegularKeyInstance,
