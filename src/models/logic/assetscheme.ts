@@ -1,4 +1,9 @@
-import { AssetScheme, H256 } from "codechain-sdk/lib/core/classes";
+import {
+    H160,
+    H256,
+    PlatformAddress,
+    U64
+} from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
@@ -9,7 +14,15 @@ import * as AssetImageModel from "./assetimage";
 export async function createAssetScheme(
     assetType: string,
     transactionHash: string,
-    assetScheme: AssetScheme
+    assetScheme: {
+        metadata: string;
+        approver: PlatformAddress | null;
+        administrator: PlatformAddress | null;
+        allowedScriptHashes: H160[];
+        supply: U64;
+        networkId: string;
+        shardId: number;
+    }
 ): Promise<AssetSchemeInstance> {
     let assetSchemeInstance: AssetSchemeInstance;
     try {

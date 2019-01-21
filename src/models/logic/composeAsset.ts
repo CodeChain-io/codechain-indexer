@@ -66,18 +66,19 @@ export async function createComposeAsset(
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
             const input = compose.input(index)!;
-            const assetScheme = await getAssetScheme(input.prevOut.assetType);
+            const inputAssetScheme: any = await getAssetScheme(
+                input.prevOut.assetType
+            );
+            inputAssetScheme.networkId = inputAssetScheme.networkId!;
             await createAssetTransferInput(transactionHash, input, {
                 networkId,
-                assetScheme
+                assetScheme: inputAssetScheme
             });
         })
     );
 
-    await createAssetScheme(
-        assetType,
-        transactionHash,
-        compose.getAssetScheme()
-    );
+    const assetScheme: any = compose.getAssetScheme();
+    assetScheme.networkId = assetScheme.networkId!;
+    await createAssetScheme(assetType, transactionHash, assetScheme);
     return result;
 }

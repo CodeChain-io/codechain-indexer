@@ -59,7 +59,13 @@ export async function createMintAsset(
         assetType,
         recipient
     });
-    await createAssetScheme(assetType, transactionHash, assetScheme);
+    const assetSchemeWithNetworkId: any = assetScheme;
+    assetSchemeWithNetworkId.networkId = networkId;
+    await createAssetScheme(
+        assetType,
+        transactionHash,
+        assetSchemeWithNetworkId
+    );
     return inst;
 }
 
