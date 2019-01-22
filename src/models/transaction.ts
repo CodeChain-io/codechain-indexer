@@ -37,7 +37,7 @@ export interface TransactionAttribute {
     setRegularKey?: SetRegularKeyAttribute;
     createShard?: CreateShardAttribute;
     setShardOwners?: SetShardOwnersAttribute;
-    setShardUses?: SetShardUsersAttribute;
+    setShardUsers?: SetShardUsersAttribute;
     store?: StoreAttribute;
     remove?: RemoveAttribute;
     custom?: CustomAttribute;
