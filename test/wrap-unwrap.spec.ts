@@ -75,7 +75,7 @@ test("Check duplicated block", async done => {
     }
 });
 
-test.skip("Check utxo", async done => {
+test("Check utxo", async done => {
     const wrapHash = wrapBlock.transactions[0].hash();
     const txInst = (await TransactionModel.getByHash(wrapHash))!;
 
@@ -83,7 +83,7 @@ test.skip("Check utxo", async done => {
     const wcccOwner = (await txInst.getWrapCCC())!.get("recipient");
 
     const utxoOfWcccOwner = await UTXOModel.getByAddress(wcccOwner);
-    expect(utxoOfWcccOwner.length).toEqual(1);
+    expect(utxoOfWcccOwner.length).toEqual(0);
 
     const utxoOfWcccInst = await UTXOModel.getByTxHashIndex(wrapHash, 0);
     expect(utxoOfWcccInst!.get("usedTransactionHash")).toBeTruthy();
