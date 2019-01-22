@@ -8,7 +8,7 @@ import * as UTXOModel from "../models/logic/utxo";
 export async function updateSnapshot(block: BlockAttribute, _C: WorkerContext) {
     const snapshotRequestsInst = await SnapshotModel.getSnapshotRequests();
     const currentSnapshots = _.filter(snapshotRequestsInst, r => {
-        return r.get().timestamp < block.timestamp;
+        return r.get("timestamp") < block.timestamp;
     });
     if (currentSnapshots.length === 0) {
         return;
