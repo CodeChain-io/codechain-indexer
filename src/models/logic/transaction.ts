@@ -662,7 +662,8 @@ export async function getByHash(
         return await models.Transaction.findOne({
             where: {
                 hash: hash.value
-            }
+            },
+            include: includeArray
         });
     } catch (err) {
         console.error(err);
