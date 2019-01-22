@@ -127,10 +127,16 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /asset-scheme/:assetType:
+     * /asset-scheme/{assetType}:
      *   get:
      *     summary: Returns asset scheme of the specific assetType
      *     tags: [Asset]
+     *     parameters:
+     *       - name: assetType
+     *         description: The type of the Asset
+     *         required: true
+     *         in: path
+     *         type: string
      *     responses:
      *       200:
      *         description: asset scheme
@@ -155,10 +161,16 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /asset-image/:assetType:
+     * /asset-image/{assetType}:
      *   get:
      *     summary: Returns asset image of the specific assetType
      *     tags: [Asset]
+     *     parameters:
+     *       - name: assetType
+     *         description: The type of the Asset
+     *         required: true
+     *         in: path
+     *         type: string
      *     responses:
      *       200:
      *         description: asset image
@@ -189,7 +201,7 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /aggs-utxo-list/:address:
+     * /aggs-utxo:
      *   get:
      *     summary: Returns aggregated utxo list (Not implemented)
      *     tags: [Asset]
@@ -323,10 +335,16 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /snapshot/:snapshotId:
+     * /snapshot/{snapshotId}:
      *   get:
      *     summary: Returns snapshot
      *     tags: [Asset]
+     *     parameters:
+     *       - name: snapshotId
+     *         description: The id of the snapshot
+     *         required: true
+     *         in: path
+     *         type: string
      *     responses:
      *       200:
      *         description: utxo list

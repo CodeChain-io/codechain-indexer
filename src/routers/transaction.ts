@@ -159,10 +159,16 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /tx/:hash:
+     * /tx/{hash}:
      *   get:
      *     summary: Returns the specific transaction
      *     tags: [Transaction]
+     *     parameters:
+     *       - name: hash
+     *         description: Transaction hash
+     *         required: true
+     *         in: path
+     *         type: string
      *     responses:
      *       200:
      *         description: specific transaction
