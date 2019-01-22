@@ -82,10 +82,16 @@ export function handle(_C: IndexerContext, router: Router) {
     });
     /**
      * @swagger
-     * /account/:address:
+     * /account/{address}:
      *   get:
      *     summary: Returns account of the specific address
      *     tags: [Account]
+     *     parameters:
+     *       - name: address
+     *         description: Account's address
+     *         required: true
+     *         in: path
+     *         type: string
      *     responses:
      *       200:
      *         description: account

@@ -48,10 +48,16 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /block/:hashOrNumber:
+     * /block/{hashOrNumber}:
      *   get:
      *     summary: Returns specific block
      *     tags: [Block]
+     *     parameters:
+     *       - name: hashOrNumber
+     *         description: Block hash or Block number
+     *         required: true
+     *         in: path
+     *         type: string
      *     responses:
      *       200:
      *         description: specific block
