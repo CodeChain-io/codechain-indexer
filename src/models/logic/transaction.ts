@@ -262,6 +262,10 @@ const includeArray = [
         model: models.DecomposeAsset,
         include: [
             {
+                as: "input",
+                model: models.AssetTransferInput
+            },
+            {
                 as: "outputs",
                 model: models.AssetTransferOutput
             }
@@ -570,23 +574,39 @@ function getPendingTransactionsQuery(params: {
         query.push({
             [Sequelize.Op.or]: [
                 { signer: address },
-                { "$action.receiver$": address },
-                { "$action.output.recipient$": address },
-                { "$action.inputs.owner$": address },
-                { "$action.outputs.owner$": address },
-                { "$action.input.owner$": address },
-                { "$action.burns.owner$": address }
+                { "$mintAsset.approver$": address },
+                { "$mintAsset.administrator$": address },
+                { "$mintAsset.recipient$": address },
+
+                { "$transferAsset.inputs.owner$": address },
+                { "$transferAsset.outputs.owner$": address },
+                { "$transferAsset.burns.owner$": address },
+
+                { "$composeAsset.approver$": address },
+                { "$composeAsset.administrator$": address },
+                { "$composeAsset.recipient$": address },
+                { "$composeAsset.inputs.owner$": address },
+
+                { "$decomposeAsset.input.owner$": address },
+                { "$decomposeAsset.outputs.owner$": address },
+
+                { "$wrapCCC.recipient$": address },
+                { "$unwrapCCC.burn.owner$": address },
+
+                { "$pay.receiver$": address }
             ]
         });
     }
     if (assetType) {
         query.push({
             [Sequelize.Op.or]: [
-                { "$action.output.assetType$": assetType.value },
-                { "$action.inputs.assetType$": assetType.value },
-                { "$action.outputs.assetType$": assetType.value },
-                { "$action.input.assetType$": assetType.value },
-                { "$action.burns.assetType$": assetType.value }
+                { "$transferAsset.inputs.assetType$": assetType.value },
+                { "$transferAsset.outputs.assetType$": assetType.value },
+                { "$transferAsset.burns.assetType$": assetType.value },
+                { "$composeAsset.inputs.assetType$": assetType.value },
+                { "$decomposeAsset.input.assetType$": assetType.value },
+                { "$decomposeAsset.outputs.assetType$": assetType.value },
+                { "$unwrapCCC.burn.assetType$": assetType.value }
             ]
         });
     }
@@ -662,23 +682,39 @@ async function getTransactionsQuery(params: {
         query.push({
             [Sequelize.Op.or]: [
                 { signer: address },
-                { "$action.receiver$": address },
-                { "$action.output.recipient$": address },
-                { "$action.inputs.owner$": address },
-                { "$action.outputs.owner$": address },
-                { "$action.input.owner$": address },
-                { "$action.burns.owner$": address }
+                { "$mintAsset.approver$": address },
+                { "$mintAsset.administrator$": address },
+                { "$mintAsset.recipient$": address },
+
+                { "$transferAsset.inputs.owner$": address },
+                { "$transferAsset.outputs.owner$": address },
+                { "$transferAsset.burns.owner$": address },
+
+                { "$composeAsset.approver$": address },
+                { "$composeAsset.administrator$": address },
+                { "$composeAsset.recipient$": address },
+                { "$composeAsset.inputs.owner$": address },
+
+                { "$decomposeAsset.input.owner$": address },
+                { "$decomposeAsset.outputs.owner$": address },
+
+                { "$wrapCCC.recipient$": address },
+                { "$unwrapCCC.burn.owner$": address },
+
+                { "$pay.receiver$": address }
             ]
         });
     }
     if (assetType) {
         query.push({
             [Sequelize.Op.or]: [
-                { "$action.output.assetType$": assetType.value },
-                { "$action.inputs.assetType$": assetType.value },
-                { "$action.outputs.assetType$": assetType.value },
-                { "$action.input.assetType$": assetType.value },
-                { "$action.burns.assetType$": assetType.value }
+                { "$transferAsset.inputs.assetType$": assetType.value },
+                { "$transferAsset.outputs.assetType$": assetType.value },
+                { "$transferAsset.burns.assetType$": assetType.value },
+                { "$composeAsset.inputs.assetType$": assetType.value },
+                { "$decomposeAsset.input.assetType$": assetType.value },
+                { "$decomposeAsset.outputs.assetType$": assetType.value },
+                { "$unwrapCCC.burn.assetType$": assetType.value }
             ]
         });
     }
