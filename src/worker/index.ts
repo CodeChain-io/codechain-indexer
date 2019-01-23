@@ -8,7 +8,6 @@ import * as BlockModel from "../models/logic/block";
 import * as TxModel from "../models/logic/transaction";
 import * as AccountUtil from "./account";
 import * as LogUtil from "./log";
-import * as SnapshotUtil from "./snapshot";
 
 export interface WorkerContext {
     sdk: SDK;
@@ -178,7 +177,6 @@ export default class Worker {
             },
             this.context
         );
-        await SnapshotUtil.updateSnapshot(blockAttribute, this.context);
         await LogUtil.indexLog(blockAttribute, false);
     };
 
