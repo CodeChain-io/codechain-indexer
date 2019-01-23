@@ -391,7 +391,11 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     if (!utxoInst) {
                         throw Exception.InvalidUTXO;
                     }
-                    return await setUsed(utxoInst.get("id"), transactionHash);
+                    return await setUsed(
+                        utxoInst.get("id"),
+                        blockNumber,
+                        transactionHash
+                    );
                 })
             );
         }
@@ -414,7 +418,11 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     if (!utxoInst) {
                         throw Exception.InvalidUTXO;
                     }
-                    return setUsed(utxoInst.get("id"), transactionHash);
+                    return setUsed(
+                        utxoInst.get("id"),
+                        blockNumber,
+                        transactionHash
+                    );
                 })
             );
         }
@@ -440,7 +448,11 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 if (!utxoInst) {
                     throw Exception.InvalidUTXO;
                 }
-                return setUsed(utxoInst.get("id"), transactionHash);
+                return setUsed(
+                    utxoInst.get("id"),
+                    blockNumber,
+                    transactionHash
+                );
             })
         );
         const output = (await composeAsset.get())!;
@@ -482,7 +494,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         if (!utxoInst) {
             throw Exception.InvalidUTXO;
         }
-        await setUsed(utxoInst.get("id"), transactionHash);
+        await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
 
         const outputs = (await decomposeAsset.getOutputs())!;
         return await Promise.all(
@@ -560,7 +572,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         if (!utxoInst) {
             throw Exception.InvalidUTXO;
         }
-        await setUsed(utxoInst.get("id"), transactionHash);
+        await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
     }
 }
 

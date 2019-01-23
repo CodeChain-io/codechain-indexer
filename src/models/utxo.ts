@@ -11,6 +11,7 @@ export interface UTXOAttribute {
     transactionHash: string;
     transactionOutputIndex: number;
     usedTransactionHash?: string | null;
+    usedBlockNumber?: number | null;
     assetScheme: AssetSchemeAttribute;
     blockNumber: number;
 }
@@ -78,6 +79,9 @@ export default (
             blockNumber: {
                 allowNull: false,
                 type: DataTypes.INTEGER
+            },
+            usedBlockNumber: {
+                type: Sequelize.INTEGER
             },
             createdAt: {
                 allowNull: false,
