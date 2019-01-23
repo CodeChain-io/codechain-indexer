@@ -210,6 +210,24 @@ export async function getBlocks(params: {
     }
 }
 
+export async function getNumberOfBlocks(params: { address?: string }) {
+    const { address } = params;
+    let query = {};
+    if (address) {
+        query = {
+            author: address
+        };
+    }
+    try {
+        return await models.Block.count({
+            where: query
+        });
+    } catch (err) {
+        console.log(err);
+        throw Exception.DBError;
+    }
+}
+
 export async function getLatestBlock(): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({

@@ -1,7 +1,6 @@
 import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
-import * as Exception from "../exception";
 import * as BlockModel from "../models/logic/block";
 
 /**
@@ -161,9 +160,13 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: number
      *           example: 12
      */
-    router.get("/block/count", async (_A, _B, next) => {
+    router.get("/block/count", async (req, res, next) => {
+        const address = req.query.address;
         try {
-            throw Exception.NotImplmeneted;
+            const count = await BlockModel.getNumberOfBlocks({
+                address
+            });
+            res.json(count);
         } catch (e) {
             next(e);
         }
