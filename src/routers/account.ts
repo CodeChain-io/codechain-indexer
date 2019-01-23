@@ -37,7 +37,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *               balance:
      *                 type: string
      *                 example: "9999999999"
-     *               nonce:
+     *               seq:
      *                 type: number
      *                 example: 1231
      */
@@ -101,7 +101,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *             balance:
      *               type: string
      *               example: "9999999999"
-     *             nonce:
+     *             seq:
      *               type: number
      *               example: 1231
      */
