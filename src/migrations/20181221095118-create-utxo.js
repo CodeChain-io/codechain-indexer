@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
-    up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable("UTXOs", {
+    up: async (queryInterface, Sequelize) => {
+        await queryInterface.createTable("UTXOs", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -57,6 +57,9 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.INTEGER
             },
+            usedBlockNumber: {
+                type: Sequelize.INTEGER
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE
@@ -65,6 +68,11 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE
             }
+        });
+
+        await queryInterface.addIndex("UTXOs", {
+            fields: ["assetType", "usedBlockNumber"],
+            name: "UTXOs_assetType_usedBlockNumber"
         });
     },
     down: (queryInterface, Sequelize) => {

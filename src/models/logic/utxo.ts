@@ -41,11 +41,16 @@ export async function createUTXO(
     return utxoInstance;
 }
 
-export async function setUsed(id: string, usedTransactionHash: H256) {
+export async function setUsed(
+    id: string,
+    blockNumber: number,
+    usedTransactionHash: H256
+) {
     try {
         return await models.UTXO.update(
             {
-                usedTransactionHash: usedTransactionHash.value
+                usedTransactionHash: usedTransactionHash.value,
+                usedBlockNumber: blockNumber
             },
             {
                 where: {
