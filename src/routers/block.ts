@@ -47,6 +47,37 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
+     * /block/count:
+     *   get:
+     *     summary: Returns total count of the blocks
+     *     tags: [Block]
+     *     parameters:
+     *       - name: address
+     *         description: Author filter by address
+     *         in: query
+     *         required: false
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: total count of the blocks
+     *         schema:
+     *           type: number
+     *           example: 12
+     */
+    router.get("/block/count", async (req, res, next) => {
+        const address = req.query.address;
+        try {
+            const count = await BlockModel.getNumberOfBlocks({
+                address
+            });
+            res.json(count);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    /**
+     * @swagger
      * /block/{hashOrNumber}:
      *   get:
      *     summary: Returns specific block
@@ -136,37 +167,6 @@ export function handle(_C: IndexerContext, router: Router) {
                 blockInst.get({ plain: true })
             );
             res.json(blocks);
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    /**
-     * @swagger
-     * /block/count:
-     *   get:
-     *     summary: Returns total count of the blocks
-     *     tags: [Block]
-     *     parameters:
-     *       - name: address
-     *         description: Author filter by address
-     *         in: query
-     *         required: false
-     *         type: string
-     *     responses:
-     *       200:
-     *         description: total count of the blocks
-     *         schema:
-     *           type: number
-     *           example: 12
-     */
-    router.get("/block/count", async (req, res, next) => {
-        const address = req.query.address;
-        try {
-            const count = await BlockModel.getNumberOfBlocks({
-                address
-            });
-            res.json(count);
         } catch (e) {
             next(e);
         }
