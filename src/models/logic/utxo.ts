@@ -3,7 +3,7 @@ import * as Sequelize from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
-import { UTXOInstance } from "../utxo";
+import { UTXOAttribute, UTXOInstance } from "../utxo";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
 
@@ -361,6 +361,38 @@ export async function getByTxHashIndex(
                 transactionHash: transactionHash.value,
                 transactionOutputIndex: outputIndex
             }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
+export async function getSnapshot(
+    assetType: H256,
+    blockNumber: number
+): Promise<UTXOAttribute[]> {
+    try {
+        const utxoInsts = await models.UTXO.findAll({
+            where: {
+                assetType: assetType.value,
+                usedBlockNumber: {
+                    [Sequelize.Op.or]: [
+                        { [Sequelize.Op.gt]: blockNumber },
+                        { [Sequelize.Op.eq]: null }
+                    ]
+                },
+                blockNumber: {
+                    [Sequelize.Op.lte]: blockNumber
+                }
+            }
+        });
+
+        return utxoInsts.map(utxoInst => {
+            const utxo = utxoInst.get({ plain: true });
+            utxo.usedBlockNumber = null;
+            utxo.usedTransactionHash = null;
+            return utxo;
         });
     } catch (err) {
         console.error(err);

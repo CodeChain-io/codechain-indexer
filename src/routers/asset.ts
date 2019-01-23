@@ -1,8 +1,11 @@
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
+import * as moment from "moment";
 import { IndexerContext } from "../context";
+import * as Exception from "../exception";
 import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
+import * as BlockModel from "../models/logic/block";
 import * as UTXOModel from "../models/logic/utxo";
 
 /**
@@ -325,6 +328,68 @@ export function handle(_C: IndexerContext, router: Router) {
                 confirmThreshold
             });
             res.json(count);
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    /**
+     * @swagger
+     * /snapshot:
+     *   get:
+     *     summary: Returns snapshot
+     *     tags: [Asset]
+     *     parameters:
+     *       - name: assetType
+     *         description: assetType for snapshot
+     *         in: query
+     *         required: true
+     *         type: string
+     *       - name: date
+     *         description: date for snapshot(ISO8601 format)
+     *         in: query
+     *         required: true
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: snapshot, return null if the block does not exist yet
+     *         schema:
+     *           type: object
+     *           properties:
+     *             blockNumber:
+     *               type: integer
+     *             blockHash:
+     *               type: string
+     *             snapshot:
+     *               type: array
+     *               items:
+     *                 $ref: '#/definitions/UTXO'
+     */
+    router.get("/snapshot", async (req, res, next) => {
+        const assetTypeString = req.query.assetType;
+        const date = req.query.date;
+        try {
+            const assetType = new H256(assetTypeString);
+            const snapshotTime = moment(date);
+            if (!snapshotTime.isValid()) {
+                throw Exception.InvalidDateParam;
+            }
+
+            const block = await BlockModel.getByTime(snapshotTime.utc().unix());
+            if (!block) {
+                res.json(null);
+                return;
+            }
+
+            const snapshot = await UTXOModel.getSnapshot(
+                assetType,
+                block.get("number")
+            );
+            res.json({
+                blockHash: block.get("hash"),
+                blockNumber: block.get("number"),
+                snapshot
+            });
         } catch (e) {
             next(e);
         }
