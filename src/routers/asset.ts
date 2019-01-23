@@ -1,11 +1,8 @@
 import { H256 } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
-import * as moment from "moment";
 import { IndexerContext } from "../context";
-import * as Exception from "../exception";
 import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
-import * as SnapshotModel from "../models/logic/snapshot";
 import * as UTXOModel from "../models/logic/utxo";
 
 /**
@@ -328,118 +325,6 @@ export function handle(_C: IndexerContext, router: Router) {
                 confirmThreshold
             });
             res.json(count);
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    /**
-     * @swagger
-     * /snapshot/{snapshotId}:
-     *   get:
-     *     summary: Returns snapshot
-     *     tags: [Asset]
-     *     parameters:
-     *       - name: snapshotId
-     *         description: The id of the snapshot
-     *         required: true
-     *         in: path
-     *         type: string
-     *     responses:
-     *       200:
-     *         description: utxo list
-     *         schema:
-     *           type: array
-     *           items:
-     *             $ref: '#/definitions/UTXO'
-     */
-    router.get("/snapshot/:snapshotId", async (req, res, next) => {
-        const snapshotId = req.params.snapshotId;
-        try {
-            const snapshotInst = await SnapshotModel.getUTXOSnapshotBySnapshotId(
-                snapshotId
-            );
-            res.json(snapshotInst ? snapshotInst.get({ plain: true }) : null);
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    /**
-     * @swagger
-     * /snapshot-request:
-     *   post:
-     *     summary: Returns snapshot
-     *     tags: [Asset]
-     *     parameters:
-     *       - name: assetType
-     *         description: assetType for snapshot
-     *         in: body
-     *         required: true
-     *         type: string
-     *       - name: date
-     *         description: date for snapshot
-     *         in: body
-     *         required: true
-     *         type: string
-     *     responses:
-     *       200:
-     *         description: snapshot Id
-     *         schema:
-     *           type: object
-     *           properties:
-     *             snapshotId:
-     *               type: string
-     */
-    router.post("/snapshot-request", async (req, res, next) => {
-        const assetTypeString = req.query.assetType;
-        const date = req.query.date;
-        try {
-            const assetType = new H256(assetTypeString);
-            if (!moment(date).isValid()) {
-                throw Exception.InvalidDateParam;
-            }
-            const unixTimestamp = moment(date)
-                .utc()
-                .unix();
-            const snapshotInst = await SnapshotModel.createSnapshotRequests(
-                assetType,
-                unixTimestamp
-            );
-            res.json(snapshotInst ? snapshotInst.get().id : null);
-        } catch (e) {
-            next(e);
-        }
-    });
-
-    /**
-     * @swagger
-     * /snapshot-request:
-     *   get:
-     *     summary: Returns snapshot
-     *     tags: [Asset]
-     *     responses:
-     *       200:
-     *         description: utxo list
-     *         schema:
-     *           type: array
-     *           items:
-     *             type: object
-     *             properties:
-     *               snapshotId:
-     *                 type: string
-     *               assetType:
-     *                 type: string
-     *               date:
-     *                 type: date
-     */
-    router.get("/snapshot-request", async (_, res, next) => {
-        try {
-            const snapshotInsts = await SnapshotModel.getSnapshotRequests();
-            const snapshotRequests = snapshotInsts.map(inst =>
-                inst.get({ plain: true })
-            );
-            res.json(snapshotRequests);
         } catch (e) {
             next(e);
         }

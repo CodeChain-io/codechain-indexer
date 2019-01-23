@@ -33,16 +33,11 @@ import {
     SetShardOwnersInstance
 } from "./setShardOwners";
 import { SetShardUsersAttribute, SetShardUsersInstance } from "./setShardUsers";
-import {
-    SnapshotRequestAttribute,
-    SnapshotRequestInstance
-} from "./snapshotrequest";
 import { StoreAttribute, StoreInstance } from "./store";
 import { TransactionAttribute, TransactionInstance } from "./transaction";
 import { TransferAssetAttribute, TransferAssetInstance } from "./transferAsset";
 import { UnwrapCCCAttribute, UnwrapCCCInstance } from "./unwrapCCC";
 import { UTXOAttribute, UTXOInstance } from "./utxo";
-import { UTXOSnapshotAttribute, UTXOSnapshotInstance } from "./utxosnapshot";
 import { WrapCCCAttribute, WrapCCCInstance } from "./wrapCCC";
 
 const basename = path.basename(__filename);
@@ -127,11 +122,6 @@ interface DB {
         AssetTransferBurnInstance,
         AssetTransferInputAttribute
     >;
-    SnapshotRequest: Sequelize.Model<
-        SnapshotRequestInstance,
-        SnapshotRequestAttribute
-    >;
-    UTXOSnapshot: Sequelize.Model<UTXOSnapshotInstance, UTXOSnapshotAttribute>;
     AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
     Log: Sequelize.Model<LogInstance, LogAttribute>;
 }
