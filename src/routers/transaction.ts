@@ -216,7 +216,10 @@ export function handle(_C: IndexerContext, router: Router) {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
         try {
-            const assetType = new H256(assetTypeString);
+            let assetType;
+            if (assetTypeString) {
+                assetType = new H256(assetTypeString);
+            }
             const pendingTxInsts = await TxModel.getPendingTransactions({
                 address,
                 assetType
@@ -257,7 +260,10 @@ export function handle(_C: IndexerContext, router: Router) {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
         try {
-            const assetType = new H256(assetTypeString);
+            let assetType;
+            if (assetTypeString) {
+                assetType = new H256(assetTypeString);
+            }
             const count = await TxModel.getNumberOfPendingTransactions({
                 address,
                 assetType
