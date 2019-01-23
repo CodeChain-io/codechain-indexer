@@ -203,7 +203,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /aggs-utxo:
      *   get:
-     *     summary: Returns aggregated utxo list (Not implemented)
+     *     summary: Returns aggregated utxo list
      *     tags: [Asset]
      *     parameters:
      *       - name: address
@@ -278,7 +278,7 @@ export function handle(_C: IndexerContext, router: Router) {
      * @swagger
      * /aggs-utxo/count:
      *   get:
-     *     summary: Returns aggregated utxo list (Not implemented)
+     *     summary: Returns aggregated utxo list
      *     tags: [Asset]
      *     parameters:
      *       - name: address
