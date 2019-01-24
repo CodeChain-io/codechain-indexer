@@ -321,13 +321,15 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         const lockScriptHash = new H160(mintAsset.lockScriptHash);
         const parameters = mintAsset.parameters;
         const recipient = getOwner(lockScriptHash, parameters, networkId);
-        const assetType = new H256(mintAsset.assetType);
+        const assetType = new H160(mintAsset.assetType);
+        const shardId = mintAsset.shardId;
         const quantity = new U64(mintAsset.supply);
         const transactionOutputIndex = 0;
         return await createUTXO(
             recipient,
             {
                 assetType,
+                shardId,
                 lockScriptHash,
                 parameters,
                 quantity,
@@ -353,7 +355,8 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                         output.parameters,
                         networkId
                     );
-                    const assetType = new H256(output.assetType);
+                    const assetType = new H160(output.assetType);
+                    const shardId = output.shardId;
                     const lockScriptHash = new H160(output.lockScriptHash);
                     const parameters = output.parameters;
                     const quantity = new U64(output.quantity);
@@ -361,6 +364,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                         recipient,
                         {
                             assetType,
+                            shardId,
                             lockScriptHash,
                             parameters,
                             quantity,
@@ -461,7 +465,8 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             output.parameters,
             networkId
         );
-        const assetType = new H256(output.assetType);
+        const assetType = new H160(output.assetType);
+        const shardId = output.shardId;
         const lockScriptHash = new H160(output.lockScriptHash);
         const parameters = output.parameters;
         const quantity = new U64(output.supply);
@@ -470,6 +475,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             recipient,
             {
                 assetType,
+                shardId,
                 lockScriptHash,
                 parameters,
                 quantity,
@@ -505,7 +511,8 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     output.parameters,
                     networkId
                 );
-                const assetType = new H256(output.assetType);
+                const assetType = new H160(output.assetType);
+                const shardId = output.shardId;
                 const lockScriptHash = new H160(output.lockScriptHash);
                 const parameters = output.parameters;
                 const quantity = new U64(output.quantity);
@@ -513,6 +520,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     recipient,
                     {
                         assetType,
+                        shardId,
                         lockScriptHash,
                         parameters,
                         quantity,
@@ -533,11 +541,8 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             networkId
         );
 
-        const shardId = wrapCCC.shardId.toString(16).padStart(4, "0");
-
-        const assetType = new H256(
-            `5300${shardId}00000000000000000000000000000000000000000000000000000000`
-        );
+        const assetType = H160.zero();
+        const shardId = wrapCCC.shardId;
         const lockScriptHash = new H160(wrapCCC.lockScriptHash);
         const parameters = wrapCCC.parameters;
         const quantity = new U64(wrapCCC.quantity);
@@ -546,6 +551,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
             recipient,
             {
                 assetType,
+                shardId,
                 lockScriptHash,
                 parameters,
                 quantity,
@@ -578,7 +584,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
 
 function getPendingTransactionsQuery(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
 }) {
     const { address, assetType } = params;
     const query = [];
@@ -630,7 +636,7 @@ function getPendingTransactionsQuery(params: {
 
 export async function getPendingTransactions(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
 }) {
     const { address, assetType } = params;
     const query = getPendingTransactionsQuery({ address, assetType });
@@ -650,7 +656,7 @@ export async function getPendingTransactions(params: {
 
 export async function getNumberOfPendingTransactions(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
 }) {
     const { address, assetType } = params;
     const query = getPendingTransactionsQuery({ address, assetType });
@@ -685,7 +691,7 @@ export async function getByHash(
 
 async function getTransactionsQuery(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
@@ -750,7 +756,7 @@ async function getTransactionsQuery(params: {
 
 export async function getTransactions(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -789,7 +795,7 @@ export async function getTransactions(params: {
 
 export async function getNumberOfTransactions(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {

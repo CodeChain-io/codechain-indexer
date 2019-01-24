@@ -8,6 +8,7 @@ export interface AssetTransferOutputAttribute {
     lockScriptHash: string;
     parameters: string[];
     assetType: string;
+    shardId: number;
     quantity: string;
     owner?: string | null;
     assetScheme: AssetSchemeAttribute;
@@ -49,6 +50,10 @@ export default (
             assetType: {
                 allowNull: false,
                 type: DataTypes.STRING
+            },
+            shardId: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             quantity: {
                 allowNull: false,

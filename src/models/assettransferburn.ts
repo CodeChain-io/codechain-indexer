@@ -37,6 +37,10 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            shardId: {
+                allowNull: false,
+                type: DataTypes.INTEGER
+            },
             timelock: {
                 type: DataTypes.JSONB
             },

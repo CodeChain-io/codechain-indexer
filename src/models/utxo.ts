@@ -5,6 +5,7 @@ export interface UTXOAttribute {
     id?: string;
     address: string;
     assetType: string;
+    shardId: number;
     lockScriptHash: string;
     parameters: string[];
     quantity: string;
@@ -38,6 +39,10 @@ export default (
             assetType: {
                 allowNull: false,
                 type: DataTypes.STRING
+            },
+            shardId: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             lockScriptHash: {
                 allowNull: false,

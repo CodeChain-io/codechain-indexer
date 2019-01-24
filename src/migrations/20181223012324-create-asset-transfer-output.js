@@ -29,6 +29,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
+            shardId: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
             quantity: {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })

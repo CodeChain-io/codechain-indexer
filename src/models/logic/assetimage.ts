@@ -1,4 +1,4 @@
-import { H256 } from "codechain-sdk/lib/core/classes";
+import { H160 } from "codechain-sdk/lib/core/classes";
 import * as request from "request";
 import * as sharp from "sharp";
 import models from "..";
@@ -35,7 +35,7 @@ export async function createAssetImage(
     }
 }
 
-export async function getByAssetType(assetType: H256) {
+export async function getByAssetType(assetType: H160) {
     try {
         return await models.AssetImage.findOne({
             where: {

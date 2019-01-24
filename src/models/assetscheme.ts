@@ -3,13 +3,13 @@ import * as Sequelize from "sequelize";
 export interface AssetSchemeAttribute {
     transactionHash: string;
     assetType: string;
+    shardId: number;
     metadata: string;
     approver?: string | null;
     administrator?: string | null;
     allowedScriptHashes: string[];
     supply?: string | null;
     networkId?: string | null;
-    shardId?: number | null;
 }
 
 export interface AssetSchemeInstance
@@ -36,6 +36,10 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            shardId: {
+                allowNull: false,
+                type: DataTypes.INTEGER
+            },
             metadata: {
                 allowNull: false,
                 type: DataTypes.STRING
@@ -55,9 +59,6 @@ export default (
             },
             networkId: {
                 type: DataTypes.STRING
-            },
-            shardId: {
-                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,

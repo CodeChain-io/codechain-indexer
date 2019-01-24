@@ -34,10 +34,12 @@ export async function createAssetTransferInput(
             unlockScript: input.unlockScript,
             owner,
             assetType: input.prevOut.assetType.value,
+            shardId: input.prevOut.shardId,
             prevOut: {
                 tracker: input.prevOut.tracker.value,
                 index: input.prevOut.index,
                 assetType: input.prevOut.assetType.value,
+                shardId: input.prevOut.shardId,
                 assetScheme: options.assetScheme,
                 quantity: input.prevOut.quantity.value.toString(10),
                 owner,

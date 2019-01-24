@@ -39,6 +39,7 @@ export async function createDecomposeAsset(
                 networkId,
                 asset: new Asset({
                     assetType: output.assetType,
+                    shardId: output.shardId,
                     lockScriptHash: output.lockScriptHash,
                     parameters: output.parameters,
                     quantity: output.quantity,
