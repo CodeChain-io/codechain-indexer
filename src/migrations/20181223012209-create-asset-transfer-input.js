@@ -29,6 +29,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
+            shardId: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
             timelock: {
                 type: Sequelize.JSONB
             },

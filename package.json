@@ -12,7 +12,7 @@
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
     "codechain-indexer-types": "https://github.com/CodeChain-io/codechain-indexer-types-js#bf321efb62fa72a4e220d1f5c684cecd5a26dfc8",
-    "codechain-sdk": "https://github.com/jhs7jhs/codechain-sdk-js.git#add-transfer-metadata-lib",
+    "codechain-sdk": "https://github.com/jhs7jhs/codechain-sdk-js.git#asset-type-split-lib",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",

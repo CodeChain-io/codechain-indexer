@@ -9,6 +9,7 @@ export interface AssetTransferInputAttribute {
     timelock?: Timelock | null;
     owner?: string | null;
     assetType: string;
+    shardId: number;
     lockScript: Buffer;
     unlockScript: Buffer;
 }
@@ -17,6 +18,7 @@ export interface AssetOutPointAttribute {
     tracker: string;
     index: number;
     assetType: string;
+    shardId: number;
     assetScheme: AssetSchemeAttribute;
     quantity: string;
     owner?: string | null;
@@ -59,6 +61,10 @@ export default (
             assetType: {
                 allowNull: false,
                 type: DataTypes.STRING
+            },
+            shardId: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             timelock: {
                 type: DataTypes.JSONB

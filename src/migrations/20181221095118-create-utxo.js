@@ -16,6 +16,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
+            shardId: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
             lockScriptHash: {
                 allowNull: false,
                 type: Sequelize.STRING

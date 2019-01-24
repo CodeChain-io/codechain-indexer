@@ -1,4 +1,4 @@
-import { H256 } from "codechain-sdk/lib/core/classes";
+import { H160 } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
 import * as moment from "moment";
 import { IndexerContext } from "../context";
@@ -108,7 +108,7 @@ export function handle(_C: IndexerContext, router: Router) {
         let assetType;
         try {
             if (assetTypeString) {
-                assetType = new H256(assetTypeString);
+                assetType = new H160(assetTypeString);
             }
             const utxoInsts = await UTXOModel.getUTXO({
                 address,
@@ -147,7 +147,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/asset-scheme/:assetType", async (req, res, next) => {
         const assetTypeString = req.params.assetType;
         try {
-            const assetType = new H256(assetTypeString);
+            const assetType = new H160(assetTypeString);
             const assetSchemeInst = await AssetSchemeModel.getByAssetType(
                 assetType
             );
@@ -180,7 +180,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/asset-image/:assetType", async (req, res, next) => {
         const assetTypeString = req.params.assetType;
         try {
-            const assetType = new H256(assetTypeString);
+            const assetType = new H160(assetTypeString);
             const assetImageInst = await AssetImageModel.getByAssetType(
                 assetType
             );
@@ -257,7 +257,7 @@ export function handle(_C: IndexerContext, router: Router) {
         let assetType;
         try {
             if (assetTypeString) {
-                assetType = new H256(assetTypeString);
+                assetType = new H160(assetTypeString);
             }
             const aggsInst = await UTXOModel.getAggsUTXO({
                 address,
@@ -319,7 +319,7 @@ export function handle(_C: IndexerContext, router: Router) {
         let assetType;
         try {
             if (assetTypeString) {
-                assetType = new H256(assetTypeString);
+                assetType = new H160(assetTypeString);
             }
             const count = await UTXOModel.getCountOfAggsUTXO({
                 address,
@@ -369,7 +369,7 @@ export function handle(_C: IndexerContext, router: Router) {
         const assetTypeString = req.query.assetType;
         const date = req.query.date;
         try {
-            const assetType = new H256(assetTypeString);
+            const assetType = new H160(assetTypeString);
             const snapshotTime = moment(date);
             if (!snapshotTime.isValid()) {
                 throw Exception.InvalidDateParam;

@@ -20,7 +20,7 @@ beforeAll(async done => {
         mintBlockNumber
     ))!;
     const assetMintTransaction = mintBlock.transactions[0].unsigned as MintAsset;
-    assetType = assetMintTransaction.getAssetSchemeAddress();
+    assetType = assetMintTransaction.getAssetType();
     transferBlock = (await Helper.sdk.rpc.chain.getBlock(
         bestBlockNumber
     ))!;

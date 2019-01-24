@@ -34,10 +34,12 @@ export async function createAssetTransferBurn(
             unlockScript: burn.unlockScript,
             owner,
             assetType: burn.prevOut.assetType.value,
+            shardId: burn.prevOut.shardId,
             prevOut: {
                 tracker: burn.prevOut.tracker.value,
                 index: burn.prevOut.index,
                 assetType: burn.prevOut.assetType.value,
+                shardId: burn.prevOut.shardId,
                 assetScheme: options.assetScheme,
                 quantity: burn.prevOut.quantity.value.toString(10),
                 owner,

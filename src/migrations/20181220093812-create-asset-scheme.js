@@ -16,6 +16,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
+            shardId: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
             metadata: {
                 allowNull: false,
                 type: Sequelize.STRING
@@ -36,9 +40,6 @@ module.exports = {
             },
             networkId: {
                 type: Sequelize.STRING
-            },
-            shardId: {
-                type: Sequelize.INTEGER
             },
             createdAt: {
                 allowNull: false,

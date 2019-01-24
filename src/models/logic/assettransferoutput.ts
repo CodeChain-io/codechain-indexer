@@ -27,6 +27,7 @@ export async function createAssetTransferOutput(
             lockScriptHash: output.lockScriptHash.value,
             parameters,
             assetType: output.assetType.value,
+            shardId: output.shardId,
             quantity: output.quantity.value.toString(10),
             assetScheme: params.assetScheme,
             owner

@@ -10,7 +10,8 @@ import * as BlockModel from "./block";
 export async function createUTXO(
     address: string,
     utxo: {
-        assetType: H256;
+        assetType: H160;
+        shardId: number;
         lockScriptHash: H160;
         parameters: string[];
         quantity: U64;
@@ -26,6 +27,7 @@ export async function createUTXO(
         utxoInstance = await models.UTXO.create({
             address,
             assetType: utxo.assetType.value,
+            shardId: utxo.shardId,
             lockScriptHash: utxo.lockScriptHash.value,
             parameters: utxo.parameters,
             quantity: utxo.quantity.value.toString(10),
@@ -35,7 +37,7 @@ export async function createUTXO(
             blockNumber
         });
     } catch (err) {
-        console.error(err);
+        console.error(err, utxo.assetType.value);
         throw Exception.DBError;
     }
     return utxoInstance;
@@ -64,7 +66,7 @@ export async function setUsed(
     }
 }
 
-async function getAssetSheme(assetType: H256): Promise<AssetSchemeAttribute> {
+async function getAssetSheme(assetType: H160): Promise<AssetSchemeAttribute> {
     const assetSchemeInstance = await AssetSchemeModel.getByAssetType(
         assetType
     );
@@ -90,7 +92,7 @@ export async function getByAddress(address: string): Promise<UTXOInstance[]> {
     }
 }
 
-export async function getByAssetType(assetType: H256) {
+export async function getByAssetType(assetType: H160) {
     try {
         return await models.UTXO.findAll({
             where: {
@@ -106,7 +108,7 @@ export async function getByAssetType(assetType: H256) {
 
 async function getUTXOQuery(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
@@ -163,7 +165,7 @@ async function getUTXOQuery(params: {
 
 export async function getUTXO(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -226,7 +228,7 @@ export async function getUTXO(params: {
 
 export async function getAggsUTXO(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -299,7 +301,7 @@ export async function getAggsUTXO(params: {
 
 export async function getCountOfAggsUTXO(params: {
     address?: string | null;
-    assetType?: H256 | null;
+    assetType?: H160 | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {

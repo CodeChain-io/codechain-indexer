@@ -82,7 +82,7 @@ test("Check duplicated block", async done => {
 test("Check assetScheme", async done => {
     const signed = mintBlock.transactions[0];
     expect(mintBlock).toBeTruthy();
-    const assetType = (signed.unsigned as MintAsset).getAssetSchemeAddress();
+    const assetType = (signed.unsigned as MintAsset).getAssetType();
     const assetSchemeInstance = (await AssetSchemeModel.getByAssetType(
         assetType
     ))!;
