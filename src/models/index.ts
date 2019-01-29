@@ -25,6 +25,11 @@ import {
 } from "./decomposeAsset";
 import { LogAttribute, LogInstance } from "./log";
 import { MintAssetAttribute, MintAssetInstance } from "./mintAsset";
+import { OrderAttribute, OrderInstance } from "./order";
+import {
+    OrderOnTransferAttribute,
+    OrderOnTransferInstance
+} from "./orderontransfer";
 import { PayAttribute, PayInstance } from "./pay";
 import { RemoveAttribute, RemoveInstance } from "./remove";
 import { SetRegularKeyAttribute, SetRegularKeyInstance } from "./setRegularKey";
@@ -112,6 +117,11 @@ interface DB {
     Custom: Sequelize.Model<CustomInstance, CustomAttribute>;
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
     Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
+    Order: Sequelize.Model<OrderInstance, OrderAttribute>;
+    OrderOnTransfer: Sequelize.Model<
+        OrderOnTransferInstance,
+        OrderOnTransferAttribute
+    >;
     UTXO: Sequelize.Model<UTXOInstance, UTXOAttribute>;
     AssetTransferInput: Sequelize.Model<
         AssetTransferInputInstance,
