@@ -7,6 +7,10 @@ import {
     AssetTransferOutputAttribute,
     AssetTransferOutputInstance
 } from "./assettransferoutput";
+import {
+    OrderOnTransferAttribute,
+    OrderOnTransferInstance
+} from "./orderontransfer";
 
 export interface TransferAssetAttribute {
     transactionHash: string;
@@ -15,6 +19,7 @@ export interface TransferAssetAttribute {
     inputs?: AssetTransferInputAttribute[];
     burns?: AssetTransferInputAttribute[];
     outputs?: AssetTransferOutputAttribute[];
+    orders?: OrderOnTransferAttribute[];
 }
 
 export interface TransferAssetInstance
@@ -26,6 +31,7 @@ export interface TransferAssetInstance
     getOutputs: Sequelize.HasManyGetAssociationsMixin<
         AssetTransferOutputInstance
     >;
+    getOrders: Sequelize.HasManyGetAssociationsMixin<OrderOnTransferInstance>;
 }
 
 export default (
@@ -54,7 +60,6 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
-
             createdAt: {
                 allowNull: false,
                 type: DataTypes.DATE
@@ -80,6 +85,11 @@ export default (
         Action.hasMany(models.AssetTransferBurn, {
             foreignKey: "transactionHash",
             as: "burns",
+            onDelete: "CASCADE"
+        });
+        Action.hasMany(models.OrderOnTransfer, {
+            foreignKey: "transactionHash",
+            as: "orders",
             onDelete: "CASCADE"
         });
     };

@@ -6,6 +6,7 @@ import { TransferAssetInstance } from "../transferAsset";
 import { createAssetTransferBurn } from "./assettransferburn";
 import { createAssetTransferInput } from "./assettransferinput";
 import { createAssetTransferOutput } from "./assettransferoutput";
+import { createOrderOnTransfer } from "./orderontransfer";
 import { getAssetScheme } from "./utils/asset";
 
 export async function createTransferAsset(
@@ -63,6 +64,15 @@ export async function createTransferAsset(
                     transactionOutputIndex
                 })
             });
+        })
+    );
+    await Promise.all(
+        transfer.orders().map(orderOnTransfer => {
+            return createOrderOnTransfer(
+                transactionHash,
+                orderOnTransfer,
+                networkId
+            );
         })
     );
 
