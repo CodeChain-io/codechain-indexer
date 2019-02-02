@@ -128,7 +128,7 @@ export async function createTransaction(
             }
             case "pay": {
                 const { quantity, receiver } = tx.toJSON().action;
-                await createPay(hash, quantity, receiver);
+                await createPay(hash, new U64(quantity).toString(10), receiver);
                 break;
             }
             case "setRegularKey": {

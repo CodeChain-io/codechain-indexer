@@ -6,12 +6,9 @@ export async function createPay(
     quantity: string,
     receiver: string
 ): Promise<PayInstance> {
-    const numericQuantity = quantity.startsWith("0x")
-        ? quantity.slice(2)
-        : quantity;
     return await models.Pay.create({
         transactionHash,
-        quantity: numericQuantity,
+        quantity,
         receiver
     });
 }
