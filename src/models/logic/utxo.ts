@@ -283,7 +283,8 @@ export async function getAggsUTXO(params: {
                 [
                     Sequelize.fn("COUNT", Sequelize.col("assetType")),
                     "utxoQuantity"
-                ]
+                ],
+                "assetScheme"
             ],
             order: Sequelize.literal(
                 `"totalAssetQuantity" DESC, "assetType" DESC`
@@ -291,7 +292,7 @@ export async function getAggsUTXO(params: {
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             include: includeArray,
-            group: ["assetType"]
+            group: ["assetType", "assetScheme"]
         });
     } catch (err) {
         console.error(err);
