@@ -64,7 +64,6 @@ export default (
                 type: DataTypes.STRING
             },
             approver: {
-                allowNull: false,
                 type: DataTypes.STRING
             },
             administrator: {
