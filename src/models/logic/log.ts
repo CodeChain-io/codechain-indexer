@@ -78,6 +78,22 @@ export async function getLog(
     }
 }
 
+export async function getMiningCountLogs(date: string, limit: number) {
+    try {
+        return await models.Log.findAll({
+            where: {
+                date,
+                type: LogType.BLOCK_MINING_COUNT
+            },
+            order: [["count", "DESC"]],
+            limit
+        }).then(logs => logs.map(log => log.get({ plain: true })));
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError;
+    }
+}
+
 function getLogId(date: string, logType: LogType, value?: string | null) {
     return `${date}-${logType}-${value || "N"}`;
 }
