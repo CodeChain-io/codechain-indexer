@@ -603,7 +603,6 @@ function getPendingTransactionsQuery(params: {
                 { "$transferAsset.inputs.owner$": address },
                 { "$transferAsset.outputs.owner$": address },
                 { "$transferAsset.burns.owner$": address },
-                { "$transferAsset.orders.owner$": address },
 
                 { "$composeAsset.approver$": address },
                 { "$composeAsset.administrator$": address },
@@ -626,7 +625,6 @@ function getPendingTransactionsQuery(params: {
                 { "$transferAsset.inputs.assetType$": assetType.value },
                 { "$transferAsset.outputs.assetType$": assetType.value },
                 { "$transferAsset.burns.assetType$": assetType.value },
-                { "$transferAsset.orders.assetType$": assetType.value },
                 { "$composeAsset.inputs.assetType$": assetType.value },
                 { "$decomposeAsset.input.assetType$": assetType.value },
                 { "$decomposeAsset.outputs.assetType$": assetType.value },
@@ -714,7 +712,6 @@ async function getTransactionsQuery(params: {
                 { "$transferAsset.inputs.owner$": address },
                 { "$transferAsset.outputs.owner$": address },
                 { "$transferAsset.burns.owner$": address },
-                { "$transferAsset.orders.owner$": address },
 
                 { "$composeAsset.approver$": address },
                 { "$composeAsset.administrator$": address },
@@ -737,7 +734,6 @@ async function getTransactionsQuery(params: {
                 { "$transferAsset.inputs.assetType$": assetType.value },
                 { "$transferAsset.outputs.assetType$": assetType.value },
                 { "$transferAsset.burns.assetType$": assetType.value },
-                { "$transferAsset.orders.assetType$": assetType.value },
                 { "$composeAsset.inputs.assetType$": assetType.value },
                 { "$decomposeAsset.input.assetType$": assetType.value },
                 { "$decomposeAsset.outputs.assetType$": assetType.value },
