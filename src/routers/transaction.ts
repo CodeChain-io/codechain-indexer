@@ -1,4 +1,4 @@
-import { H160 } from "codechain-primitives/lib";
+import { H160, H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as TxModel from "../models/logic/transaction";
@@ -179,7 +179,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/tx/:hash", async (req, res, next) => {
         const hashString = req.params.hash;
         try {
-            const hash = new H160(hashString);
+            const hash = new H256(hashString);
             const txInst = await TxModel.getByHash(hash);
             res.json(txInst ? txInst.get({ plain: true }) : null);
         } catch (e) {
