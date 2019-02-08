@@ -32,6 +32,8 @@ export function handle(_C: IndexerContext, router: Router) {
      *         description: return the number of either block or transaction
      *         schema:
      *           type: number
+     *       400:
+     *         description: either filter or date is invalid
      */
     router.get("/log/count", async (req, res) => {
         const filter = req.query.filter;
@@ -55,6 +57,42 @@ export function handle(_C: IndexerContext, router: Router) {
             .catch(err => {
                 console.error(err);
                 res.status(500).send();
+            });
+    });
+
+    /**
+     * @swagger
+     * /log/miners:
+     *   get:
+     *     summary: Returns the list of the block miners
+     *     tags: [Log]
+     *     parameters:
+     *       - name: date
+     *         description: (YYYY-MM-DD format)
+     *         in: query
+     *         required: true
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: return a list of address and count pair. The list is sorted by the count in descending order.
+     *       400:
+     *         description: date is invalid
+     */
+    router.get("/log/miners", async (req, res, next) => {
+        const date = req.query.date;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            res.status(400).send();
+            return;
+        }
+        LogModel.getMiningCountLogs(date, 5)
+            .then(logs => {
+                res.json(
+                    logs.map(log => ({ address: log.value, count: log.count }))
+                );
+            })
+            .catch(err => {
+                console.error(err);
+                next(err);
             });
     });
 }
