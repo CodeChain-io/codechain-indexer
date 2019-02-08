@@ -1029,9 +1029,9 @@ codechain-primitives@^0.4.4:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-"codechain-sdk@https://github.com/jhs7jhs/codechain-sdk-js.git#asset-type-split-lib":
+"codechain-sdk@https://github.com/sgkim126/codechain-sdk-js.git#rlp-lib":
   version "0.5.1"
-  resolved "https://github.com/jhs7jhs/codechain-sdk-js.git#be34ca7b7266c093ea2cf531fead497ef5777028"
+  resolved "https://github.com/sgkim126/codechain-sdk-js.git#a1ae4d81d27c5d277590763a630bb322af15c1bd"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
