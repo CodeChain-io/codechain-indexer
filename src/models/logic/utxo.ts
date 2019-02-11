@@ -17,6 +17,7 @@ export async function createUTXO(
         quantity: U64;
         orderHash?: H256 | null;
         transactionHash: H256;
+        transactionTracker: H256;
         transactionOutputIndex: number;
     },
     blockNumber: number
@@ -32,6 +33,7 @@ export async function createUTXO(
             parameters: utxo.parameters,
             quantity: utxo.quantity.value.toString(10),
             transactionHash: utxo.transactionHash.value,
+            transactionTracker: utxo.transactionTracker.value,
             transactionOutputIndex: utxo.transactionOutputIndex,
             assetScheme,
             blockNumber

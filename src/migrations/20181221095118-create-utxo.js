@@ -41,6 +41,10 @@ module.exports = {
                     key: "hash"
                 }
             },
+            transactionTracker: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
             transactionOutputIndex: {
                 allowNull: false,
                 type: Sequelize.INTEGER
