@@ -38,7 +38,7 @@ export default (
                 primaryKey: true,
                 type: DataTypes.STRING
             },
-            TransactionHash: {
+            transactionHash: {
                 allowNull: false,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
@@ -95,7 +95,7 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            paramtersFrom: {
+            parametersFrom: {
                 allowNull: false,
                 type: DataTypes.JSONB
             },
