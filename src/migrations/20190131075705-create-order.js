@@ -65,7 +65,7 @@ module.exports = {
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            paramtersFrom: {
+            parametersFrom: {
                 allowNull: false,
                 type: DataTypes.JSONB
             },
