@@ -165,7 +165,7 @@ export async function createTransaction(
                 throw new Error(`${type} is not an expected transaction type`);
         }
 
-        if (!isPending) {
+        if (!isPending && isAssetTransaction) {
             const txInst = await getByHash(tx.hash());
             if (!txInst) {
                 throw Exception.InvalidTransaction;
@@ -217,7 +217,9 @@ export async function updatePendingTransaction(
             }
         );
         const txInst = await getByHash(hash);
-        await handleUTXO(txInst!, params.blockNumber);
+        if (txInst!.get().tracker !== null) {
+            await handleUTXO(txInst!, params.blockNumber);
+        }
     } catch (err) {
         console.error(err);
         throw Exception.DBError;
@@ -319,6 +321,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
     const tx = txInst.get({ plain: true });
     const networkId = tx.networkId;
     const transactionHash = new H256(tx.hash);
+    const transactionTracker = new H256(tx.tracker!);
     const txType = tx.type;
     if (txType === "mintAsset") {
         const mintAsset = (await txInst.getMintAsset())!.get();
@@ -338,6 +341,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 parameters,
                 quantity,
                 transactionHash,
+                transactionTracker,
                 transactionOutputIndex
             },
             blockNumber
@@ -373,6 +377,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                             parameters,
                             quantity,
                             transactionHash,
+                            transactionTracker,
                             transactionOutputIndex
                         },
                         blockNumber
@@ -484,6 +489,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 parameters,
                 quantity,
                 transactionHash,
+                transactionTracker,
                 transactionOutputIndex
             },
             blockNumber
@@ -529,6 +535,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                         parameters,
                         quantity,
                         transactionHash,
+                        transactionTracker,
                         transactionOutputIndex
                     },
                     blockNumber
@@ -560,6 +567,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                 parameters,
                 quantity,
                 transactionHash,
+                transactionTracker,
                 transactionOutputIndex
             },
             blockNumber
