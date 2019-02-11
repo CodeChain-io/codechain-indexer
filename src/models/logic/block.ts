@@ -10,7 +10,7 @@ export async function createBlock(
     block: Block,
     params: {
         miningReward: U64;
-        invoices: { invoice: boolean; errorType?: string | null }[];
+        invoices: { success: boolean; errorHint?: string }[];
     }
 ): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
@@ -40,8 +40,8 @@ export async function createBlock(
                 if (txInst) {
                     await TxModel.updatePendingTransaction(tx.hash(), {
                         timestamp: block.timestamp,
-                        invoice: invoice.invoice,
-                        errorType: invoice.errorType,
+                        success: invoice.success,
+                        errorHint: invoice.errorHint,
                         transactionIndex: tx.transactionIndex!,
                         blockNumber: tx.blockNumber!,
                         blockHash: tx.blockHash!
@@ -49,8 +49,8 @@ export async function createBlock(
                 } else {
                     await TxModel.createTransaction(tx, false, {
                         timestamp: block.timestamp,
-                        invoice: invoice.invoice,
-                        errorType: invoice.errorType
+                        success: invoice.success,
+                        errorHint: invoice.errorHint
                     });
                 }
             })

@@ -533,9 +533,9 @@ codechain-primitives@^0.4.4:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-"codechain-sdk@https://github.com/jhs7jhs/codechain-sdk-js.git#add-transfer-metadata-lib":
+"codechain-sdk@https://github.com/sgkim126/codechain-sdk-js.git#invoice-lib":
   version "0.5.1"
-  resolved "https://github.com/jhs7jhs/codechain-sdk-js.git#2bbbf26701fccb021f134145afc02ee316952c40"
+  resolved "https://github.com/sgkim126/codechain-sdk-js.git#37ee0e3a9ff6726f65cc157e7df425e798cf90b4"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"

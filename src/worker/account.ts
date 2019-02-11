@@ -27,7 +27,7 @@ export async function updateAccount(
         }
         const payments = transactions.filter(tx => tx.type === "pay");
         payments.map(tx => {
-            if (tx.type === "pay" && tx.invoice) {
+            if (tx.type === "pay" && tx.success) {
                 affectedAddresses.push(tx.pay!.receiver);
             }
         });

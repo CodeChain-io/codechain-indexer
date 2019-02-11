@@ -2,7 +2,7 @@ import { SDK } from "codechain-sdk";
 import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import { Job, scheduleJob } from "node-schedule";
-import { InvalidBlockNumber, InvalidTransaction } from "../exception";
+import { InvalidBlockNumber } from "../exception";
 import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
 import * as TxModel from "../models/logic/transaction";
@@ -155,12 +155,14 @@ export default class Worker {
         const invoices = await Promise.all(
             block.transactions.map(async tx => {
                 const invoice = await sdk.rpc.chain.getInvoice(tx.hash());
-                if (!invoice) {
-                    throw InvalidTransaction;
+                if (invoice) {
+                    return {
+                        success: true
+                    };
                 }
                 return {
-                    invoice: invoice.success,
-                    errorType: invoice.error ? invoice.error.type : null
+                    success: false,
+                    errorHint: "" // FIXME: Fill it if CodeChain provides an RPC
                 };
             })
         );
