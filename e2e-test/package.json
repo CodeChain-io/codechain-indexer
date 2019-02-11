@@ -29,7 +29,7 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
-    "codechain-sdk": "https://github.com/jhs7jhs/codechain-sdk-js.git#add-transfer-metadata-lib",
+    "codechain-sdk": "https://github.com/sgkim126/codechain-sdk-js.git#invoice-lib",
     "dockerode": "^2.5.8",
     "inquirer": "^6.2.1",
     "is-port-reachable": "^2.0.0",

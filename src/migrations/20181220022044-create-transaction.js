@@ -51,11 +51,11 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
-            invoice: {
+            success: {
                 type: Sequelize.BOOLEAN
             },
-            errorType: {
-                type: Sequelize.STRING
+            errorHint: {
+                type: Sequelize.TEXT("MEDIUM")
             },
             timestamp: {
                 type: Sequelize.INTEGER

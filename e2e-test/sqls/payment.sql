@@ -49,7 +49,7 @@ COPY "Blocks" (hash, "parentHash", "timestamp", number, author, "extraData", "tr
 -- Data for Name: Transactions; Type: TABLE DATA; Schema: public; Owner: user
 --
 
-COPY "Transactions" (hash, "blockNumber", "blockHash", tracker, "transactionIndex", type, seq, fee, "networkId", sig, signer, invoice, "errorType", "timestamp", "isPending", "pendingTimestamp", "createdAt", "updatedAt") FROM stdin;
+COPY "Transactions" (hash, "blockNumber", "blockHash", tracker, "transactionIndex", type, seq, fee, "networkId", sig, signer, success, "errorHint", "timestamp", "isPending", "pendingTimestamp", "createdAt", "updatedAt") FROM stdin;
 d1dffb192188b2d55ed5e05ace6998a73a6a1920878f6175b163a8d80df24e53	1	0f892d35ddbe041cc4fc6210eaee9da79dce67138d200bfb95338fec073f7676	\N	0	pay	0	10	tc	0xf6ac8165150768147922db84cc18628f196923c0f50aa2ee0f9c598e94cd01735070fb23462a3b351ba09aeb868b9e842079c2cd45d0c4b2a34584bd25ca332301	tccq9h7vnl68frvqapzv3tujrxtxtwqdnxw6yamrrgd	t	\N	1548307143	f	\N	2019-01-24 14:19:09.327+09	2019-01-24 14:19:09.327+09
 \.
 

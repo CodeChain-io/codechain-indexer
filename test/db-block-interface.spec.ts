@@ -21,7 +21,7 @@ test("Check getLastBlock", async done => {
     expect(mintBlock).toBeTruthy();
     await BlockModel.createBlock(mintBlock!, {
         miningReward: new U64("1000"),
-        invoices: [{invoice: true}]
+        invoices: [{success: true}]
     });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();

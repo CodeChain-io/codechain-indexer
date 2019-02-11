@@ -46,8 +46,8 @@ export interface TransactionAttribute {
     networkId: string;
     sig: string;
     signer: string;
-    invoice?: boolean | null;
-    errorType?: string | null;
+    success?: boolean | null;
+    errorHint?: string;
     timestamp?: number | null;
     isPending: boolean;
     pendingTimestamp?: number | null;
@@ -137,11 +137,11 @@ export default (
                 type: DataTypes.STRING
             },
 
-            invoice: {
+            success: {
                 type: Sequelize.BOOLEAN
             },
-            errorType: {
-                type: Sequelize.STRING
+            errorHint: {
+                type: Sequelize.TEXT("MEDIUM")
             },
             timestamp: {
                 type: DataTypes.INTEGER

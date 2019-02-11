@@ -39,11 +39,12 @@ export async function createTransaction(
     isPending: boolean,
     params?: {
         timestamp?: number | null;
-        invoice?: boolean | null;
-        errorType?: string | null;
+        success?: boolean | null;
+        errorHint?: string;
     } | null
 ): Promise<TransactionInstance> {
-    const { timestamp = null, invoice = null, errorType = null } = params || {};
+    const { timestamp = null, success = null } = params || {};
+    const errorHint = params ? params.errorHint : undefined;
     try {
         const type = tx.unsigned.type();
         const hash = tx.hash().value;
@@ -72,8 +73,8 @@ export async function createTransaction(
             signer: tx.getSignerAddress({
                 networkId: tx.unsigned.networkId()
             }).value,
-            invoice,
-            errorType,
+            success,
+            errorHint,
             timestamp,
             isPending,
             pendingTimestamp: isPending ? +new Date() / 1000 : null
@@ -191,8 +192,8 @@ export async function createTransaction(
 export async function updatePendingTransaction(
     hash: H256,
     params: {
-        invoice?: boolean | null;
-        errorType?: string | null;
+        success?: boolean | null;
+        errorHint?: string;
         timestamp: number;
         transactionIndex: number;
         blockNumber: number;
@@ -205,8 +206,8 @@ export async function updatePendingTransaction(
                 blockHash: params.blockHash.value,
                 transactionIndex: params.transactionIndex,
                 blockNumber: params.blockNumber,
-                invoice: params.invoice,
-                errorType: params.errorType,
+                success: params.success,
+                errorHint: params.errorHint,
                 timestamp: params.timestamp,
                 isPending: false
             },
@@ -855,7 +856,7 @@ export async function getSuccessfulTransaction(
         return await models.Transaction.findOne({
             where: {
                 tracker,
-                invoice: true
+                success: true
             }
         });
     } catch (err) {
