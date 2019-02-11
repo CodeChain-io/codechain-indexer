@@ -1031,7 +1031,7 @@ codechain-primitives@^0.4.4:
 
 "codechain-sdk@https://github.com/joojis/codechain-sdk-js.git#corgi":
   version "0.5.1"
-  resolved "https://github.com/joojis/codechain-sdk-js.git#b5a606f72308ee6dfcf03fb3a63ff45b96992094"
+  resolved "https://github.com/joojis/codechain-sdk-js.git#cd112e8e11bef5c55fdb024a38e55fb7cb036db7"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
