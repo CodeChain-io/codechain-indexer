@@ -10,6 +10,7 @@ export interface UTXOAttribute {
     parameters: string[];
     quantity: string;
     transactionHash: string;
+    transactionTracker: string;
     transactionOutputIndex: number;
     usedTransactionHash?: string | null;
     usedBlockNumber?: number | null;
@@ -64,6 +65,10 @@ export default (
                     model: "Transactions",
                     key: "hash"
                 }
+            },
+            transactionTracker: {
+                allowNull: false,
+                type: DataTypes.STRING
             },
             transactionOutputIndex: {
                 allowNull: false,
