@@ -1029,9 +1029,9 @@ codechain-primitives@^0.4.4:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-"codechain-sdk@https://github.com/joojis/codechain-sdk-js.git#corgi":
+"codechain-sdk@https://github.com/sgkim126/codechain-sdk-js.git#wrap-lib2":
   version "0.5.1"
-  resolved "https://github.com/joojis/codechain-sdk-js.git#cd112e8e11bef5c55fdb024a38e55fb7cb036db7"
+  resolved "https://github.com/sgkim126/codechain-sdk-js.git#c32bcb39d0358450e5571a9c82955b7a88b71faa"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
