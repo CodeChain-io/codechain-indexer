@@ -369,14 +369,15 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     const lockScriptHash = new H160(output.lockScriptHash);
                     const parameters = output.parameters;
                     const quantity = new U64(output.quantity);
-                    const order = (await transferAsset.getOrders()).find(o =>
-                        o
-                            .get({ plain: true })
-                            .outputIndices.includes(transactionOutputIndex)
+                    const orderOnTransfer = (await transferAsset.getOrders()).find(
+                        o =>
+                            o
+                                .get({ plain: true })
+                                .outputIndices.includes(transactionOutputIndex)
                     );
-                    const orderHash = order
-                        ? new H256((await order.getOrder())!.get().orderHash)
-                        : null;
+                    const order =
+                        orderOnTransfer && (await orderOnTransfer.getOrder());
+                    const orderHash = order && new H256(order.get().orderHash);
                     return createUTXO(
                         recipient,
                         {
