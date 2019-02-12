@@ -1,4 +1,5 @@
 import {
+    ChangeAssetScheme,
     ComposeAsset,
     DecomposeAsset,
     H160,
@@ -18,6 +19,7 @@ import { AssetTransferOutputAttribute } from "../assettransferoutput";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
 import * as BlockModel from "./block";
+import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
 import { createCustom } from "./custom";
 import { createDecomposeAsset } from "./decomposeAsset";
@@ -125,6 +127,11 @@ export async function createTransaction(
             case "unwrapCCC": {
                 const unwrap = tx.unsigned as UnwrapCCC;
                 await createUnwrapCCC(hash, unwrap, tx.unsigned.networkId());
+                break;
+            }
+            case "changeAssetScheme": {
+                const changeAssetScheme = tx.unsigned as ChangeAssetScheme;
+                await createChangeAssetScheme(hash, changeAssetScheme);
                 break;
             }
             case "pay": {
@@ -277,6 +284,10 @@ const includeArray = [
                 model: models.AssetTransferOutput
             }
         ]
+    },
+    {
+        as: "changeAssetScheme",
+        model: models.ChangeAssetScheme
     },
     {
         as: "wrapCCC",
