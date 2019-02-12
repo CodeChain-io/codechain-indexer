@@ -355,7 +355,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         );
         await Promise.all(
             outputs!.map(
-                (
+                async (
                     output: AssetTransferOutputAttribute,
                     transactionOutputIndex: number
                 ) => {
@@ -369,6 +369,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     const lockScriptHash = new H160(output.lockScriptHash);
                     const parameters = output.parameters;
                     const quantity = new U64(output.quantity);
+                    const order = (await transferAsset.getOrders()).find(o =>
+                        o
+                            .get({ plain: true })
+                            .outputIndices.includes(transactionOutputIndex)
+                    );
+                    const orderHash = order
+                        ? new H256((await order.getOrder())!.get().orderHash)
+                        : null;
                     return createUTXO(
                         recipient,
                         {
@@ -377,6 +385,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                             lockScriptHash,
                             parameters,
                             quantity,
+                            orderHash,
                             transactionHash,
                             transactionTracker,
                             transactionOutputIndex

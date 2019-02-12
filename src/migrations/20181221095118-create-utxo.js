@@ -32,6 +32,9 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
+            orderHash: {
+                type: Sequelize.STRING
+            },
             transactionHash: {
                 allowNull: false,
                 type: Sequelize.STRING,

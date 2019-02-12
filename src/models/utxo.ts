@@ -9,6 +9,7 @@ export interface UTXOAttribute {
     lockScriptHash: string;
     parameters: string[];
     quantity: string;
+    orderHash?: string | null;
     transactionHash: string;
     transactionTracker: string;
     transactionOutputIndex: number;
@@ -56,6 +57,9 @@ export default (
             quantity: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+            orderHash: {
+                type: DataTypes.STRING
             },
             transactionHash: {
                 allowNull: false,

@@ -32,6 +32,7 @@ export async function createUTXO(
             lockScriptHash: utxo.lockScriptHash.value,
             parameters: utxo.parameters,
             quantity: utxo.quantity.value.toString(10),
+            orderHash: utxo.orderHash ? utxo.orderHash.value : null,
             transactionHash: utxo.transactionHash.value,
             transactionTracker: utxo.transactionTracker.value,
             transactionOutputIndex: utxo.transactionOutputIndex,
