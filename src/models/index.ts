@@ -16,6 +16,10 @@ import {
     AssetTransferOutputInstance
 } from "./assettransferoutput";
 import { BlockAttribute, BlockInstance } from "./block";
+import {
+    ChangeAssetSchemeAttribute,
+    ChangeAssetSchemeInstance
+} from "./changeAssetScheme";
 import { ComposeAssetAttribute, ComposeAssetInstance } from "./composeAsset";
 import { CreateShardAttribute, CreateShardInstance } from "./createShard";
 import { CustomAttribute, CustomInstance } from "./custom";
@@ -95,6 +99,10 @@ interface DB {
     DecomposeAsset: Sequelize.Model<
         DecomposeAssetInstance,
         DecomposeAssetAttribute
+    >;
+    ChangeAssetScheme: Sequelize.Model<
+        ChangeAssetSchemeInstance,
+        ChangeAssetSchemeAttribute
     >;
     WrapCCC: Sequelize.Model<WrapCCCInstance, WrapCCCAttribute>;
     UnwrapCCC: Sequelize.Model<UnwrapCCCInstance, UnwrapCCCAttribute>;

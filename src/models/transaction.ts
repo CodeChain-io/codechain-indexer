@@ -1,4 +1,8 @@
 import * as Sequelize from "sequelize";
+import {
+    ChangeAssetSchemeAttribute,
+    ChangeAssetSchemeInstance
+} from "./changeAssetScheme";
 import { ComposeAssetAttribute, ComposeAssetInstance } from "./composeAsset";
 import { CreateShardAttribute, CreateShardInstance } from "./createShard";
 import { CustomAttribute, CustomInstance } from "./custom";
@@ -32,6 +36,7 @@ export interface TransactionAttribute {
     transferAsset?: TransferAssetAttribute;
     composeAsset?: ComposeAssetAttribute;
     decomposeAsset?: DecomposeAssetAttribute;
+    changeAssetScheme?: ChangeAssetSchemeAttribute;
     wrapCCC?: WrapCCCAttribute;
     unwrapCCC?: UnwrapCCCAttribute;
     setRegularKey?: SetRegularKeyAttribute;
@@ -62,6 +67,9 @@ export interface TransactionInstance
     getComposeAsset: Sequelize.HasOneGetAssociationMixin<ComposeAssetInstance>;
     getDecomposeAsset: Sequelize.HasOneGetAssociationMixin<
         DecomposeAssetInstance
+    >;
+    getChangeAssetScheme: Sequelize.HasOneGetAssociationMixin<
+        ChangeAssetSchemeInstance
     >;
     getWrapCCC: Sequelize.HasOneGetAssociationMixin<WrapCCCInstance>;
     getUnwrapCCC: Sequelize.HasOneGetAssociationMixin<UnwrapCCCInstance>;
@@ -183,6 +191,11 @@ export default (
         Transaction.hasOne(models.DecomposeAsset, {
             foreignKey: "transactionHash",
             as: "decomposeAsset",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.ChangeAssetScheme, {
+            foreignKey: "transactionHash",
+            as: "changeAssetScheme",
             onDelete: "CASCADE"
         });
         Transaction.hasOne(models.WrapCCC, {
