@@ -78,10 +78,6 @@ export default (
                 allowNull: false,
                 type: DataTypes.INTEGER
             },
-            assetScheme: {
-                allowNull: false,
-                type: DataTypes.JSONB
-            },
             usedTransactionHash: {
                 type: DataTypes.STRING,
                 onDelete: "SET NULL",
@@ -113,6 +109,11 @@ export default (
             foreignKey: "usedTransactionHash",
             as: "usedTransaction",
             onDelete: "SET NULL"
+        });
+        UTXO.belongsTo(models.AssetScheme, {
+            foreignKey: "assetType",
+            as: "assetScheme",
+            onDelete: "CASCADE"
         });
     };
     return UTXO;

@@ -192,6 +192,10 @@ export async function getUTXO(params: {
         {
             as: "usedTransaction",
             model: models.Transaction
+        },
+        {
+            as: "assetScheme",
+            model: models.AssetScheme
         }
     ];
     if (onlyConfirmed) {
@@ -210,6 +214,10 @@ export async function getUTXO(params: {
                             latestBlockNumber - confirmThreshold!
                     }
                 }
+            },
+            {
+                as: "assetScheme",
+                model: models.AssetScheme
             }
         ];
     }

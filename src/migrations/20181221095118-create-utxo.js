@@ -14,7 +14,12 @@ module.exports = {
             },
             assetType: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.STRING,
+                onDelete: "CASCADE",
+                references: {
+                    model: "AssetSchemes",
+                    key: "assetType"
+                }
             },
             shardId: {
                 allowNull: false,
@@ -51,10 +56,6 @@ module.exports = {
             transactionOutputIndex: {
                 allowNull: false,
                 type: Sequelize.INTEGER
-            },
-            assetScheme: {
-                allowNull: false,
-                type: Sequelize.JSONB
             },
             usedTransactionHash: {
                 type: Sequelize.STRING,

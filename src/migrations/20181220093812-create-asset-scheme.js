@@ -4,7 +4,6 @@ module.exports = {
         return queryInterface.createTable("AssetSchemes", {
             transactionHash: {
                 allowNull: false,
-                primaryKey: true,
                 type: Sequelize.STRING,
                 onDelete: "CASCADE",
                 references: {
@@ -14,6 +13,7 @@ module.exports = {
             },
             assetType: {
                 allowNull: false,
+                primaryKey: true,
                 type: Sequelize.STRING
             },
             shardId: {

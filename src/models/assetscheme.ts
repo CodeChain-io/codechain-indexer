@@ -24,7 +24,6 @@ export default (
         {
             transactionHash: {
                 allowNull: false,
-                primaryKey: true,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
                 references: {
@@ -34,6 +33,7 @@ export default (
             },
             assetType: {
                 allowNull: false,
+                primaryKey: true,
                 type: DataTypes.STRING
             },
             shardId: {
