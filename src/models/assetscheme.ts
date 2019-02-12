@@ -42,7 +42,7 @@ export default (
             },
             metadata: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.TEXT
             },
             approver: {
                 type: DataTypes.STRING

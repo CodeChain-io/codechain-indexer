@@ -24,7 +24,7 @@ module.exports = {
             },
             metadata: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.TEXT
             },
 
             approver: {

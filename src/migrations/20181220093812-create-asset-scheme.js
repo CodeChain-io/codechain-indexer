@@ -22,7 +22,7 @@ module.exports = {
             },
             metadata: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.TEXT
             },
             approver: {
                 type: Sequelize.STRING
