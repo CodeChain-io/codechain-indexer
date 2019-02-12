@@ -17,18 +17,18 @@ export default (
         "AssetImage",
         {
             transactionHash: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            assetType: {
                 primaryKey: true,
                 allowNull: false,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
                 references: {
                     model: "AssetSchemes",
-                    key: "transactionHash"
+                    key: "assetType"
                 }
-            },
-            assetType: {
-                allowNull: false,
-                type: DataTypes.STRING
             },
             image: {
                 allowNull: false,

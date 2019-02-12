@@ -100,11 +100,7 @@ export async function getByAssetType(
     assetType: H160
 ): Promise<AssetSchemeInstance | null> {
     try {
-        return await models.AssetScheme.findOne({
-            where: {
-                assetType: assetType.value
-            }
-        });
+        return await models.AssetScheme.findByPk(assetType.value);
     } catch (err) {
         console.error(err);
         throw Exception.DBError;
