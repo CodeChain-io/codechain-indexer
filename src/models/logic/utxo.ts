@@ -259,7 +259,12 @@ export async function getAggsUTXO(params: {
         onlyConfirmed,
         confirmThreshold
     });
-    let includeArray: any = [];
+    let includeArray: any = [
+        {
+            as: "assetScheme",
+            model: models.AssetScheme
+        }
+    ];
     if (onlyConfirmed) {
         const latestBlockInst = await BlockModel.getLatestBlock();
         const latestBlockNumber = latestBlockInst
@@ -277,6 +282,10 @@ export async function getAggsUTXO(params: {
                     }
                 },
                 attributes: []
+            },
+            {
+                as: "assetScheme",
+                model: models.AssetScheme
             }
         ];
     }
@@ -292,7 +301,7 @@ export async function getAggsUTXO(params: {
                 ],
                 "assetType",
                 [
-                    Sequelize.fn("COUNT", Sequelize.col("assetType")),
+                    Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
                     "utxoQuantity"
                 ]
             ],
@@ -302,7 +311,7 @@ export async function getAggsUTXO(params: {
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             include: includeArray,
-            group: ["assetType"]
+            group: ["UTXO.assetType", "assetScheme.assetType"]
         });
     } catch (err) {
         console.error(err);
