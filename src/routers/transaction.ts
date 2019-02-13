@@ -39,6 +39,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: tracker
+     *         description: filter by tracker
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: page
      *         description: page for the pagination
      *         in: query
@@ -75,6 +80,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/tx", async (req, res, next) => {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
+        const trackerString = req.query.tracker;
         const page = req.query.page && parseInt(req.query.page, 10);
         const itemsPerPage =
             req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
@@ -86,13 +92,18 @@ export function handle(_C: IndexerContext, router: Router) {
             req.query.confirmThreshold &&
             parseInt(req.query.confirmThreshold, 10);
         let assetType;
+        let tracker;
         try {
             if (assetTypeString) {
                 assetType = new H160(assetTypeString);
             }
+            if (trackerString) {
+                tracker = new H256(trackerString);
+            }
             const txInsts = await TxModel.getTransactions({
                 address,
                 assetType,
+                tracker,
                 page,
                 itemsPerPage,
                 onlyConfirmed,
@@ -123,6 +134,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: tracker
+     *         description: filter by tracker
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -148,6 +164,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/tx/count", async (req, res, next) => {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
+        const trackerString = req.query.tracker;
         const onlyConfirmed =
             req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
         const onlySuccessful =
@@ -156,13 +173,18 @@ export function handle(_C: IndexerContext, router: Router) {
             req.query.confirmThreshold &&
             parseInt(req.query.confirmThreshold, 10);
         let assetType;
+        let tracker;
         try {
             if (assetTypeString) {
                 assetType = new H160(assetTypeString);
             }
+            if (trackerString) {
+                tracker = new H256(trackerString);
+            }
             const count = await TxModel.getNumberOfTransactions({
                 address,
                 assetType,
+                tracker,
                 onlyConfirmed,
                 onlySuccessful,
                 confirmThreshold
