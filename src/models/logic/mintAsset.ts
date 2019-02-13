@@ -61,11 +61,16 @@ export async function createMintAsset(
     });
     const assetSchemeWithNetworkId: any = assetScheme;
     assetSchemeWithNetworkId.networkId = networkId;
-    await createAssetScheme(
-        assetType,
-        transactionHash,
-        assetSchemeWithNetworkId
-    );
+    // FIXME: if clause is for avoiding primary key conflict. We need to address
+    // it properly.
+    const existing = await models.AssetScheme.findByPk(assetType);
+    if (existing === null) {
+        await createAssetScheme(
+            assetType,
+            transactionHash,
+            assetSchemeWithNetworkId
+        );
+    }
     return inst;
 }
 
