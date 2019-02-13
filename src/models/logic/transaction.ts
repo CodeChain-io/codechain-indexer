@@ -726,6 +726,7 @@ export async function getByHash(
 async function getTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
+    tracker?: H256 | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
@@ -733,6 +734,7 @@ async function getTransactionsQuery(params: {
     const {
         address,
         assetType,
+        tracker,
         onlyConfirmed,
         onlySuccessful,
         confirmThreshold
@@ -778,6 +780,9 @@ async function getTransactionsQuery(params: {
             ]
         });
     }
+    if (tracker) {
+        query.push({ tracker: tracker.value });
+    }
     if (onlyConfirmed) {
         const latestBlockInst = await BlockModel.getLatestBlock();
         const latestBlockNumber = latestBlockInst
@@ -803,6 +808,7 @@ async function getTransactionsQuery(params: {
 export async function getTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
+    tracker?: H256 | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -812,6 +818,7 @@ export async function getTransactions(params: {
     const {
         address,
         assetType,
+        tracker,
         page = 1,
         itemsPerPage = 15,
         onlyConfirmed = false,
@@ -821,6 +828,7 @@ export async function getTransactions(params: {
     const query = await getTransactionsQuery({
         address,
         assetType,
+        tracker,
         onlyConfirmed,
         onlySuccessful,
         confirmThreshold
@@ -845,6 +853,7 @@ export async function getTransactions(params: {
 export async function getNumberOfTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
+    tracker?: H256 | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
@@ -852,6 +861,7 @@ export async function getNumberOfTransactions(params: {
     const {
         address,
         assetType,
+        tracker,
         onlyConfirmed = false,
         onlySuccessful = false,
         confirmThreshold = 0
@@ -859,6 +869,7 @@ export async function getNumberOfTransactions(params: {
     const query = await getTransactionsQuery({
         address,
         assetType,
+        tracker,
         onlyConfirmed,
         onlySuccessful,
         confirmThreshold
