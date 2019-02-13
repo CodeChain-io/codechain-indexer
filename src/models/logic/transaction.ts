@@ -173,7 +173,7 @@ export async function createTransaction(
                 throw new Error(`${type} is not an expected transaction type`);
         }
 
-        if (!isPending && isAssetTransaction) {
+        if (!isPending && isAssetTransaction && success === true) {
             const txInst = await getByHash(tx.hash());
             if (!txInst) {
                 throw Exception.InvalidTransaction;
