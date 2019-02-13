@@ -727,9 +727,16 @@ async function getTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
     onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, assetType, onlyConfirmed, confirmThreshold } = params;
+    const {
+        address,
+        assetType,
+        onlyConfirmed,
+        onlySuccessful,
+        confirmThreshold
+    } = params;
     const query = [];
     if (address) {
         query.push({
@@ -782,6 +789,11 @@ async function getTransactionsQuery(params: {
             }
         });
     }
+    if (onlySuccessful) {
+        query.push({
+            success: true
+        });
+    }
     query.push({
         isPending: false
     });
@@ -794,6 +806,7 @@ export async function getTransactions(params: {
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
     const {
@@ -802,12 +815,14 @@ export async function getTransactions(params: {
         page = 1,
         itemsPerPage = 15,
         onlyConfirmed = false,
+        onlySuccessful = false,
         confirmThreshold = 0
     } = params;
     const query = await getTransactionsQuery({
         address,
         assetType,
         onlyConfirmed,
+        onlySuccessful,
         confirmThreshold
     });
     try {
@@ -831,18 +846,21 @@ export async function getNumberOfTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
     onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
     const {
         address,
         assetType,
         onlyConfirmed = false,
+        onlySuccessful = false,
         confirmThreshold = 0
     } = params;
     const query = await getTransactionsQuery({
         address,
         assetType,
         onlyConfirmed,
+        onlySuccessful,
         confirmThreshold
     });
     try {

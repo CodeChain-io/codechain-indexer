@@ -54,6 +54,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: boolean
+     *       - name: onlySuccessful
+     *         description: returns only successful transactions
+     *         in: query
+     *         required: false
+     *         type: boolean
      *       - name: confirmThreshold
      *         description: confirm threshold
      *         in: query
@@ -75,6 +80,8 @@ export function handle(_C: IndexerContext, router: Router) {
             req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
         const onlyConfirmed =
             req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+        const onlySuccessful =
+            req.query.onlySuccessful && req.query.onlySuccessful === "true";
         const confirmThreshold =
             req.query.confirmThreshold &&
             parseInt(req.query.confirmThreshold, 10);
@@ -89,6 +96,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 page,
                 itemsPerPage,
                 onlyConfirmed,
+                onlySuccessful,
                 confirmThreshold
             });
             const txs = txInsts.map(tx => tx.get({ plain: true }));
@@ -120,6 +128,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: boolean
+     *       - name: onlySuccessful
+     *         description: returns only successful transactions
+     *         in: query
+     *         required: false
+     *         type: boolean
      *       - name: confirmThreshold
      *         description: confirm threshold
      *         in: query
@@ -137,6 +150,8 @@ export function handle(_C: IndexerContext, router: Router) {
         const assetTypeString = req.query.assetType;
         const onlyConfirmed =
             req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+        const onlySuccessful =
+            req.query.onlySuccessful && req.query.onlySuccessful === "true";
         const confirmThreshold =
             req.query.confirmThreshold &&
             parseInt(req.query.confirmThreshold, 10);
@@ -149,6 +164,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 address,
                 assetType,
                 onlyConfirmed,
+                onlySuccessful,
                 confirmThreshold
             });
             res.json(count);
