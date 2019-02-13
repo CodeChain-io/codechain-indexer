@@ -21,7 +21,6 @@ export async function createAssetTransferBurn(
             : [];
         const owner =
             burn.prevOut.lockScriptHash &&
-            burn.prevOut.parameters &&
             AddressUtil.getOwner(
                 burn.prevOut.lockScriptHash,
                 parameters,

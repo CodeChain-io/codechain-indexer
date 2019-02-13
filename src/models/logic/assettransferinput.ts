@@ -21,7 +21,6 @@ export async function createAssetTransferInput(
             : [];
         const owner =
             input.prevOut.lockScriptHash &&
-            input.prevOut.parameters &&
             AddressUtil.getOwner(
                 input.prevOut.lockScriptHash,
                 parameters,
