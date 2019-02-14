@@ -1,7 +1,5 @@
 import * as Sequelize from "sequelize";
 
-import { AssetSchemeAttribute } from "./assetscheme";
-
 export interface AssetTransferOutputAttribute {
     id?: string;
     transactionHash: string;
@@ -11,7 +9,6 @@ export interface AssetTransferOutputAttribute {
     shardId: number;
     quantity: string;
     owner?: string | null;
-    assetScheme: AssetSchemeAttribute;
 }
 
 export interface AssetTransferOutputInstance
