@@ -1,9 +1,10 @@
-import { AssetTransferInput } from "codechain-sdk/lib/core/classes";
+import { AssetTransferInput, H160 } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferBurnInstance } from "../assettransferburn";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
+import { getByTxTrackerIndex } from "./utxo";
 
 // FIXME: This is duplicated with asset transfer-input
 export async function createAssetTransferBurn(
@@ -16,13 +17,16 @@ export async function createAssetTransferBurn(
 ): Promise<AssetTransferBurnInstance> {
     let assetTransferBurnInstance: AssetTransferBurnInstance;
     try {
-        const parameters = burn.prevOut.parameters
-            ? burn.prevOut.parameters.map(p => p.toString("hex"))
-            : [];
+        const { lockScriptHash, parameters } = await getByTxTrackerIndex(
+            burn.prevOut.tracker,
+            burn.prevOut.index
+        ).then(
+            utxo => (utxo === null ? ({} as any) : utxo.get({ plain: true }))
+        );
         const owner =
-            burn.prevOut.lockScriptHash &&
+            lockScriptHash &&
             AddressUtil.getOwner(
-                burn.prevOut.lockScriptHash,
+                H160.ensure(lockScriptHash),
                 parameters,
                 options.networkId
             );
@@ -41,9 +45,7 @@ export async function createAssetTransferBurn(
                 shardId: burn.prevOut.shardId,
                 quantity: burn.prevOut.quantity.value.toString(10),
                 owner,
-                lockScriptHash:
-                    burn.prevOut.lockScriptHash &&
-                    burn.prevOut.lockScriptHash.value,
+                lockScriptHash,
                 parameters
             }
         });
