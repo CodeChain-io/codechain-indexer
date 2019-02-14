@@ -980,10 +980,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codechain-indexer-types@0.5.0-alpha.0:
-  version "0.5.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.5.0-alpha.0.tgz#0002f4dbacd9d9584a6d2cb05aeeb34b3244b542"
-  integrity sha512-Z8+ZlKO8fjV/Tp4a5MF+kVVvMYDadjK19r08/HskwhC3jCgBeBv/Fd8rtu1bNTOwc73/FzYRCgaMvcvTZB2o0w==
+codechain-indexer-types@^0.6.0-alpha.0:
+  version "0.6.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.6.0-alpha.0.tgz#d5061af96d5fce394e0e5122046a3d12c73d15e9"
+  integrity sha512-E001oZPLj26Ke5t3LmeQsZo19Bc0i9MfyCNxDH00KKAkhXFp9fG6DBcy8BwXxNyevx0srAUyBVQLElgJvx1/2A==
   dependencies:
     buffer "^5.2.1"
     lodash "^4.17.10"
@@ -1014,10 +1014,10 @@ codechain-primitives@^0.3.0:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-codechain-primitives@^0.4.4:
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-0.4.4.tgz#3930367fad8d9af25ce56e4900d95c5120d09756"
-  integrity sha512-DwZ7I5dQTTQruFq0DTkFbU66XGzqXfGL5vAvN/p3Y+F8Em9Diy8ew3I+wmDaOi5taAJWdDwmWKCoyMTutkPTwA==
+codechain-primitives@^0.4.6:
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-0.4.6.tgz#c58e6f435ef58026614a41a5203abd639374c0ce"
+  integrity sha512-6ae+tUU8bT5Golh62fWaHUe0DHkRQmPHK4Lq4gBA3Vs1Stf72AF4DUmQg0cPp20iujsejq8poxqCjyakhpLRjQ==
   dependencies:
     bignumber.js "^7.2.1"
     blakejs "^1.1.0"
@@ -1030,13 +1030,13 @@ codechain-primitives@^0.4.4:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-"codechain-sdk@https://github.com/sgkim126/codechain-sdk-js.git#invoice-lib":
+"codechain-sdk@https://github.com/joojis/codechain-sdk-js.git#corgi":
   version "0.5.1"
-  resolved "https://github.com/sgkim126/codechain-sdk-js.git#37ee0e3a9ff6726f65cc157e7df425e798cf90b4"
+  resolved "https://github.com/joojis/codechain-sdk-js.git#6f08a007d3f87b5c1409616fcf769b6b927ee862"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
-    codechain-primitives "^0.4.4"
+    codechain-primitives "^0.4.6"
     jayson "^2.0.6"
     lodash "^4.17.10"
     node-fetch "^2.1.2"
