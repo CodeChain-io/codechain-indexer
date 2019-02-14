@@ -4,7 +4,6 @@ import { AssetOutPointAttribute } from "../assettransferinput";
 import models from "../index";
 import { OrderInstance } from "../order";
 import * as AddressUtil from "./utils/address";
-import { getAssetScheme } from "./utils/asset";
 
 export async function createOrder(
     transactionHash: string,
@@ -27,13 +26,11 @@ export async function createOrder(
                         parameters,
                         networkId
                     );
-                const assetScheme = await getAssetScheme(out.assetType);
                 const result: AssetOutPointAttribute = {
                     tracker: out.tracker.value,
                     index: out.index,
                     assetType: out.assetType.value,
                     shardId: out.shardId,
-                    assetScheme,
                     quantity: out.quantity.value.toString(10),
                     owner,
                     lockScriptHash:

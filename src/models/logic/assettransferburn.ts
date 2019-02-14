@@ -39,7 +39,6 @@ export async function createAssetTransferBurn(
                 index: burn.prevOut.index,
                 assetType: burn.prevOut.assetType.value,
                 shardId: burn.prevOut.shardId,
-                assetScheme: options.assetScheme,
                 quantity: burn.prevOut.quantity.value.toString(10),
                 owner,
                 lockScriptHash:

@@ -255,11 +255,23 @@ const includeArray = [
             },
             {
                 as: "inputs",
-                model: models.AssetTransferInput
+                model: models.AssetTransferInput,
+                include: [
+                    {
+                        as: "assetScheme",
+                        model: models.AssetScheme
+                    }
+                ]
             },
             {
                 as: "burns",
-                model: models.AssetTransferBurn
+                model: models.AssetTransferBurn,
+                include: [
+                    {
+                        as: "assetScheme",
+                        model: models.AssetScheme
+                    }
+                ]
             },
             {
                 as: "orders",

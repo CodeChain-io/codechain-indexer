@@ -1,6 +1,5 @@
 import { Timelock } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
-import { AssetSchemeAttribute } from "./assetscheme";
 
 export interface AssetTransferInputAttribute {
     id?: string;
@@ -19,7 +18,6 @@ export interface AssetOutPointAttribute {
     index: number;
     assetType: string;
     shardId: number;
-    assetScheme: AssetSchemeAttribute;
     quantity: string;
     owner?: string | null;
     lockScriptHash?: string | null;
@@ -88,7 +86,11 @@ export default (
         },
         {}
     );
-    AssetTransferInput.associate = () => {
+    AssetTransferInput.associate = models => {
+        AssetTransferInput.belongsTo(models.AssetScheme, {
+            foreignKey: "assetType",
+            as: "assetScheme"
+        });
         // associations can be defined here
     };
     return AssetTransferInput;

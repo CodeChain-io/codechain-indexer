@@ -39,7 +39,6 @@ export async function createAssetTransferInput(
                 index: input.prevOut.index,
                 assetType: input.prevOut.assetType.value,
                 shardId: input.prevOut.shardId,
-                assetScheme: options.assetScheme,
                 quantity: input.prevOut.quantity.value.toString(10),
                 owner,
                 lockScriptHash:
