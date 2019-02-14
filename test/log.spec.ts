@@ -82,7 +82,9 @@ test("Check log assetTransaciton count", async done => {
 });
 
 test("Check log transaction count", async done => {
-    const date = moment().utc().format("YYYY-MM-DD");
+    const date = moment()
+        .utc()
+        .format("YYYY-MM-DD");
     const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
     expect(nextLogInst).toBeTruthy();
     expect(nextLogInst!.get().count).toEqual(txLogCount + 4);
@@ -106,6 +108,36 @@ test("Check log compose transaction count", async done => {
 });
 
 test("Check log decompose transaction count", async done => {
+    // TODO
+    done();
+});
+
+test("Check log change assetScheme transaction count", async done => {
+    // TODO
+    done();
+});
+
+test("Check log store transaction count", async done => {
+    // TODO
+    done();
+});
+
+test("Check log remove transaction count", async done => {
+    // TODO
+    done();
+});
+
+test("Check log custom transaction count", async done => {
+    // TODO
+    done();
+});
+
+test("Check log wrapCCC transaction count", async done => {
+    // TODO
+    done();
+});
+
+test("Check log unwrapCCC transaction count", async done => {
     // TODO
     done();
 });

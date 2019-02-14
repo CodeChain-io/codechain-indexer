@@ -106,6 +106,70 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
             createShardCount
         );
 
+        const ChangeAssetSchemeCount = _.filter(
+            block.transactions,
+            p => p.type === "changeAssetScheme"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.CHANGE_ASSET_SCHEME_COUNT,
+            ChangeAssetSchemeCount
+        );
+
+        const storeCount = _.filter(block.transactions, p => p.type === "store")
+            .length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.STORE_COUNT,
+            storeCount
+        );
+
+        const removeCount = _.filter(
+            block.transactions,
+            p => p.type === "remove"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.REMOVE_COUNT,
+            removeCount
+        );
+
+        const customCount = _.filter(
+            block.transactions,
+            p => p.type === "custom"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.CUSTOM_COUNT,
+            customCount
+        );
+
+        const wrapCCCCount = _.filter(
+            block.transactions,
+            p => p.type === "wrapCCC"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.WRAP_CCC_COUNT,
+            wrapCCCCount
+        );
+
+        const unwrapCCCCount = _.filter(
+            block.transactions,
+            p => p.type === "unwrapCCC"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.UNWRAP_CCC_COUNT,
+            unwrapCCCCount
+        );
+
         if (txCount) {
             await queryLog(isRetracted, dateString, LogType.TX_COUNT, txCount);
         }
