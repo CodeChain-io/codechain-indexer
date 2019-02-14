@@ -157,12 +157,14 @@ export default class Worker {
                 const invoice = await sdk.rpc.chain.getInvoice(tx.hash());
                 if (invoice) {
                     return {
-                        success: true
+                        success: true,
+                        errorHint: undefined
                     };
                 }
+                const errorHint = await sdk.rpc.chain.getErrorHint(tx.hash());
                 return {
                     success: false,
-                    errorHint: "" // FIXME: Fill it if CodeChain provides an RPC
+                    errorHint: errorHint ? errorHint : undefined
                 };
             })
         );
