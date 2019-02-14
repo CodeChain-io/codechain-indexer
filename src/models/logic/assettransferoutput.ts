@@ -29,7 +29,6 @@ export async function createAssetTransferOutput(
             assetType: output.assetType.value,
             shardId: output.shardId,
             quantity: output.quantity.value.toString(10),
-            assetScheme: params.assetScheme,
             owner
         });
     } catch (err) {
