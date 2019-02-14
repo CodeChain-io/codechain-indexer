@@ -63,7 +63,11 @@ export default (
         },
         {}
     );
-    AssetTransferBurn.associate = () => {
+    AssetTransferBurn.associate = models => {
+        AssetTransferBurn.belongsTo(models.AssetScheme, {
+            foreignKey: "assetType",
+            as: "assetScheme"
+        });
         // associations can be defined here
     };
     return AssetTransferBurn;
