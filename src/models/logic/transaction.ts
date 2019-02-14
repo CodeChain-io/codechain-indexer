@@ -788,6 +788,7 @@ async function getTransactionsQuery(params: {
     if (assetType) {
         query.push({
             [Sequelize.Op.or]: [
+                { "$mintAsset.assetType$": assetType.value },
                 { "$transferAsset.inputs.assetType$": assetType.value },
                 { "$transferAsset.outputs.assetType$": assetType.value },
                 { "$transferAsset.burns.assetType$": assetType.value },
