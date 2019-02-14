@@ -73,7 +73,11 @@ export default (
         },
         {}
     );
-    AssetTransferOutput.associate = () => {
+    AssetTransferOutput.associate = models => {
+        AssetTransferOutput.belongsTo(models.AssetScheme, {
+            foreignKey: "assetType",
+            as: "assetScheme"
+        });
         // associations can be defined here
     };
     return AssetTransferOutput;

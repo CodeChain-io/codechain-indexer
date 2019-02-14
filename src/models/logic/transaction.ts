@@ -245,7 +245,13 @@ const includeArray = [
         include: [
             {
                 as: "outputs",
-                model: models.AssetTransferOutput
+                model: models.AssetTransferOutput,
+                include: [
+                    {
+                        as: "assetScheme",
+                        model: models.AssetScheme
+                    }
+                ]
             },
             {
                 as: "inputs",
