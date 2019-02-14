@@ -18,7 +18,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     tags: [Log]
      *     parameters:
      *       - name: filter
-     *         description: block, tx, pay, setRegularKey, setShardOwner, setShardUser, createShard, mintAsset, transferAsset, composeAsset, decomposeAsset
+     *         description: block, tx, pay, setRegularKey, setShardOwner, setShardUser, createShard, mintAsset, transferAsset, composeAsset, decomposeAsset, changeAssetScheme, store, remove, custom, wrapCCC, unwrapCCC
      *         in: query
      *         required: true
      *         type: string
@@ -110,7 +110,13 @@ const isFilterValid = (filter: string): boolean => {
             "mintAsset",
             "transferAsset",
             "composeAsset",
-            "decomposeAsset"
+            "decomposeAsset",
+            "changeAssetScheme",
+            "store",
+            "remove",
+            "custom",
+            "wrapCCC",
+            "unwrapCCC"
         ].findIndex(type => type.toLowerCase() === filter.toLowerCase()) >= 0
     );
 };
@@ -139,6 +145,18 @@ const getLogTypeFromFilter = (filter: string): LogType => {
             return LogType.COMPOSE_ASSET_COUNT;
         case "decomposeAsset".toLowerCase():
             return LogType.DECOMPOSE_ASSET_COUNT;
+        case "changeAssetScheme".toLowerCase():
+            return LogType.CHANGE_ASSET_SCHEME_COUNT;
+        case "store".toLowerCase():
+            return LogType.STORE_COUNT;
+        case "remove".toLowerCase():
+            return LogType.REMOVE_COUNT;
+        case "custom".toLowerCase():
+            return LogType.CUSTOM_COUNT;
+        case "wrapCCC".toLowerCase():
+            return LogType.WRAP_CCC_COUNT;
+        case "unwrapCCC".toLowerCase():
+            return LogType.UNWRAP_CCC_COUNT;
         default:
             throw Error(`Unexpected filter ${filter}`);
     }
