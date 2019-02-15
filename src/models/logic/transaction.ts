@@ -225,7 +225,7 @@ export async function updatePendingTransaction(
             }
         );
         const txInst = await getByHash(hash);
-        if (txInst!.get().tracker !== null) {
+        if (txInst!.get().tracker != null) {
             await handleUTXO(txInst!, params.blockNumber);
         }
     } catch (err) {

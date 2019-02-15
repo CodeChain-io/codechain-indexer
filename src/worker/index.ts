@@ -147,7 +147,7 @@ export default class Worker {
                 "chain_getMiningReward",
                 [block.number]
             );
-            if (miningRewardResponse == undefined) {
+            if (miningRewardResponse === undefined) {
                 throw InvalidBlockNumber;
             }
             miningReward = miningRewardResponse;

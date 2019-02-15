@@ -32,8 +32,7 @@ export async function createBlock(
         await Promise.all(
             block.transactions.map(async tx => {
                 const invoice = params.invoices[tx.transactionIndex!];
-                // FIXME: fix tslint to allow ==
-                if (invoice === null || invoice === undefined) {
+                if (invoice == null || invoice === undefined) {
                     throw Error("invalid invoice");
                 }
                 const txInst = await TxModel.getByHash(tx.hash());
@@ -271,12 +270,12 @@ export async function getByTime(
             include: includeArray
         });
 
-        if (block === null) {
+        if (block == null) {
             return null;
         }
 
         const nextBlock = await getByNumber(block.get("number") + 1);
-        if (nextBlock === null || nextBlock.get("timestamp") <= timestamp) {
+        if (nextBlock == null || nextBlock.get("timestamp") <= timestamp) {
             // If the `block` is the latest block, the future block's timestamp also could be less than or equal to the timestamp.
             // To ensure the `block` is the nearest block, the `block` should have the next block whose timestamp is greater than the `timestamp`.
             return null;
