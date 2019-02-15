@@ -188,12 +188,12 @@ export function handle(_C: IndexerContext, router: Router) {
                 res.status(404).send("Not found");
                 return;
             }
-            const img = Buffer.from(assetImageInst.get().image, "base64");
+            const { image } = assetImageInst.get();
             res.writeHead(200, {
                 "Content-Type": "image/png",
-                "Content-Length": img.length
+                "Content-Length": image.byteLength
             });
-            res.end(img);
+            res.end(image);
         } catch (e) {
             next(e);
         }

@@ -26,7 +26,7 @@ export async function createAssetImage(
             await models.AssetImage.upsert({
                 transactionHash,
                 assetType,
-                image: imageDataBuffer.toString("base64")
+                image: imageDataBuffer
             });
         } catch (err) {
             console.error(err);

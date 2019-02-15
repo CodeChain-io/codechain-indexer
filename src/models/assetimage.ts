@@ -3,7 +3,7 @@ import * as Sequelize from "sequelize";
 export interface AssetImageAttribute {
     transactionHash: string;
     assetType: string;
-    image: string;
+    image: Buffer;
 }
 
 export interface AssetImageInstance
