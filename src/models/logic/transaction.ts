@@ -12,6 +12,17 @@ import {
     WrapCCC
 } from "codechain-sdk/lib/core/classes";
 import { AssetTransaction } from "codechain-sdk/lib/core/Transaction";
+import { ComposeAssetActionJSON } from "codechain-sdk/lib/core/transaction/ComposeAsset";
+import { CustomActionJSON } from "codechain-sdk/lib/core/transaction/Custom";
+import { DecomposeAssetActionJSON } from "codechain-sdk/lib/core/transaction/DecomposeAsset";
+import { MintAssetActionJSON } from "codechain-sdk/lib/core/transaction/MintAsset";
+import { PayActionJSON } from "codechain-sdk/lib/core/transaction/Pay";
+import { RemoveActionJSON } from "codechain-sdk/lib/core/transaction/Remove";
+import { SetRegularKeyActionJSON } from "codechain-sdk/lib/core/transaction/SetRegularKey";
+import { SetShardOwnersActionJSON } from "codechain-sdk/lib/core/transaction/SetShardOwners";
+import { SetShardUsersActionJSON } from "codechain-sdk/lib/core/transaction/SetShardUsers";
+import { StoreActionJSON } from "codechain-sdk/lib/core/transaction/Store";
+import { TransferAssetActionJSON } from "codechain-sdk/lib/core/transaction/TransferAsset";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
@@ -88,40 +99,32 @@ export async function createTransaction(
                     hash,
                     mintAsset.getMintedAsset(),
                     mintAsset.getAssetScheme(),
-                    tx.toJSON().action
+                    tx.toJSON().action as MintAssetActionJSON
                 );
                 break;
             }
             case "transferAsset": {
                 const transferAsset = tx.unsigned as TransferAsset;
-                await createTransferAsset(
-                    hash,
-                    transferAsset,
-                    tx.toJSON().action
-                );
+                await createTransferAsset(hash, transferAsset, tx.toJSON()
+                    .action as TransferAssetActionJSON);
                 break;
             }
             case "composeAsset": {
                 const composeAsset = tx.unsigned as ComposeAsset;
-                await createComposeAsset(
-                    hash,
-                    composeAsset,
-                    tx.toJSON().action
-                );
+                await createComposeAsset(hash, composeAsset, tx.toJSON()
+                    .action as ComposeAssetActionJSON);
                 break;
             }
             case "decomposeAsset": {
                 const decomposeAsset = tx.unsigned as DecomposeAsset;
-                await createDecomposeAsset(
-                    hash,
-                    decomposeAsset,
-                    tx.toJSON().action
-                );
+                await createDecomposeAsset(hash, decomposeAsset, tx.toJSON()
+                    .action as DecomposeAssetActionJSON);
                 break;
             }
             case "wrapCCC": {
                 const wrap = tx.unsigned as WrapCCC;
-                await createWrapCCC(hash, wrap.toJSON().action);
+                // FIXME: any
+                await createWrapCCC(hash, wrap.toJSON().action as any);
                 break;
             }
             case "unwrapCCC": {
@@ -135,38 +138,47 @@ export async function createTransaction(
                 break;
             }
             case "pay": {
-                const { quantity, receiver } = tx.toJSON().action;
+                const { quantity, receiver } = tx.toJSON()
+                    .action as PayActionJSON;
                 await createPay(hash, new U64(quantity).toString(10), receiver);
                 break;
             }
             case "setRegularKey": {
-                const { key } = tx.toJSON().action;
+                const { key } = tx.toJSON().action as SetRegularKeyActionJSON;
                 await createSetRegularKey(hash, key);
                 break;
             }
             case "setShardOwners": {
-                const { shardId, owners } = tx.toJSON().action;
+                const { shardId, owners } = tx.toJSON()
+                    .action as SetShardOwnersActionJSON;
                 await createSetShardOwners(hash, shardId, owners);
                 break;
             }
             case "setShardUsers": {
-                const { shardId, users } = tx.toJSON().action;
+                const { shardId, users } = tx.toJSON()
+                    .action as SetShardUsersActionJSON;
                 await createSetShardUsers(hash, shardId, users);
                 break;
             }
             case "store": {
-                const { content, certifier, signature } = tx.toJSON().action;
+                const { content, certifier, signature } = tx.toJSON()
+                    .action as StoreActionJSON;
                 await createStore(hash, content, certifier, signature);
                 break;
             }
             case "remove": {
-                const action = tx.toJSON().action;
+                const action = tx.toJSON().action as RemoveActionJSON;
                 await createRemove(hash, action.hash, action.signature);
                 break;
             }
             case "custom": {
-                const { handleId, buffer } = tx.toJSON().action;
-                await createCustom(hash, handleId, buffer);
+                const { handlerId, buffer } = tx.toJSON()
+                    .action as CustomActionJSON;
+                await createCustom(
+                    hash,
+                    parseInt(handlerId, 10),
+                    Buffer.from(buffer).toString("hex")
+                );
                 break;
             }
             default:

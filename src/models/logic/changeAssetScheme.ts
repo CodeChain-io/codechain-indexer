@@ -1,4 +1,5 @@
 import { ChangeAssetScheme } from "codechain-sdk/lib/core/classes";
+import { ChangeAssetSchemeActionJSON } from "codechain-sdk/lib/core/transaction/ChangeAssetScheme";
 import models from "..";
 import { ChangeAssetSchemeInstance } from "../changeAssetScheme";
 
@@ -15,7 +16,7 @@ export async function createChangeAssetScheme(
         administrator,
         allowedScriptHashes,
         approvals
-    } = changeAssetScheme.toJSON().action;
+    } = changeAssetScheme.toJSON().action as ChangeAssetSchemeActionJSON;
     const inst = await models.ChangeAssetScheme.create({
         transactionHash,
         assetType,

@@ -20,12 +20,12 @@ export async function createBlock(
             timestamp: block.timestamp,
             number: block.number,
             author: block.author.value,
-            extraData: block.extraData,
+            extraData: Buffer.from(block.extraData),
             transactionsRoot: block.transactionsRoot.value,
             stateRoot: block.stateRoot.value,
             invoicesRoot: block.invoicesRoot.value,
             score: block.score.value.toString(10),
-            seal: block.seal,
+            seal: block.seal.map(s => Buffer.from(s)),
             hash: block.hash.value,
             miningReward: params.miningReward.value.toString(10)
         });

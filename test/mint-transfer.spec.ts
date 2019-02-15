@@ -1,8 +1,5 @@
-import {
-    Block,
-    MintAsset,
-    U64
-} from "codechain-sdk/lib/core/classes";
+import { Block, MintAsset, U64 } from "codechain-sdk/lib/core/classes";
+import { TransferAssetActionJSON } from "codechain-sdk/lib/core/transaction/TransferAsset";
 import models from "../src/models";
 import * as AssetSchemeModel from "../src/models/logic/assetscheme";
 import * as AssetTransferInputModel from "../src/models/logic/assettransferinput";
@@ -20,12 +17,8 @@ beforeAll(async done => {
     await Helper.runExample("import-test-account");
     await Helper.runExample("mint-and-transfer");
     bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
-    mintBlock = (await Helper.sdk.rpc.chain.getBlock(
-        bestBlockNumber - 1
-    ))!;
-    transferBlock = (await Helper.sdk.rpc.chain.getBlock(
-        bestBlockNumber
-    ))!;
+    mintBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber - 1))!;
+    transferBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber))!;
     done();
 });
 
@@ -34,7 +27,7 @@ async function check(blockResponse: Block, type: string) {
 
     const blockInst = await BlockModel.createBlock(blockResponse, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true}]
+        invoices: [{ success: true }]
     });
     const blockDoc = blockInst.get({ plain: true });
     expect(blockDoc.hash).toEqual(blockResponse.hash.value);
@@ -68,7 +61,7 @@ test("Check duplicated block", async done => {
     try {
         await BlockModel.createBlock(transferBlock, {
             miningReward: new U64("1000"),
-            invoices: [ { success: true}]
+            invoices: [{ success: true }]
         });
         done.fail();
     } catch (e) {
@@ -100,7 +93,8 @@ test("Check assetTransfer input output", async done => {
     const transferOutputInst = await AssetTransferOutputModel.getByTransactionHash(
         signed.hash().value
     );
-    const { action: { inputs, outputs } } = signed.toJSON();
+    const { inputs, outputs } = signed.toJSON()
+        .action as TransferAssetActionJSON;
     expect(transferOutputInst.length).toEqual(outputs.length);
 
     const tranferInputInst = await AssetTransferInputModel.getByTransactionHash(
@@ -124,10 +118,7 @@ test("Check utxo", async done => {
     const mintOwner = (await txInst.getMintAsset())!.get("recipient");
     console.log("mint owner", mintOwner);
     const utxoOfMintOwner = await UTXOModel.getByAddress(mintOwner);
-    const utxoOfMintAssetInst = await UTXOModel.getByTxHashIndex(
-        mintHash,
-        0
-    );
+    const utxoOfMintAssetInst = await UTXOModel.getByTxHashIndex(mintHash, 0);
 
     expect(utxoOfMintOwner.length).toEqual(1);
     expect(utxoOfMintAssetInst!.get().usedTransactionHash).toBeTruthy();
@@ -140,35 +131,40 @@ test("Check utxo", async done => {
 });
 
 test("Get block document containing action, transaction, input", async done => {
-    const mintBlockInst = (await BlockModel.getByNumber(
-        bestBlockNumber - 1
-    ))!;
+    const mintBlockInst = (await BlockModel.getByNumber(bestBlockNumber - 1))!;
     expect(mintBlockInst).toBeTruthy();
     const mintBlockDoc = mintBlockInst.get({ plain: true });
     expect(mintBlockDoc.hash).toEqual(mintBlock.hash.value);
-    expect(mintBlockDoc.transactions![0].hash).toEqual(mintBlock.transactions[0].hash().value);
-    expect(mintBlockDoc.transactions![0].type).toEqual(
-        "mintAsset"
+    expect(mintBlockDoc.transactions![0].hash).toEqual(
+        mintBlock.transactions[0].hash().value
     );
+    expect(mintBlockDoc.transactions![0].type).toEqual("mintAsset");
 
-
-    const transferBlockInst = (await BlockModel.getByNumber(
-        bestBlockNumber
-    ))!;
+    const transferBlockInst = (await BlockModel.getByNumber(bestBlockNumber))!;
     expect(transferBlockInst).toBeTruthy();
     const transferBlockDoc = transferBlockInst.get({ plain: true });
     expect(transferBlockDoc.hash).toEqual(transferBlock.hash.value);
-    expect(transferBlockDoc.transactions![0].hash).toEqual(transferBlock.transactions[0].hash().value);
-    expect(transferBlockDoc.transactions![0].type).toEqual(
-        "transferAsset"
+    expect(transferBlockDoc.transactions![0].hash).toEqual(
+        transferBlock.transactions[0].hash().value
     );
-    expect(transferBlockDoc.transactions![0].transferAsset!.inputs).toBeTruthy();
-    expect(transferBlockDoc.transactions![0].transferAsset!.outputs).toBeTruthy();
-    expect(transferBlockDoc.transactions![0].transferAsset!.inputs!.length).toEqual(
-        transferBlock.transactions[0].unsigned.toJSON().action.inputs.length
+    expect(transferBlockDoc.transactions![0].type).toEqual("transferAsset");
+    expect(
+        transferBlockDoc.transactions![0].transferAsset!.inputs
+    ).toBeTruthy();
+    expect(
+        transferBlockDoc.transactions![0].transferAsset!.outputs
+    ).toBeTruthy();
+    expect(
+        transferBlockDoc.transactions![0].transferAsset!.inputs!.length
+    ).toEqual(
+        (transferBlock.transactions[0].unsigned.toJSON()
+            .action as TransferAssetActionJSON).inputs.length
     );
-    expect(transferBlockDoc.transactions![0].transferAsset!.outputs!.length).toEqual(
-        transferBlock.transactions[0].unsigned.toJSON().action.outputs.length
+    expect(
+        transferBlockDoc.transactions![0].transferAsset!.outputs!.length
+    ).toEqual(
+        (transferBlock.transactions[0].unsigned.toJSON()
+            .action as TransferAssetActionJSON).outputs.length
     );
 
     done();
