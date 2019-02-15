@@ -110,7 +110,7 @@ export function handle(_C: IndexerContext, router: Router) {
             let latestBlockInst;
             if (hashValue) {
                 latestBlockInst = await BlockModel.getByHash(hashValue);
-            } else if (numberValue != undefined) {
+            } else if (numberValue !== undefined) {
                 latestBlockInst = await BlockModel.getByNumber(numberValue);
             }
             res.json(

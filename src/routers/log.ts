@@ -48,7 +48,7 @@ export function handle(_C: IndexerContext, router: Router) {
         }
         LogModel.getLog(date, getLogTypeFromFilter(filter), null)
             .then(instance => {
-                if (instance === null) {
+                if (instance == null) {
                     res.json(0);
                     return;
                 }

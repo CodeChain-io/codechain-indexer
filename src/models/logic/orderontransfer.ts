@@ -42,7 +42,7 @@ async function orderNotExist(orderHash: H256) {
                 orderHash: orderHash.value
             }
         });
-        return order === null;
+        return order == null;
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

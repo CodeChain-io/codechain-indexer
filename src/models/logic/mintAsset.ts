@@ -64,7 +64,7 @@ export async function createMintAsset(
     // FIXME: if clause is for avoiding primary key conflict. We need to address
     // it properly.
     const existing = await models.AssetScheme.findByPk(assetType);
-    if (existing === null) {
+    if (existing == null) {
         await createAssetScheme(
             assetType,
             transactionHash,
