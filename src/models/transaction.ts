@@ -10,6 +10,10 @@ import {
     DecomposeAssetAttribute,
     DecomposeAssetInstance
 } from "./decomposeAsset";
+import {
+    IncreaseAssetSupplyAttribute,
+    IncreaseAssetSupplyInstance
+} from "./increaseAssetSupply";
 import { MintAssetAttribute, MintAssetInstance } from "./mintAsset";
 import { PayAttribute, PayInstance } from "./pay";
 import { RemoveAttribute, RemoveInstance } from "./remove";
@@ -37,6 +41,7 @@ export interface TransactionAttribute {
     composeAsset?: ComposeAssetAttribute;
     decomposeAsset?: DecomposeAssetAttribute;
     changeAssetScheme?: ChangeAssetSchemeAttribute;
+    increaseAssetSupply?: IncreaseAssetSupplyAttribute;
     wrapCCC?: WrapCCCAttribute;
     unwrapCCC?: UnwrapCCCAttribute;
     setRegularKey?: SetRegularKeyAttribute;
@@ -70,6 +75,9 @@ export interface TransactionInstance
     >;
     getChangeAssetScheme: Sequelize.HasOneGetAssociationMixin<
         ChangeAssetSchemeInstance
+    >;
+    getIncreaseAssetSupply: Sequelize.HasOneGetAssociationMixin<
+        IncreaseAssetSupplyInstance
     >;
     getWrapCCC: Sequelize.HasOneGetAssociationMixin<WrapCCCInstance>;
     getUnwrapCCC: Sequelize.HasOneGetAssociationMixin<UnwrapCCCInstance>;
@@ -196,6 +204,11 @@ export default (
         Transaction.hasOne(models.ChangeAssetScheme, {
             foreignKey: "transactionHash",
             as: "changeAssetScheme",
+            onDelete: "CASCADE"
+        });
+        Transaction.hasOne(models.IncreaseAssetSupply, {
+            foreignKey: "transactionHash",
+            as: "increaseAssetSupply",
             onDelete: "CASCADE"
         });
         Transaction.hasOne(models.WrapCCC, {

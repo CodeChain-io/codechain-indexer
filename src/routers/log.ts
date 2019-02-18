@@ -112,6 +112,7 @@ const isFilterValid = (filter: string): boolean => {
             "composeAsset",
             "decomposeAsset",
             "changeAssetScheme",
+            "increaseAssetSupply",
             "store",
             "remove",
             "custom",
@@ -147,6 +148,8 @@ const getLogTypeFromFilter = (filter: string): LogType => {
             return LogType.DECOMPOSE_ASSET_COUNT;
         case "changeAssetScheme".toLowerCase():
             return LogType.CHANGE_ASSET_SCHEME_COUNT;
+        case "increaseAssetSupply".toLowerCase():
+            return LogType.INCREASE_ASSET_SUPPLY_COUNT;
         case "store".toLowerCase():
             return LogType.STORE_COUNT;
         case "remove".toLowerCase():
