@@ -15,6 +15,7 @@ import { AssetTransaction } from "codechain-sdk/lib/core/Transaction";
 import { ComposeAssetActionJSON } from "codechain-sdk/lib/core/transaction/ComposeAsset";
 import { CustomActionJSON } from "codechain-sdk/lib/core/transaction/Custom";
 import { DecomposeAssetActionJSON } from "codechain-sdk/lib/core/transaction/DecomposeAsset";
+import { IncreaseAssetSupply } from "codechain-sdk/lib/core/transaction/IncreaseAssetSupply";
 import { MintAssetActionJSON } from "codechain-sdk/lib/core/transaction/MintAsset";
 import { PayActionJSON } from "codechain-sdk/lib/core/transaction/Pay";
 import { RemoveActionJSON } from "codechain-sdk/lib/core/transaction/Remove";
@@ -34,6 +35,7 @@ import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
 import { createCustom } from "./custom";
 import { createDecomposeAsset } from "./decomposeAsset";
+import { createIncreaseAssetSupply } from "./increaseassetsupply";
 import { createMintAsset } from "./mintAsset";
 import { createPay } from "./pay";
 import { createRemove } from "./remove";
@@ -67,6 +69,7 @@ export async function createTransaction(
             type === "transferAsset" ||
             type === "composeAsset" ||
             type === "decomposeAsset" ||
+            type === "increaseAssetSupply" ||
             type === "wrapCCC" ||
             type === "unwrapCCC";
         const tracker = isAssetTransaction
@@ -135,6 +138,11 @@ export async function createTransaction(
             case "changeAssetScheme": {
                 const changeAssetScheme = tx.unsigned as ChangeAssetScheme;
                 await createChangeAssetScheme(hash, changeAssetScheme);
+                break;
+            }
+            case "increaseAssetSupply": {
+                const increaseAssetSupply = tx.unsigned as IncreaseAssetSupply;
+                await createIncreaseAssetSupply(hash, increaseAssetSupply);
                 break;
             }
             case "pay": {
@@ -318,6 +326,10 @@ const includeArray = [
     {
         as: "changeAssetScheme",
         model: models.ChangeAssetScheme
+    },
+    {
+        as: "increaseAssetSupply",
+        model: models.IncreaseAssetSupply
     },
     {
         as: "wrapCCC",
@@ -593,6 +605,36 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     blockNumber
                 );
             })
+        );
+    }
+    if (txType === "increaseAssetSupply") {
+        const incAssetSupply = (await txInst.getIncreaseAssetSupply())!.get();
+
+        const assetType = new H160(incAssetSupply.assetType);
+        const { shardId, parameters } = incAssetSupply;
+        const lockScriptHash = new H160(incAssetSupply.lockScriptHash);
+        const quantity = new U64(incAssetSupply.supply);
+        const transactionOutputIndex = 0;
+
+        const recipient = getOwner(
+            new H160(incAssetSupply.lockScriptHash),
+            incAssetSupply.parameters,
+            networkId
+        );
+
+        return createUTXO(
+            recipient,
+            {
+                assetType,
+                shardId,
+                lockScriptHash,
+                parameters,
+                quantity,
+                transactionHash,
+                transactionTracker,
+                transactionOutputIndex
+            },
+            blockNumber
         );
     }
     if (txType === "wrapCCC") {

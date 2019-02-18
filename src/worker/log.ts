@@ -106,7 +106,7 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
             createShardCount
         );
 
-        const ChangeAssetSchemeCount = _.filter(
+        const changeAssetSchemeCount = _.filter(
             block.transactions,
             p => p.type === "changeAssetScheme"
         ).length;
@@ -114,7 +114,18 @@ export async function indexLog(block: BlockAttribute, isRetracted: boolean) {
             isRetracted,
             dateString,
             LogType.CHANGE_ASSET_SCHEME_COUNT,
-            ChangeAssetSchemeCount
+            changeAssetSchemeCount
+        );
+
+        const increaseAssetSupplyCount = _.filter(
+            block.transactions,
+            p => p.type === "increaseAssetSupply"
+        ).length;
+        await queryLog(
+            isRetracted,
+            dateString,
+            LogType.INCREASE_ASSET_SUPPLY_COUNT,
+            increaseAssetSupplyCount
         );
 
         const storeCount = _.filter(block.transactions, p => p.type === "store")

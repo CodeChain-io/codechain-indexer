@@ -27,6 +27,10 @@ import {
     DecomposeAssetAttribute,
     DecomposeAssetInstance
 } from "./decomposeAsset";
+import {
+    IncreaseAssetSupplyAttribute,
+    IncreaseAssetSupplyInstance
+} from "./increaseAssetSupply";
 import { LogAttribute, LogInstance } from "./log";
 import { MintAssetAttribute, MintAssetInstance } from "./mintAsset";
 import { OrderAttribute, OrderInstance } from "./order";
@@ -103,6 +107,10 @@ interface DB {
     ChangeAssetScheme: Sequelize.Model<
         ChangeAssetSchemeInstance,
         ChangeAssetSchemeAttribute
+    >;
+    IncreaseAssetSupply: Sequelize.Model<
+        IncreaseAssetSupplyInstance,
+        IncreaseAssetSupplyAttribute
     >;
     WrapCCC: Sequelize.Model<WrapCCCInstance, WrapCCCAttribute>;
     UnwrapCCC: Sequelize.Model<UnwrapCCCInstance, UnwrapCCCAttribute>;

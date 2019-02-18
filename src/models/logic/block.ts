@@ -114,6 +114,10 @@ const includeArray = [
                 ]
             },
             {
+                as: "increaseAssetSupply",
+                model: models.IncreaseAssetSupply
+            },
+            {
                 as: "wrapCCC",
                 model: models.WrapCCC
             },
