@@ -108,12 +108,9 @@ export default class Worker {
     ) => {
         const { sdk } = this.context;
         while (currentBlockNumber > -1) {
-            const currentIndexedBlockInst = await BlockModel.getByNumber(
+            const currentIndexedBlock = (await BlockModel.getByNumber(
                 currentBlockNumber
-            );
-            const currentIndexedBlock = currentIndexedBlockInst!.get({
-                plain: true
-            });
+            ))!.get({ plain: true });
             const currentCodeChainBlock = await sdk.rpc.chain.getBlock(
                 currentBlockNumber
             );

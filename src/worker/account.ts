@@ -35,14 +35,16 @@ export async function updateAccount(
 
     return Promise.all(
         _.uniq(affectedAddresses).map(async affectedAddress => {
-            const balance = await sdk.rpc.chain.getBalance(
-                affectedAddress,
-                params.checkingBlockNumber
-            );
-            const seq = await sdk.rpc.chain.getSeq(
-                affectedAddress,
-                params.checkingBlockNumber
-            );
+            const [balance, seq] = await Promise.all([
+                sdk.rpc.chain.getBalance(
+                    affectedAddress,
+                    params.checkingBlockNumber
+                ),
+                sdk.rpc.chain.getSeq(
+                    affectedAddress,
+                    params.checkingBlockNumber
+                )
+            ]);
             await AccountModel.updateAccountOrCreate(affectedAddress, {
                 balance,
                 seq
