@@ -5,15 +5,7 @@ import Worker from "./worker";
 
 export class IndexerContext {
     public static newInstance(options: IndexerConfig) {
-        const context = new IndexerContext(options);
-
-        process.on("SIGINT", async () => {
-            console.log("Caught interrupt signal.");
-            await context.destroy();
-            process.exit();
-        });
-
-        return context;
+        return new IndexerContext(options);
     }
     public sdk: SDK;
     public worker: Worker;
