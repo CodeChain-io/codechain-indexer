@@ -65,14 +65,11 @@ export default class Worker {
             console.log("There is no synchronized block");
         } else {
             console.log(
-                "lastest indexed block number : %d",
+                "latest indexed block number : %d",
                 latestIndexedBlockInst.get({ plain: true }).number
             );
         }
-        console.log(
-            "lastest codechain block number : %d",
-            chainBestBlockNumber
-        );
+        console.log("latest codechain block number : %d", chainBestBlockNumber);
 
         let lastIndexedBlockNumber = latestIndexedBlockInst
             ? latestIndexedBlockInst.get().number
