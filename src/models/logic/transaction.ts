@@ -705,9 +705,19 @@ export async function getPendingTransactions(params: {
     const { address, assetType } = params;
     const query = getPendingTransactionsQuery({ address, assetType });
     try {
-        return await models.Transaction.findAll({
+        const hashes = await models.Transaction.findAll({
+            attributes: ["hash"],
             where: {
                 [Sequelize.Op.and]: query
+            },
+            order: [["pendingTimestamp", "DESC"]],
+            include: includeArray
+        }).then(instances => instances.map(i => i.get().hash));
+        return await models.Transaction.findAll({
+            where: {
+                hash: {
+                    [Sequelize.Op.in]: hashes
+                }
             },
             order: [["pendingTimestamp", "DESC"]],
             include: includeArray
@@ -865,7 +875,8 @@ export async function getTransactions(params: {
         confirmThreshold
     });
     try {
-        return await models.Transaction.findAll({
+        const hashes = await models.Transaction.findAll({
+            attributes: ["hash"],
             where: {
                 [Sequelize.Op.and]: query
             },
@@ -873,6 +884,15 @@ export async function getTransactions(params: {
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             subQuery: false,
+            include: includeArray
+        }).then(instances => instances.map(i => i.get().hash));
+        return await models.Transaction.findAll({
+            where: {
+                hash: {
+                    [Sequelize.Op.in]: hashes
+                }
+            },
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
             include: includeArray
         });
     } catch (err) {
