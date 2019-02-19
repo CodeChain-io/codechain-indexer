@@ -29,31 +29,30 @@ export async function createBlock(
             hash: block.hash.value,
             miningReward: params.miningReward.value.toString(10)
         });
-        await Promise.all(
-            block.transactions.map(async tx => {
-                const invoice = params.invoices[tx.transactionIndex!];
-                if (invoice == null || invoice === undefined) {
-                    throw Error("invalid invoice");
-                }
-                const txInst = await TxModel.getByHash(tx.hash());
-                if (txInst) {
-                    await TxModel.updatePendingTransaction(tx.hash(), {
-                        timestamp: block.timestamp,
-                        success: invoice.success,
-                        errorHint: invoice.errorHint,
-                        transactionIndex: tx.transactionIndex!,
-                        blockNumber: tx.blockNumber!,
-                        blockHash: tx.blockHash!
-                    });
-                } else {
-                    await TxModel.createTransaction(tx, false, {
-                        timestamp: block.timestamp,
-                        success: invoice.success,
-                        errorHint: invoice.errorHint
-                    });
-                }
-            })
-        );
+
+        for (const tx of block.transactions) {
+            const invoice = params.invoices[tx.transactionIndex!];
+            if (invoice == null || invoice === undefined) {
+                throw Error("invalid invoice");
+            }
+            const txInst = await TxModel.getByHash(tx.hash());
+            if (txInst) {
+                await TxModel.updatePendingTransaction(tx.hash(), {
+                    timestamp: block.timestamp,
+                    success: invoice.success,
+                    errorHint: invoice.errorHint,
+                    transactionIndex: tx.transactionIndex!,
+                    blockNumber: tx.blockNumber!,
+                    blockHash: tx.blockHash!
+                });
+            } else {
+                await TxModel.createTransaction(tx, false, {
+                    timestamp: block.timestamp,
+                    success: invoice.success,
+                    errorHint: invoice.errorHint
+                });
+            }
+        }
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
