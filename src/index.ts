@@ -8,6 +8,11 @@ async function runServer() {
     process.env.NODE_ENV = process.env.NODE_ENV || "dev";
     const options = require("config") as IndexerConfig;
     const context = IndexerContext.newInstance(options);
+    process.on("SIGINT", async () => {
+        console.log("Caught interrupt signal.");
+        await context.destroy();
+        process.exit();
+    });
     const app = createServer(context);
 
     const httpServer = http.createServer(app);
