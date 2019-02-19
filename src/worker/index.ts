@@ -199,8 +199,7 @@ export default class Worker {
         const indexedTransactionsInst = await TxModel.getPendingTransactions(
             {}
         );
-        // FIXME: remove any
-        const indexedTransactions = indexedTransactionsInst.map((inst: any) =>
+        const indexedTransactions = indexedTransactionsInst.map(inst =>
             inst.get({ plain: true })
         );
 
