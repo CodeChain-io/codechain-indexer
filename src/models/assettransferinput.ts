@@ -19,6 +19,7 @@ export interface AssetOutPointAttribute {
     assetType: string;
     shardId: number;
     quantity: string;
+    hash?: string | null;
     owner?: string | null;
     lockScriptHash?: string | null;
     parameters?: string[] | null;

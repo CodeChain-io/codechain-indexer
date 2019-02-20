@@ -3,6 +3,7 @@ import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferInputInstance } from "../assettransferinput";
 import models from "../index";
+import { UTXOAttribute } from "../utxo";
 import * as AddressUtil from "./utils/address";
 import { getByTxTrackerIndex } from "./utxo";
 
@@ -17,11 +18,18 @@ export async function createAssetTransferInput(
 ): Promise<AssetTransferInputInstance> {
     let assetTransferInputInstance: AssetTransferInputInstance;
     try {
-        const { lockScriptHash, parameters } = await getByTxTrackerIndex(
+        const {
+            lockScriptHash,
+            parameters,
+            transactionHash: prevHash
+        } = await getByTxTrackerIndex(
             input.prevOut.tracker,
             input.prevOut.index
         ).then(
-            utxo => (utxo === null ? ({} as any) : utxo.get({ plain: true }))
+            utxo =>
+                utxo === null
+                    ? ({} as UTXOAttribute)
+                    : utxo.get({ plain: true })
         );
         const owner =
             lockScriptHash &&
@@ -40,6 +48,7 @@ export async function createAssetTransferInput(
             shardId: input.prevOut.shardId,
             prevOut: {
                 tracker: input.prevOut.tracker.value,
+                hash: prevHash,
                 index: input.prevOut.index,
                 assetType: input.prevOut.assetType.value,
                 shardId: input.prevOut.shardId,
