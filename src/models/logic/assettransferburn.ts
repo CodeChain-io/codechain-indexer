@@ -3,6 +3,7 @@ import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferBurnInstance } from "../assettransferburn";
 import models from "../index";
+import { UTXOAttribute } from "../utxo";
 import * as AddressUtil from "./utils/address";
 import { getByTxTrackerIndex } from "./utxo";
 
@@ -17,11 +18,18 @@ export async function createAssetTransferBurn(
 ): Promise<AssetTransferBurnInstance> {
     let assetTransferBurnInstance: AssetTransferBurnInstance;
     try {
-        const { lockScriptHash, parameters } = await getByTxTrackerIndex(
+        const {
+            lockScriptHash,
+            parameters,
+            transactionHash: prevHash
+        } = await getByTxTrackerIndex(
             burn.prevOut.tracker,
             burn.prevOut.index
         ).then(
-            utxo => (utxo === null ? ({} as any) : utxo.get({ plain: true }))
+            utxo =>
+                utxo === null
+                    ? ({} as UTXOAttribute)
+                    : utxo.get({ plain: true })
         );
         const owner =
             lockScriptHash &&
@@ -40,6 +48,7 @@ export async function createAssetTransferBurn(
             shardId: burn.prevOut.shardId,
             prevOut: {
                 tracker: burn.prevOut.tracker.value,
+                hash: prevHash,
                 index: burn.prevOut.index,
                 assetType: burn.prevOut.assetType.value,
                 shardId: burn.prevOut.shardId,
