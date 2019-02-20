@@ -691,7 +691,7 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
 function getPendingTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
-    type?: string | null;
+    type?: string[] | null;
 }) {
     const { address, assetType, type } = params;
     const query: any[] = [];
@@ -702,7 +702,11 @@ function getPendingTransactionsQuery(params: {
         addAssetTypeQuery(query, assetType);
     }
     if (type) {
-        query.push({ type });
+        query.push({
+            type: {
+                [Sequelize.Op.in]: type
+            }
+        });
     }
     query.push({
         isPending: true
@@ -713,7 +717,7 @@ function getPendingTransactionsQuery(params: {
 export async function getPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
-    type?: string | null;
+    type?: string[] | null;
 }) {
     const { address, assetType, type } = params;
     const query = getPendingTransactionsQuery({ address, assetType, type });
@@ -744,7 +748,7 @@ export async function getPendingTransactions(params: {
 export async function getNumberOfPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
-    type?: string | null;
+    type?: string[] | null;
 }) {
     const { address, assetType, type } = params;
     const query = getPendingTransactionsQuery({ address, assetType, type });
@@ -823,7 +827,7 @@ function addAssetTypeQuery(query: any[], assetType: H160) {
 async function getTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
-    type?: string | null;
+    type?: string[] | null;
     tracker?: H256 | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
@@ -846,7 +850,11 @@ async function getTransactionsQuery(params: {
         addAssetTypeQuery(query, assetType);
     }
     if (type) {
-        query.push({ type });
+        query.push({
+            type: {
+                [Sequelize.Op.in]: type
+            }
+        });
     }
     if (tracker) {
         query.push({ tracker: tracker.value });
@@ -876,7 +884,7 @@ async function getTransactionsQuery(params: {
 export async function getTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
-    type?: string | null;
+    type?: string[] | null;
     tracker?: H256 | null;
     page?: number | null;
     itemsPerPage?: number | null;
@@ -934,7 +942,7 @@ export async function getTransactions(params: {
 export async function getNumberOfTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
-    type?: string | null;
+    type?: string[] | null;
     tracker?: H256 | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
