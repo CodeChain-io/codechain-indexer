@@ -44,6 +44,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: type
+     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: page
      *         description: page for the pagination
      *         in: query
@@ -80,6 +85,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/tx", async (req, res, next) => {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
+        const type = req.query.type;
         const trackerString = req.query.tracker;
         const page = req.query.page && parseInt(req.query.page, 10);
         const itemsPerPage =
@@ -103,6 +109,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const txInsts = await TxModel.getTransactions({
                 address,
                 assetType,
+                type,
                 tracker,
                 page,
                 itemsPerPage,
@@ -139,6 +146,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: type
+     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -164,6 +176,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/tx/count", async (req, res, next) => {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
+        const type = req.query.type;
         const trackerString = req.query.tracker;
         const onlyConfirmed =
             req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
@@ -184,6 +197,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const count = await TxModel.getNumberOfTransactions({
                 address,
                 assetType,
+                type,
                 tracker,
                 onlyConfirmed,
                 onlySuccessful,
@@ -242,6 +256,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: type
+     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: pending transactions
@@ -253,6 +272,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/pending-tx", async (req, res, next) => {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
+        const type = req.query.type;
         try {
             let assetType;
             if (assetTypeString) {
@@ -260,7 +280,8 @@ export function handle(_C: IndexerContext, router: Router) {
             }
             const pendingTxInsts = await TxModel.getPendingTransactions({
                 address,
-                assetType
+                assetType,
+                type
             });
             const pendingTxs = pendingTxInsts.map(tx =>
                 tx.get({ plain: true })
@@ -287,6 +308,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: type
+     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: pending transactions count
@@ -297,6 +323,7 @@ export function handle(_C: IndexerContext, router: Router) {
     router.get("/pending-tx/count", async (req, res, next) => {
         const address = req.query.address;
         const assetTypeString = req.query.assetType;
+        const type = req.query.type;
         try {
             let assetType;
             if (assetTypeString) {
@@ -304,7 +331,8 @@ export function handle(_C: IndexerContext, router: Router) {
             }
             const count = await TxModel.getNumberOfPendingTransactions({
                 address,
-                assetType
+                assetType,
+                type
             });
             res.json(count);
         } catch (e) {

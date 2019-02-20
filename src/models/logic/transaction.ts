@@ -649,14 +649,18 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
 function getPendingTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
+    type?: string | null;
 }) {
-    const { address, assetType } = params;
+    const { address, assetType, type } = params;
     const query: any[] = [];
     if (address) {
         addAddressQuery(query, address);
     }
     if (assetType) {
         addAssetTypeQuery(query, assetType);
+    }
+    if (type) {
+        query.push({ type });
     }
     query.push({
         isPending: true
@@ -667,9 +671,10 @@ function getPendingTransactionsQuery(params: {
 export async function getPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
+    type?: string | null;
 }) {
-    const { address, assetType } = params;
-    const query = getPendingTransactionsQuery({ address, assetType });
+    const { address, assetType, type } = params;
+    const query = getPendingTransactionsQuery({ address, assetType, type });
     try {
         const hashes = await models.Transaction.findAll({
             attributes: ["hash"],
@@ -697,9 +702,10 @@ export async function getPendingTransactions(params: {
 export async function getNumberOfPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
+    type?: string | null;
 }) {
-    const { address, assetType } = params;
-    const query = getPendingTransactionsQuery({ address, assetType });
+    const { address, assetType, type } = params;
+    const query = getPendingTransactionsQuery({ address, assetType, type });
     try {
         return await models.Transaction.count({
             where: {
@@ -775,6 +781,7 @@ function addAssetTypeQuery(query: any[], assetType: H160) {
 async function getTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
+    type?: string | null;
     tracker?: H256 | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
@@ -783,6 +790,7 @@ async function getTransactionsQuery(params: {
     const {
         address,
         assetType,
+        type,
         tracker,
         onlyConfirmed,
         onlySuccessful,
@@ -794,6 +802,9 @@ async function getTransactionsQuery(params: {
     }
     if (assetType) {
         addAssetTypeQuery(query, assetType);
+    }
+    if (type) {
+        query.push({ type });
     }
     if (tracker) {
         query.push({ tracker: tracker.value });
@@ -823,6 +834,7 @@ async function getTransactionsQuery(params: {
 export async function getTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
+    type?: string | null;
     tracker?: H256 | null;
     page?: number | null;
     itemsPerPage?: number | null;
@@ -833,6 +845,7 @@ export async function getTransactions(params: {
     const {
         address,
         assetType,
+        type,
         tracker,
         page = 1,
         itemsPerPage = 15,
@@ -843,6 +856,7 @@ export async function getTransactions(params: {
     const query = await getTransactionsQuery({
         address,
         assetType,
+        type,
         tracker,
         onlyConfirmed,
         onlySuccessful,
@@ -878,6 +892,7 @@ export async function getTransactions(params: {
 export async function getNumberOfTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
+    type?: string | null;
     tracker?: H256 | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
@@ -886,6 +901,7 @@ export async function getNumberOfTransactions(params: {
     const {
         address,
         assetType,
+        type,
         tracker,
         onlyConfirmed = false,
         onlySuccessful = false,
@@ -894,6 +910,7 @@ export async function getNumberOfTransactions(params: {
     const query = await getTransactionsQuery({
         address,
         assetType,
+        type,
         tracker,
         onlyConfirmed,
         onlySuccessful,
