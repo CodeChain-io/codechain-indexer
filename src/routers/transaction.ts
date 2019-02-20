@@ -45,7 +45,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: false
      *         type: string
      *       - name: type
-     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         description: filter by type such as mintAsset, transferAsset, etc. Multiple types can be given by comma separating.
      *         in: query
      *         required: false
      *         type: string
@@ -109,7 +109,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const txInsts = await TxModel.getTransactions({
                 address,
                 assetType,
-                type,
+                type: typeof type === "string" ? type.split(",") : undefined,
                 tracker,
                 page,
                 itemsPerPage,
@@ -147,7 +147,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: false
      *         type: string
      *       - name: type
-     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         description: filter by type such as mintAsset, transferAsset, etc. Multiple types can be given by comma separating.
      *         in: query
      *         required: false
      *         type: string
@@ -197,7 +197,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const count = await TxModel.getNumberOfTransactions({
                 address,
                 assetType,
-                type,
+                type: typeof type === "string" ? type.split(",") : undefined,
                 tracker,
                 onlyConfirmed,
                 onlySuccessful,
@@ -257,7 +257,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: false
      *         type: string
      *       - name: type
-     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         description: filter by type such as mintAsset, transferAsset, etc. Multiple types can be given by comma separating.
      *         in: query
      *         required: false
      *         type: string
@@ -281,7 +281,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const pendingTxInsts = await TxModel.getPendingTransactions({
                 address,
                 assetType,
-                type
+                type: typeof type === "string" ? type.split(",") : undefined
             });
             const pendingTxs = pendingTxInsts.map(tx =>
                 tx.get({ plain: true })
@@ -309,7 +309,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: false
      *         type: string
      *       - name: type
-     *         description: filter by type such as mintAsset, transferAsset, etc.
+     *         description: filter by type such as mintAsset, transferAsset, etc. Multiple types can be given by comma separating.
      *         in: query
      *         required: false
      *         type: string
@@ -332,7 +332,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const count = await TxModel.getNumberOfPendingTransactions({
                 address,
                 assetType,
-                type
+                type: typeof type === "string" ? type.split(",") : undefined
             });
             res.json(count);
         } catch (e) {
