@@ -238,10 +238,8 @@ export default class Worker {
             pending =>
                 !_.includes(indexedPendingTxHashList, pending.hash().value)
         );
-        await Promise.all(
-            newPendingTransactions.map(async pending => {
-                await TxModel.createTransaction(pending, true);
-            })
-        );
+        for (const pending of newPendingTransactions) {
+            await TxModel.createTransaction(pending, true);
+        }
     };
 }
