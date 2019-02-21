@@ -1,5 +1,5 @@
 "use strict";
-const tableName = "SetRegularKeys";
+const tableName = "CreateShards";
 module.exports = {
     up: (queryInterface, DataTypes) => {
         return queryInterface.createTable(tableName, {
@@ -12,11 +12,6 @@ module.exports = {
                     model: "Transactions",
                     key: "hash"
                 }
-            },
-
-            key: {
-                allowNull: false,
-                type: DataTypes.STRING
             },
 
             createdAt: {
