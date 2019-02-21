@@ -1,7 +1,4 @@
-import {
-    Block,
-    U64
-} from "codechain-sdk/lib/core/classes";
+import { Block, U64 } from "codechain-sdk/lib/core/classes";
 import models from "../src/models";
 import * as BlockModel from "../src/models/logic/block";
 import * as TransactionModel from "../src/models/logic/transaction";
@@ -16,21 +13,17 @@ beforeAll(async done => {
     await Helper.runExample("import-test-account");
     await Helper.runExample("wrap-ccc-and-unwrap-ccc");
     bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
-    wrapBlock = (await Helper.sdk.rpc.chain.getBlock(
-        bestBlockNumber - 1
-    ))!;
-    unwrapBlock = (await Helper.sdk.rpc.chain.getBlock(
-        bestBlockNumber
-    ))!;
+    wrapBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber - 1))!;
+    unwrapBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber))!;
     done();
 });
 
 async function check(blockResponse: Block, type: string) {
     expect(blockResponse).toBeTruthy();
 
-    const blockInst = await BlockModel.createBlock(blockResponse, {
+    const blockInst = await BlockModel.createBlock(blockResponse, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true}]
+        invoices: [{ success: true }]
     });
     const blockDoc = blockInst.get({ plain: true });
     expect(blockDoc.hash).toEqual(blockResponse.hash.value);
@@ -62,9 +55,9 @@ test("Check duplicated block", async done => {
 
     // Duplicated error test
     try {
-        await BlockModel.createBlock(unwrapBlock, {
+        await BlockModel.createBlock(unwrapBlock, Helper.sdk, {
             miningReward: new U64("1000"),
-            invoices: [ { success: true}]
+            invoices: [{ success: true }]
         });
         done.fail();
     } catch (e) {

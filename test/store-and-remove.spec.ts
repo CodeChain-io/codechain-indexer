@@ -12,16 +12,14 @@ beforeAll(async done => {
 });
 
 async function check(blockNumber: number, typeName: string, typeInstance: any) {
-    const blockResponse = (await Helper.sdk.rpc.chain.getBlock(
-        blockNumber
-    ))!;
+    const blockResponse = (await Helper.sdk.rpc.chain.getBlock(blockNumber))!;
 
     expect(blockResponse).toBeTruthy();
     expect(blockResponse.transactions.length).toBe(1);
 
-    const blockInst = await createBlock(blockResponse, {
+    const blockInst = await createBlock(blockResponse, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true}]
+        invoices: [{ success: true }]
     });
 
     const blockDoc = blockInst.get({ plain: true });
@@ -31,9 +29,7 @@ async function check(blockNumber: number, typeName: string, typeInstance: any) {
     const unsigned = signed.unsigned;
     expect(unsigned).toBeInstanceOf(typeInstance);
 
-    const txInst = (await TransactionModel.getByHash(
-        signed.hash()
-    ))!;
+    const txInst = (await TransactionModel.getByHash(signed.hash()))!;
     expect(txInst).toBeTruthy();
     const tx = txInst.get({ plain: true });
     expect(tx.hash).toEqual(signed.hash().value);
@@ -50,7 +46,7 @@ test("remove", async done => {
     const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
     await check(bestBlockNumber, "remove", Remove);
 
-    done()
+    done();
 });
 
 afterAll(async done => {

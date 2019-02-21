@@ -25,7 +25,7 @@ beforeAll(async done => {
 async function check(blockResponse: Block, type: string) {
     expect(blockResponse).toBeTruthy();
 
-    const blockInst = await BlockModel.createBlock(blockResponse, {
+    const blockInst = await BlockModel.createBlock(blockResponse, Helper.sdk, {
         miningReward: new U64("1000"),
         invoices: [{ success: true }]
     });
@@ -59,7 +59,7 @@ test("Check duplicated block", async done => {
 
     // Duplicated error test
     try {
-        await BlockModel.createBlock(transferBlock, {
+        await BlockModel.createBlock(transferBlock, Helper.sdk, {
             miningReward: new U64("1000"),
             invoices: [{ success: true }]
         });

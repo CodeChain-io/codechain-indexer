@@ -26,9 +26,9 @@ test("Create payment block", async done => {
     );
 
     expect(miningRewardResponse).toBeTruthy();
-    await BlockModel.createBlock(paymentBlock!, {
+    await BlockModel.createBlock(paymentBlock!, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true}]
+        invoices: [{ success: true }]
     });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
@@ -41,8 +41,7 @@ test("Create payment block", async done => {
 test("Pay large amount", async done => {
     const ACCOUNT_SECRET =
         "ede1d4ccb4ec9a8bbbae9a13db3f4a7b56ea04189be86ac3a6a439d9a0a1addd";
-    const ACCOUNT_ADDRESS =
-        "tccq9h7vnl68frvqapzv3tujrxtxtwqdnxw6yamrrgd";
+    const ACCOUNT_ADDRESS = "tccq9h7vnl68frvqapzv3tujrxtxtwqdnxw6yamrrgd";
     const seq = await Helper.sdk.rpc.chain.getSeq(ACCOUNT_ADDRESS);
     const tx = Helper.sdk.core.createPayTransaction({
         recipient: "tccqxv9y4cw0jwphhu65tn4605wadyd2sxu5yezqghw",
@@ -71,7 +70,7 @@ test("Pay large amount", async done => {
     );
 
     expect(miningRewardResponse).toBeTruthy();
-    await BlockModel.createBlock(paymentBlock!, {
+    await BlockModel.createBlock(paymentBlock!, Helper.sdk, {
         miningReward: new U64("1000"),
         invoices: [{ success: true }]
     });
