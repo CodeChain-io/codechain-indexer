@@ -19,9 +19,9 @@ test("Check getLastBlock", async done => {
         (await Helper.sdk.rpc.chain.getBestBlockNumber()) - 1;
     const mintBlock = await Helper.sdk.rpc.chain.getBlock(mintBlockNumber);
     expect(mintBlock).toBeTruthy();
-    await BlockModel.createBlock(mintBlock!, {
+    await BlockModel.createBlock(mintBlock!, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{success: true}]
+        invoices: [{ success: true }]
     });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
