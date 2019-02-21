@@ -1,4 +1,4 @@
-import { ChangeAssetScheme } from "codechain-sdk/lib/core/classes";
+import { ChangeAssetScheme, H160 } from "codechain-sdk/lib/core/classes";
 import { ChangeAssetSchemeActionJSON } from "codechain-sdk/lib/core/transaction/ChangeAssetScheme";
 import models from "..";
 import { ChangeAssetSchemeInstance } from "../changeAssetScheme";
@@ -19,7 +19,7 @@ export async function createChangeAssetScheme(
     } = changeAssetScheme.toJSON().action as ChangeAssetSchemeActionJSON;
     const inst = await models.ChangeAssetScheme.create({
         transactionHash,
-        assetType,
+        assetType: H160.ensure(assetType).value,
         networkId,
         shardId,
         metadata,

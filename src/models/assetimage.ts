@@ -28,6 +28,9 @@ export default (
                 references: {
                     model: "AssetSchemes",
                     key: "assetType"
+                },
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
                 }
             },
             image: {

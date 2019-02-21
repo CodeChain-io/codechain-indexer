@@ -28,7 +28,7 @@ export async function createIncreaseAssetSupply(
         transactionHash,
         networkId,
         shardId,
-        assetType,
+        assetType: H160.ensure(assetType).value,
         approvals,
         lockScriptHash,
         parameters,
