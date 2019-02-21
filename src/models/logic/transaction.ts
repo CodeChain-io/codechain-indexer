@@ -836,6 +836,8 @@ function addAddressQuery(query: any[], address: string) {
             { "$wrapCCC.recipient$": address },
             { "$unwrapCCC.burn.owner$": address },
 
+            { "$increaseAssetSupply.recipient$": address },
+
             { "$pay.receiver$": address }
         ]
     });
@@ -851,7 +853,9 @@ function addAssetTypeQuery(query: any[], assetType: H160) {
             { "$composeAsset.inputs.assetType$": assetType.value },
             { "$decomposeAsset.input.assetType$": assetType.value },
             { "$decomposeAsset.outputs.assetType$": assetType.value },
-            { "$unwrapCCC.burn.assetType$": assetType.value }
+            { "$unwrapCCC.burn.assetType$": assetType.value },
+            { "$changeAssetScheme.assetType$": assetType.value },
+            { "$increaseAssetSupply.assetType$": assetType.value }
         ]
     });
 }
