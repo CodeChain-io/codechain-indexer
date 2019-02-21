@@ -1,3 +1,4 @@
+import { SDK } from "codechain-sdk";
 import {
     ChangeAssetScheme,
     ComposeAsset,
@@ -33,6 +34,7 @@ import { TransactionInstance } from "../transaction";
 import * as BlockModel from "./block";
 import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
+import { createCreateShard } from "./createShard";
 import { createCustom } from "./custom";
 import { createDecomposeAsset } from "./decomposeAsset";
 import { createIncreaseAssetSupply } from "./increaseassetsupply";
@@ -51,6 +53,7 @@ import { createWrapCCC } from "./wrapCCC";
 
 export async function createTransaction(
     tx: SignedTransaction,
+    sdk: SDK,
     isPending: boolean,
     params?: {
         timestamp?: number | null;
@@ -156,6 +159,10 @@ export async function createTransaction(
                 await createSetRegularKey(hash, key);
                 break;
             }
+            case "createShard": {
+                await createCreateShard(hash);
+                break;
+            }
             case "setShardOwners": {
                 const { shardId, owners } = tx.toJSON()
                     .action as SetShardOwnersActionJSON;
@@ -200,6 +207,9 @@ export async function createTransaction(
             }
             await handleUTXO(txInst, tx.blockNumber!);
         }
+        if (type === "createShard" && success === true) {
+            await updateCreateShard(txInstance, sdk);
+        }
         return txInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -218,6 +228,7 @@ export async function createTransaction(
 
 export async function updatePendingTransaction(
     hash: H256,
+    sdk: SDK,
     params: {
         success?: boolean | null;
         errorHint?: string;
@@ -248,10 +259,31 @@ export async function updatePendingTransaction(
         if (txInst!.get().tracker != null) {
             await handleUTXO(txInst!, params.blockNumber);
         }
+        if (
+            txInst!.get().type === "createShard" &&
+            txInst!.get().success === true
+        ) {
+            await updateCreateShard(txInst!, sdk);
+        }
     } catch (err) {
         console.error(err);
         throw Exception.DBError;
     }
+}
+
+async function updateCreateShard(tx: TransactionInstance, sdk: SDK) {
+    const { hash } = tx.get();
+    const shardId = await sdk.rpc.chain.getShardIdByHash(hash);
+    await models.CreateShard.update(
+        {
+            shardId: shardId!
+        },
+        {
+            where: {
+                transactionHash: hash
+            }
+        }
+    );
 }
 
 const includeArray = [

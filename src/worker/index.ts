@@ -162,7 +162,7 @@ export default class Worker {
                 };
             })
         );
-        await BlockModel.createBlock(block, {
+        await BlockModel.createBlock(block, sdk, {
             miningReward: new U64(miningReward),
             invoices
         });
@@ -239,7 +239,7 @@ export default class Worker {
                 !_.includes(indexedPendingTxHashList, pending.hash().value)
         );
         for (const pending of newPendingTransactions) {
-            await TxModel.createTransaction(pending, true);
+            await TxModel.createTransaction(pending, this.context.sdk, true);
         }
     };
 }
