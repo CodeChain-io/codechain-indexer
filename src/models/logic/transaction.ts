@@ -31,6 +31,7 @@ import * as Exception from "../../exception";
 import { AssetTransferOutputAttribute } from "../assettransferoutput";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
+import { updateAssetScheme } from "./assetscheme";
 import * as BlockModel from "./block";
 import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
@@ -210,6 +211,20 @@ export async function createTransaction(
         if (type === "createShard" && success === true) {
             await updateCreateShard(txInstance, sdk);
         }
+        if (type === "changeAssetScheme" && success === true) {
+            const txInst = await getByHash(tx.hash());
+            if (!txInst) {
+                throw Exception.InvalidTransaction;
+            }
+            await updateAssetScheme(txInst);
+        }
+        if (type === "increaseAssetSupply" && success === true) {
+            const txInst = await getByHash(tx.hash());
+            if (!txInst) {
+                throw Exception.InvalidTransaction;
+            }
+            await updateAssetScheme(txInst);
+        }
         return txInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -256,6 +271,7 @@ export async function updatePendingTransaction(
             }
         );
         const txInst = await getByHash(hash);
+        const { type, success } = txInst!.get();
         if (txInst!.get().tracker != null) {
             await handleUTXO(txInst!, params.blockNumber);
         }
@@ -264,6 +280,12 @@ export async function updatePendingTransaction(
             txInst!.get().success === true
         ) {
             await updateCreateShard(txInst!, sdk);
+        }
+        if (type === "changeAssetScheme" && success === true) {
+            await updateAssetScheme(txInst!);
+        }
+        if (type === "increaseAssetSupply" && success === true) {
+            await updateAssetScheme(txInst!);
         }
     } catch (err) {
         console.error(err);

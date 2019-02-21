@@ -4,6 +4,7 @@ import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { AssetSchemeInstance } from "../assetscheme";
 import models from "../index";
+import { TransactionInstance } from "../transaction";
 import * as AssetImageModel from "./assetimage";
 
 export async function createAssetScheme(
@@ -94,6 +95,59 @@ export async function createAssetSchemeOfWCCC(
         console.error(err);
         throw Exception.DBError;
     }
+}
+
+export async function updateAssetScheme(
+    tx: TransactionInstance
+): Promise<AssetSchemeInstance> {
+    const { changeAssetScheme, increaseAssetSupply } = tx.get();
+    if (changeAssetScheme) {
+        const {
+            assetType,
+            metadata,
+            administrator,
+            approver,
+            allowedScriptHashes
+        } = changeAssetScheme;
+        try {
+            const [, [instance]] = await models.AssetScheme.update(
+                { metadata, approver, administrator, allowedScriptHashes },
+                {
+                    where: { assetType },
+                    returning: true
+                }
+            );
+            return instance;
+        } catch (err) {
+            console.error(err);
+            throw Exception.DBError;
+        }
+    }
+    if (increaseAssetSupply) {
+        const { assetType, supply } = increaseAssetSupply;
+        try {
+            const instance = await models.AssetScheme.findByPk(assetType).then(
+                assetScheme => {
+                    const updatedSupply = U64.plus(
+                        assetScheme!.get().supply!,
+                        supply
+                    );
+                    return assetScheme!.update({
+                        supply: updatedSupply.toString()
+                    });
+                }
+            );
+            return instance;
+        } catch (err) {
+            console.error(err);
+            throw Exception.DBError;
+        }
+    }
+    console.error(
+        "Unsupported transaction type for updateAssetScheme:",
+        tx.get()!.type
+    );
+    throw Exception.InvalidTransaction;
 }
 
 export async function getByAssetType(
