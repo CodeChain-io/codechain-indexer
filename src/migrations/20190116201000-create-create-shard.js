@@ -14,6 +14,10 @@ module.exports = {
                 }
             },
 
+            shardId: {
+                type: DataTypes.INTEGER
+            },
+
             createdAt: {
                 allowNull: false,
                 type: DataTypes.DATE

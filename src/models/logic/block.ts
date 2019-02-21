@@ -1,3 +1,4 @@
+import { SDK } from "codechain-sdk";
 import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
@@ -8,6 +9,7 @@ import * as TxModel from "./transaction";
 
 export async function createBlock(
     block: Block,
+    sdk: SDK,
     params: {
         miningReward: U64;
         invoices: { success: boolean; errorHint?: string }[];
@@ -37,7 +39,7 @@ export async function createBlock(
             }
             const txInst = await TxModel.getByHash(tx.hash());
             if (txInst) {
-                await TxModel.updatePendingTransaction(tx.hash(), {
+                await TxModel.updatePendingTransaction(tx.hash(), sdk, {
                     timestamp: block.timestamp,
                     success: invoice.success,
                     errorHint: invoice.errorHint,
@@ -46,7 +48,7 @@ export async function createBlock(
                     blockHash: tx.blockHash!
                 });
             } else {
-                await TxModel.createTransaction(tx, false, {
+                await TxModel.createTransaction(tx, sdk, false, {
                     timestamp: block.timestamp,
                     success: invoice.success,
                     errorHint: invoice.errorHint
