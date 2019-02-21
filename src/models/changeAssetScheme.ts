@@ -34,7 +34,10 @@ export default (
             },
             assetType: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             networkId: {
                 allowNull: false,
