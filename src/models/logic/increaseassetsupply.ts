@@ -7,6 +7,7 @@ import {
 import { IncreaseAssetSupplyInstance } from "../increaseAssetSupply";
 import models from "../index";
 import { getOwner } from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createIncreaseAssetSupply(
     transactionHash: string,
@@ -25,13 +26,13 @@ export async function createIncreaseAssetSupply(
     const supply = incSupplyOutput.supply!.toString(10);
     const recipient = getOwner(new H160(lockScriptHash), parameters, networkId);
     const inst = await models.IncreaseAssetSupply.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         networkId,
         shardId,
-        assetType: H160.ensure(assetType).value,
+        assetType: strip0xPrefix(assetType),
         approvals,
-        lockScriptHash,
-        parameters,
+        lockScriptHash: strip0xPrefix(lockScriptHash),
+        parameters: parameters.map(p => strip0xPrefix(p)),
         recipient,
         supply
     });

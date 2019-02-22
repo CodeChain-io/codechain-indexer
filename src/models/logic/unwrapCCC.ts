@@ -4,6 +4,7 @@ import models from "../index";
 import { UnwrapCCCInstance } from "../unwrapCCC";
 import { createAssetTransferBurn } from "./assettransferburn";
 import { getAssetScheme } from "./utils/asset";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createUnwrapCCC(
     transactionHash: string,
@@ -17,6 +18,6 @@ export async function createUnwrapCCC(
         assetScheme
     });
     return await models.UnwrapCCC.create({
-        transactionHash
+        transactionHash: strip0xPrefix(transactionHash)
     });
 }

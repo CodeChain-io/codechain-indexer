@@ -6,6 +6,7 @@ import { AssetSchemeInstance } from "../assetscheme";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
 import * as AssetImageModel from "./assetimage";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createAssetScheme(
     assetType: string,
@@ -23,14 +24,14 @@ export async function createAssetScheme(
     let assetSchemeInstance: AssetSchemeInstance;
     try {
         assetSchemeInstance = await models.AssetScheme.create({
-            transactionHash,
-            assetType,
+            transactionHash: strip0xPrefix(transactionHash),
+            assetType: strip0xPrefix(assetType),
             metadata: assetScheme.metadata,
             approver: assetScheme.approver && assetScheme.approver.value,
             administrator:
                 assetScheme.administrator && assetScheme.administrator.value,
-            allowedScriptHashes: assetScheme.allowedScriptHashes.map(
-                hash => hash.value
+            allowedScriptHashes: assetScheme.allowedScriptHashes.map(hash =>
+                strip0xPrefix(hash.value)
             ),
             supply: assetScheme.supply.value.toString(10),
             networkId: assetScheme.networkId,
@@ -72,8 +73,8 @@ export async function createAssetSchemeOfWCCC(
     const metadata = "WCCC"; // FIXME
     try {
         const assetSchemeInstance = await models.AssetScheme.create({
-            transactionHash,
-            assetType,
+            transactionHash: strip0xPrefix(transactionHash),
+            assetType: strip0xPrefix(assetType),
             metadata,
             approver: null,
             administrator: null,
@@ -111,7 +112,14 @@ export async function updateAssetScheme(
         } = changeAssetScheme;
         try {
             const [, [instance]] = await models.AssetScheme.update(
-                { metadata, approver, administrator, allowedScriptHashes },
+                {
+                    metadata,
+                    approver,
+                    administrator,
+                    allowedScriptHashes: allowedScriptHashes.map(hash =>
+                        strip0xPrefix(hash)
+                    )
+                },
                 {
                     where: { assetType },
                     returning: true
@@ -154,7 +162,9 @@ export async function getByAssetType(
     assetType: H160
 ): Promise<AssetSchemeInstance | null> {
     try {
-        return await models.AssetScheme.findByPk(assetType.value);
+        return await models.AssetScheme.findByPk(
+            strip0xPrefix(assetType.value)
+        );
     } catch (err) {
         console.error(err);
         throw Exception.DBError;

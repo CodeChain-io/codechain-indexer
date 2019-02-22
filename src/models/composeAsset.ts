@@ -48,6 +48,9 @@ export default (
                 references: {
                     model: "Transactions",
                     key: "hash"
+                },
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
                 }
             },
 
@@ -80,7 +83,10 @@ export default (
 
             lockScriptHash: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             parameters: {
                 allowNull: false,

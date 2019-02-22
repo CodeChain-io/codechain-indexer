@@ -31,11 +31,17 @@ export default (
             hash: {
                 allowNull: false,
                 type: DataTypes.STRING,
-                primaryKey: true
+                primaryKey: true,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             parentHash: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             timestamp: {
                 allowNull: false,
@@ -55,15 +61,24 @@ export default (
             },
             transactionsRoot: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             stateRoot: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             invoicesRoot: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             score: {
                 allowNull: false,

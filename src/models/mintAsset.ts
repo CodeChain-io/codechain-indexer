@@ -34,6 +34,9 @@ export default (
                 primaryKey: true,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                },
                 references: {
                     model: "Transactions",
                     key: "hash"
@@ -71,7 +74,10 @@ export default (
 
             lockScriptHash: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             parameters: {
                 allowNull: false,

@@ -6,6 +6,7 @@ import * as Exception from "../../exception";
 import { BlockInstance } from "../block";
 import models from "../index";
 import * as TxModel from "./transaction";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createBlock(
     block: Block,
@@ -18,17 +19,17 @@ export async function createBlock(
     let blockInstance: BlockInstance;
     try {
         blockInstance = await models.Block.create({
-            parentHash: block.parentHash.value,
+            parentHash: strip0xPrefix(block.parentHash.value),
             timestamp: block.timestamp,
             number: block.number,
             author: block.author.value,
             extraData: Buffer.from(block.extraData),
-            transactionsRoot: block.transactionsRoot.value,
-            stateRoot: block.stateRoot.value,
-            invoicesRoot: block.invoicesRoot.value,
+            transactionsRoot: strip0xPrefix(block.transactionsRoot.value),
+            stateRoot: strip0xPrefix(block.stateRoot.value),
+            invoicesRoot: strip0xPrefix(block.invoicesRoot.value),
             score: block.score.value.toString(10),
             seal: block.seal.map(s => Buffer.from(s)),
-            hash: block.hash.value,
+            hash: strip0xPrefix(block.hash.value),
             miningReward: params.miningReward.value.toString(10)
         });
 
@@ -165,7 +166,7 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
             where: {
-                hash: hash.value
+                hash: strip0xPrefix(hash.value)
             },
             include: includeArray
         });

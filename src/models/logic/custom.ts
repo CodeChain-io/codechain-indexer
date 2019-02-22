@@ -1,5 +1,6 @@
 import { CustomInstance } from "../custom";
 import models from "../index";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createCustom(
     transactionHash: string,
@@ -7,7 +8,7 @@ export async function createCustom(
     content: string
 ): Promise<CustomInstance> {
     return await models.Custom.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         handlerId,
         content
     });

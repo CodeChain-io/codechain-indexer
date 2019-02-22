@@ -5,6 +5,7 @@ import { AssetTransferBurnInstance } from "../assettransferburn";
 import models from "../index";
 import { UTXOAttribute } from "../utxo";
 import * as AddressUtil from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 import { getByTxTrackerIndex } from "./utxo";
 
 // FIXME: This is duplicated with asset transfer-input
@@ -39,23 +40,23 @@ export async function createAssetTransferBurn(
                 options.networkId
             );
         assetTransferBurnInstance = await models.AssetTransferBurn.create({
-            transactionHash,
+            transactionHash: strip0xPrefix(transactionHash),
             timelock: burn.timelock,
             lockScript: burn.lockScript,
             unlockScript: burn.unlockScript,
             owner,
-            assetType: burn.prevOut.assetType.value,
+            assetType: strip0xPrefix(burn.prevOut.assetType.value),
             shardId: burn.prevOut.shardId,
             prevOut: {
-                tracker: burn.prevOut.tracker.value,
-                hash: prevHash,
+                tracker: strip0xPrefix(burn.prevOut.tracker.value),
+                hash: strip0xPrefix(prevHash),
                 index: burn.prevOut.index,
-                assetType: burn.prevOut.assetType.value,
+                assetType: strip0xPrefix(burn.prevOut.assetType.value),
                 shardId: burn.prevOut.shardId,
                 quantity: burn.prevOut.quantity.value.toString(10),
                 owner,
-                lockScriptHash,
-                parameters
+                lockScriptHash: strip0xPrefix(lockScriptHash),
+                parameters: parameters.map(p => strip0xPrefix(p))
             }
         });
     } catch (err) {
@@ -72,7 +73,7 @@ export async function getByTransactionHash(
     try {
         return await models.AssetTransferBurn.findAll({
             where: {
-                transactionHash
+                transactionHash: strip0xPrefix(transactionHash)
             }
         });
     } catch (err) {

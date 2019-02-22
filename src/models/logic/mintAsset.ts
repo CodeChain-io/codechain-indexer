@@ -6,6 +6,7 @@ import { MintAssetInstance } from "../mintAsset";
 import { createAssetScheme } from "./assetscheme";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createMintAsset(
     transactionHash: string,
@@ -44,19 +45,21 @@ export async function createMintAsset(
         networkId
     );
     const inst = await models.MintAsset.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         networkId,
         shardId,
         metadata,
         approver,
         administrator,
-        allowedScriptHashes,
+        allowedScriptHashes: allowedScriptHashes.map(scripthash =>
+            strip0xPrefix(scripthash)
+        ),
         approvals,
-        lockScriptHash,
+        lockScriptHash: strip0xPrefix(lockScriptHash),
         parameters,
         supply,
         assetName,
-        assetType,
+        assetType: strip0xPrefix(assetType),
         recipient
     });
     const assetSchemeWithNetworkId: any = assetScheme;
@@ -79,7 +82,7 @@ export async function getByTransactionHash(
 ): Promise<MintAssetInstance | null> {
     return await models.MintAsset.findOne({
         where: {
-            transactionHash
+            transactionHash: strip0xPrefix(transactionHash)
         }
     });
 }

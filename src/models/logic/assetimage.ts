@@ -3,6 +3,7 @@ import * as request from "request";
 import * as sharp from "sharp";
 import models from "..";
 import * as Exception from "../../exception";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createAssetImage(
     transactionHash: string,
@@ -24,8 +25,8 @@ export async function createAssetImage(
     if (imageDataBuffer) {
         try {
             await models.AssetImage.upsert({
-                transactionHash,
-                assetType,
+                transactionHash: strip0xPrefix(transactionHash),
+                assetType: strip0xPrefix(assetType),
                 image: imageDataBuffer
             });
         } catch (err) {
@@ -39,7 +40,7 @@ export async function getByAssetType(assetType: H160) {
     try {
         return await models.AssetImage.findOne({
             where: {
-                assetType: assetType.value
+                assetType: strip0xPrefix(assetType.value)
             }
         });
     } catch (err) {

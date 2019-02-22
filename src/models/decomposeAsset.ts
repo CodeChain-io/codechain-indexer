@@ -36,6 +36,9 @@ export default (
                 primaryKey: true,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                },
                 references: {
                     model: "Transactions",
                     key: "hash"

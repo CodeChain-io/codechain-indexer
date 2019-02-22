@@ -1,5 +1,6 @@
 import models from "../index";
 import { PayInstance } from "../pay";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createPay(
     transactionHash: string,
@@ -7,7 +8,7 @@ export async function createPay(
     receiver: string
 ): Promise<PayInstance> {
     return await models.Pay.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         quantity,
         receiver
     });

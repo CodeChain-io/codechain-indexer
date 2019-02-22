@@ -23,6 +23,9 @@ export default (
                 references: {
                     model: "Transactions",
                     key: "hash"
+                },
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
                 }
             },
 

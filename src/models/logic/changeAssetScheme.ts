@@ -1,8 +1,9 @@
-import { ChangeAssetScheme, H160 } from "codechain-sdk/lib/core/classes";
+import { ChangeAssetScheme } from "codechain-sdk/lib/core/classes";
 import { ChangeAssetSchemeActionJSON } from "codechain-sdk/lib/core/transaction/ChangeAssetScheme";
 import models from "..";
 import { ChangeAssetSchemeInstance } from "../changeAssetScheme";
 import * as AssetImageModel from "./assetimage";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createChangeAssetScheme(
     transactionHash: string,
@@ -19,14 +20,16 @@ export async function createChangeAssetScheme(
         approvals
     } = changeAssetScheme.toJSON().action as ChangeAssetSchemeActionJSON;
     const inst = await models.ChangeAssetScheme.create({
-        transactionHash,
-        assetType: H160.ensure(assetType).value,
+        transactionHash: strip0xPrefix(transactionHash),
+        assetType: strip0xPrefix(assetType),
         networkId,
         shardId,
         metadata,
         approver,
         administrator,
-        allowedScriptHashes,
+        allowedScriptHashes: allowedScriptHashes.map(hash =>
+            strip0xPrefix(hash)
+        ),
         approvals
     });
     let metadataObj;
@@ -38,7 +41,7 @@ export async function createChangeAssetScheme(
     if (metadataObj && metadataObj.icon_url) {
         await AssetImageModel.createAssetImage(
             transactionHash,
-            H160.ensure(assetType).value,
+            strip0xPrefix(assetType),
             metadataObj.icon_url
         );
     }
