@@ -60,11 +60,11 @@ export async function createBlock(
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
             if (_.has(duplicateFields, "hash")) {
-                throw Exception.AlreadyExist;
+                throw Exception.AlreadyExist();
             }
         }
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
     return blockInstance;
 }
@@ -172,7 +172,7 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -185,7 +185,7 @@ export async function deleteBlockByNumber(
         });
     } catch (err) {
         console.log(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -211,7 +211,7 @@ export async function getBlocks(params: {
         });
     } catch (err) {
         console.log(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -229,7 +229,7 @@ export async function getNumberOfBlocks(params: { address?: string }) {
         });
     } catch (err) {
         console.log(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -241,7 +241,7 @@ export async function getLatestBlock(): Promise<BlockInstance | null> {
         });
     } catch (err) {
         console.log(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -257,7 +257,7 @@ export async function getByNumber(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -289,6 +289,6 @@ export async function getByTime(
         return block;
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }

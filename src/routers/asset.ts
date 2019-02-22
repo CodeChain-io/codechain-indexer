@@ -372,7 +372,7 @@ export function handle(_C: IndexerContext, router: Router) {
             const assetType = new H160(assetTypeString);
             const snapshotTime = moment(date);
             if (!snapshotTime.isValid()) {
-                throw Exception.InvalidDateParam;
+                throw Exception.InvalidDateParam();
             }
 
             const block = await BlockModel.getByTime(snapshotTime.utc().unix());

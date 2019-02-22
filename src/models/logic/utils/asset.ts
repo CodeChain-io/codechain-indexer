@@ -16,7 +16,7 @@ export async function getAssetScheme(
 ): Promise<AssetSchemeAttribute> {
     const assetSchemeInstance = await getByAssetType(assetType);
     if (!assetSchemeInstance) {
-        throw InvalidTransaction;
+        throw InvalidTransaction();
     }
     return assetSchemeInstance.get({
         plain: true

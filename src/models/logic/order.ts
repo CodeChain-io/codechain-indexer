@@ -66,7 +66,7 @@ export async function createOrder(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
     return orderInstance;
 }

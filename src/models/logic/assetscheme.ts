@@ -55,11 +55,11 @@ export async function createAssetScheme(
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
             if (_.has(duplicateFields, "assetType")) {
-                throw Exception.AlreadyExist;
+                throw Exception.AlreadyExist();
             }
         }
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
     return assetSchemeInstance;
 }
@@ -90,11 +90,11 @@ export async function createAssetSchemeOfWCCC(
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
             if (_.has(duplicateFields, "assetType")) {
-                throw Exception.AlreadyExist;
+                throw Exception.AlreadyExist();
             }
         }
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -128,7 +128,7 @@ export async function updateAssetScheme(
             return instance;
         } catch (err) {
             console.error(err);
-            throw Exception.DBError;
+            throw Exception.DBError();
         }
     }
     if (increaseAssetSupply) {
@@ -148,14 +148,14 @@ export async function updateAssetScheme(
             return instance;
         } catch (err) {
             console.error(err);
-            throw Exception.DBError;
+            throw Exception.DBError();
         }
     }
     console.error(
         "Unsupported transaction type for updateAssetScheme:",
         tx.get()!.type
     );
-    throw Exception.InvalidTransaction;
+    throw Exception.InvalidTransaction();
 }
 
 export async function getByAssetType(
@@ -167,6 +167,6 @@ export async function getByAssetType(
         );
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }

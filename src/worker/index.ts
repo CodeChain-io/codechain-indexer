@@ -78,7 +78,7 @@ export default class Worker {
             const nextBlockNumber = lastIndexedBlockNumber + 1;
             const nextBlock = await sdk.rpc.chain.getBlock(nextBlockNumber);
             if (!nextBlock) {
-                throw InvalidBlockNumber;
+                throw InvalidBlockNumber();
             }
             if (lastIndexedBlockNumber > 0) {
                 const lastIndexedBlockInst = await BlockModel.getByNumber(
@@ -115,7 +115,7 @@ export default class Worker {
                 currentBlockNumber
             );
             if (!currentCodeChainBlock) {
-                throw InvalidBlockNumber;
+                throw InvalidBlockNumber();
             }
 
             if (currentCodeChainBlock.hash.value === currentIndexedBlock.hash) {
@@ -142,7 +142,7 @@ export default class Worker {
                 [block.number]
             );
             if (miningRewardResponse === undefined) {
-                throw InvalidBlockNumber;
+                throw InvalidBlockNumber();
             }
             miningReward = miningRewardResponse;
         }

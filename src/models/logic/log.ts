@@ -37,7 +37,7 @@ export async function decreaseLogCount(
         const newCount = currentCount - count;
         await updateLog(date, type, newCount, value);
     } else {
-        throw Exception.InvalidLogType;
+        throw Exception.InvalidLogType();
     }
 }
 
@@ -57,7 +57,7 @@ async function updateLog(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -74,7 +74,7 @@ export async function getLog(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -90,7 +90,7 @@ export async function getMiningCountLogs(date: string, limit: number) {
         }).then(logs => logs.map(log => log.get({ plain: true })));
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
