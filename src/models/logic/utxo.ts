@@ -44,7 +44,7 @@ export async function createUTXO(
         });
     } catch (err) {
         console.error(err, utxo.assetType.value);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
     return utxoInstance;
 }
@@ -68,7 +68,7 @@ export async function setUsed(
         );
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -77,7 +77,7 @@ async function getAssetSheme(assetType: H160): Promise<AssetSchemeAttribute> {
         assetType
     );
     if (!assetSchemeInstance) {
-        throw Exception.InvalidTransaction;
+        throw Exception.InvalidTransaction();
     }
     return assetSchemeInstance.get({
         plain: true
@@ -94,7 +94,7 @@ export async function getByAddress(address: string): Promise<UTXOInstance[]> {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -108,7 +108,7 @@ export async function getByAssetType(assetType: H160) {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -236,7 +236,7 @@ export async function getUTXO(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -318,7 +318,7 @@ export async function getAggsUTXO(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -372,7 +372,7 @@ export async function getCountOfAggsUTXO(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -389,7 +389,7 @@ export async function getByTxHashIndex(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -406,7 +406,7 @@ export async function getByTxTrackerIndex(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -438,6 +438,6 @@ export async function getSnapshot(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }

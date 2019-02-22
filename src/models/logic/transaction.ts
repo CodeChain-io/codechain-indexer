@@ -205,7 +205,7 @@ export async function createTransaction(
         if (!isPending && isAssetTransaction && success === true) {
             const txInst = await getByHash(tx.hash());
             if (!txInst) {
-                throw Exception.InvalidTransaction;
+                throw Exception.InvalidTransaction();
             }
             await handleUTXO(txInst, tx.blockNumber!);
         }
@@ -215,14 +215,14 @@ export async function createTransaction(
         if (type === "changeAssetScheme" && success === true) {
             const txInst = await getByHash(tx.hash());
             if (!txInst) {
-                throw Exception.InvalidTransaction;
+                throw Exception.InvalidTransaction();
             }
             await updateAssetScheme(txInst);
         }
         if (type === "increaseAssetSupply" && success === true) {
             const txInst = await getByHash(tx.hash());
             if (!txInst) {
-                throw Exception.InvalidTransaction;
+                throw Exception.InvalidTransaction();
             }
             await updateAssetScheme(txInst);
         }
@@ -231,14 +231,14 @@ export async function createTransaction(
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
             if (_.has(duplicateFields, "hash")) {
-                throw Exception.AlreadyExist;
+                throw Exception.AlreadyExist();
             }
         }
-        if (err === Exception.InvalidTransaction) {
+        if (err.message === "InvalidTransaction") {
             throw err;
         }
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -290,7 +290,7 @@ export async function updatePendingTransaction(
         }
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -514,14 +514,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                         prevTracker
                     );
                     if (!prevTransaction) {
-                        throw Exception.InvalidUTXO;
+                        throw Exception.InvalidUTXO();
                     }
                     const utxoInst = await getByTxHashIndex(
                         new H256(prevTransaction.get("hash")),
                         input.prevOut.index
                     );
                     if (!utxoInst) {
-                        throw Exception.InvalidUTXO;
+                        throw Exception.InvalidUTXO();
                     }
                     return await setUsed(
                         utxoInst.get("id"),
@@ -541,14 +541,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                         prevTracker
                     );
                     if (!prevTransaction) {
-                        throw Exception.InvalidUTXO;
+                        throw Exception.InvalidUTXO();
                     }
                     const utxoInst = await getByTxHashIndex(
                         new H256(prevTransaction.get("hash")),
                         burn.prevOut.index
                     );
                     if (!utxoInst) {
-                        throw Exception.InvalidUTXO;
+                        throw Exception.InvalidUTXO();
                     }
                     return setUsed(
                         utxoInst.get("id"),
@@ -571,14 +571,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
                     prevTracker
                 );
                 if (!prevTransaction) {
-                    throw Exception.InvalidUTXO;
+                    throw Exception.InvalidUTXO();
                 }
                 const utxoInst = await getByTxHashIndex(
                     new H256(prevTransaction.get("hash")),
                     input.prevOut.index
                 );
                 if (!utxoInst) {
-                    throw Exception.InvalidUTXO;
+                    throw Exception.InvalidUTXO();
                 }
                 return setUsed(
                     utxoInst.get("id"),
@@ -620,14 +620,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         const prevTracker = input.prevOut.tracker;
         const prevTransaction = await getSuccessfulTransaction(prevTracker);
         if (!prevTransaction) {
-            throw Exception.InvalidUTXO;
+            throw Exception.InvalidUTXO();
         }
         const utxoInst = await getByTxHashIndex(
             new H256(prevTransaction.get("hash")),
             input.prevOut.index
         );
         if (!utxoInst) {
-            throw Exception.InvalidUTXO;
+            throw Exception.InvalidUTXO();
         }
         await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
 
@@ -730,14 +730,14 @@ async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
         const prevTransaction = await getSuccessfulTransaction(prevTracker);
 
         if (!prevTransaction) {
-            throw Exception.InvalidUTXO;
+            throw Exception.InvalidUTXO();
         }
         const utxoInst = await getByTxHashIndex(
             new H256(prevTransaction.get("hash")),
             prevOut.index
         );
         if (!utxoInst) {
-            throw Exception.InvalidUTXO;
+            throw Exception.InvalidUTXO();
         }
         await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
     }
@@ -796,7 +796,7 @@ export async function getPendingTransactions(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -816,7 +816,7 @@ export async function getNumberOfPendingTransactions(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -832,7 +832,7 @@ export async function getByHash(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -994,7 +994,7 @@ export async function getTransactions(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -1034,7 +1034,7 @@ export async function getNumberOfTransactions(params: {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -1046,7 +1046,7 @@ export async function deleteByHash(hash: H256) {
         });
     } catch (err) {
         console.log(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 
@@ -1062,6 +1062,6 @@ export async function getSuccessfulTransaction(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }

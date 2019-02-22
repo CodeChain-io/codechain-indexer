@@ -1,40 +1,7 @@
-interface Exception {
-    code: number;
-    message: string;
-    data?: any;
-}
-
-export const AlreadyExist: Exception = {
-    code: 102,
-    message: "AlreadyExist"
-};
-
-export const DBError: Exception = {
-    code: 103,
-    message: "DBError"
-};
-
-export const InvalidTransaction: Exception = {
-    code: 104,
-    message: "InvalidTransaction"
-};
-
-export const InvalidBlockNumber: Exception = {
-    code: 107,
-    message: "InvalidBlockNumber"
-};
-
-export const InvalidUTXO: Exception = {
-    code: 108,
-    message: "InvalidUTXO"
-};
-
-export const InvalidLogType: Exception = {
-    code: 109,
-    message: "InvalidLogType"
-};
-
-export const InvalidDateParam: Exception = {
-    code: 111,
-    message: "InvalidDateParam"
-};
+export const AlreadyExist = () => new Error("AlreadyExist");
+export const DBError = () => new Error("DBError");
+export const InvalidTransaction = () => new Error("InvalidTransaction");
+export const InvalidBlockNumber = () => new Error("InvalidBlockNumber");
+export const InvalidUTXO = () => new Error("InvalidUTXO");
+export const InvalidLogType = () => new Error("InvalidLogType");
+export const InvalidDateParam = () => new Error("InvalidDateParam");

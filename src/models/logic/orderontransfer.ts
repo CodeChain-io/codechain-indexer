@@ -30,7 +30,7 @@ export async function createOrderOnTransfer(
         }
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 
     return orderOnTransferInstance;
@@ -46,6 +46,6 @@ async function orderNotExist(orderHash: H256) {
         return order == null;
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }

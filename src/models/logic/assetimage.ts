@@ -31,7 +31,7 @@ export async function createAssetImage(
             });
         } catch (err) {
             console.error(err);
-            throw Exception.DBError;
+            throw Exception.DBError();
         }
     }
 }
@@ -45,7 +45,7 @@ export async function getByAssetType(assetType: H160) {
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
 

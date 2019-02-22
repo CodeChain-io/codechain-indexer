@@ -34,7 +34,7 @@ export async function createAssetTransferOutput(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
     return assetTransferOuputInstance;
 }
@@ -51,6 +51,6 @@ export async function getByTransactionHash(
         });
     } catch (err) {
         console.error(err);
-        throw Exception.DBError;
+        throw Exception.DBError();
     }
 }
