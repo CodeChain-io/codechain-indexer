@@ -21,6 +21,9 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                },
                 references: {
                     model: "Transactions",
                     key: "hash"

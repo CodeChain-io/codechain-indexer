@@ -6,6 +6,7 @@ import { createAssetScheme } from "./assetscheme";
 import { createAssetTransferInput } from "./assettransferinput";
 import { getOwner } from "./utils/address";
 import { getAssetName, getAssetScheme } from "./utils/asset";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createComposeAsset(
     transactionHash: string,
@@ -47,19 +48,21 @@ export async function createComposeAsset(
     );
 
     const result = await models.ComposeAsset.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         networkId,
         shardId,
         metadata,
         approver,
         administrator,
-        allowedScriptHashes,
+        allowedScriptHashes: allowedScriptHashes.map(hash =>
+            strip0xPrefix(hash)
+        ),
         approvals,
-        lockScriptHash,
-        parameters,
+        lockScriptHash: strip0xPrefix(lockScriptHash),
+        parameters: parameters.map((p: string) => strip0xPrefix(p)),
         supply,
         assetName,
-        assetType,
+        assetType: strip0xPrefix(assetType),
         recipient
     });
 

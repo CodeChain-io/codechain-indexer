@@ -8,6 +8,7 @@ import { createAssetTransferInput } from "./assettransferinput";
 import { createAssetTransferOutput } from "./assettransferoutput";
 import { createOrderOnTransfer } from "./orderontransfer";
 import { getAssetScheme } from "./utils/asset";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createTransferAsset(
     transactionHash: string,
@@ -22,7 +23,7 @@ export async function createTransferAsset(
 ): Promise<TransferAssetInstance> {
     const { networkId, approvals, inputs, outputs, burns } = params;
     const result = await models.TransferAsset.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         networkId,
         approvals
     });

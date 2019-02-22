@@ -1,5 +1,6 @@
 import models from "../index";
 import { StoreInstance } from "../store";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createStore(
     transactionHash: string,
@@ -8,9 +9,9 @@ export async function createStore(
     signature: string
 ): Promise<StoreInstance> {
     return await models.Store.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         content,
         certifier,
-        signature
+        signature: strip0xPrefix(signature)
     });
 }

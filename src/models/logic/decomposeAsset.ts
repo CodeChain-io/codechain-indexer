@@ -6,6 +6,7 @@ import models from "../index";
 import { createAssetTransferBurn } from "./assettransferburn";
 import { createAssetTransferOutput } from "./assettransferoutput";
 import { getAssetScheme } from "./utils/asset";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createDecomposeAsset(
     transactionHash: string,
@@ -19,7 +20,7 @@ export async function createDecomposeAsset(
     const { networkId, approvals, outputs } = params;
 
     const result = await models.DecomposeAsset.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         networkId,
         approvals
     });

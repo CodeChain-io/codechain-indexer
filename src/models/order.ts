@@ -36,12 +36,18 @@ export default (
             orderHash: {
                 allowNull: false,
                 primaryKey: true,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             transactionHash: {
                 allowNull: false,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                },
                 references: {
                     model: "Transactions",
                     key: "hash"
@@ -49,11 +55,17 @@ export default (
             },
             assetTypeFrom: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             assetTypeTo: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             assetTypeFee: {
                 allowNull: false,
@@ -93,7 +105,10 @@ export default (
             },
             lockScriptHashFrom: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             parametersFrom: {
                 allowNull: false,

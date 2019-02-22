@@ -6,6 +6,7 @@ import { AssetSchemeAttribute } from "../assetscheme";
 import { UTXOAttribute, UTXOInstance } from "../utxo";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createUTXO(
     address: string,
@@ -27,14 +28,16 @@ export async function createUTXO(
         const assetScheme = await getAssetSheme(utxo.assetType);
         utxoInstance = await models.UTXO.create({
             address,
-            assetType: utxo.assetType.value,
+            assetType: strip0xPrefix(utxo.assetType.value),
             shardId: utxo.shardId,
-            lockScriptHash: utxo.lockScriptHash.value,
-            parameters: utxo.parameters,
+            lockScriptHash: strip0xPrefix(utxo.lockScriptHash.value),
+            parameters: utxo.parameters.map(p => strip0xPrefix(p)),
             quantity: utxo.quantity.value.toString(10),
-            orderHash: utxo.orderHash ? utxo.orderHash.value : null,
-            transactionHash: utxo.transactionHash.value,
-            transactionTracker: utxo.transactionTracker.value,
+            orderHash: utxo.orderHash
+                ? strip0xPrefix(utxo.orderHash.value)
+                : null,
+            transactionHash: strip0xPrefix(utxo.transactionHash.value),
+            transactionTracker: strip0xPrefix(utxo.transactionTracker.value),
             transactionOutputIndex: utxo.transactionOutputIndex,
             assetScheme,
             blockNumber
@@ -54,7 +57,7 @@ export async function setUsed(
     try {
         return await models.UTXO.update(
             {
-                usedTransactionHash: usedTransactionHash.value,
+                usedTransactionHash: strip0xPrefix(usedTransactionHash.value),
                 usedBlockNumber: blockNumber
             },
             {
@@ -99,7 +102,7 @@ export async function getByAssetType(assetType: H160) {
     try {
         return await models.UTXO.findAll({
             where: {
-                assetType: assetType.value,
+                assetType: strip0xPrefix(assetType.value),
                 usedTransactionHash: null
             }
         });
@@ -380,7 +383,7 @@ export async function getByTxHashIndex(
     try {
         return await models.UTXO.findOne({
             where: {
-                transactionHash: transactionHash.value,
+                transactionHash: strip0xPrefix(transactionHash.value),
                 transactionOutputIndex: outputIndex
             }
         });
@@ -397,7 +400,7 @@ export async function getByTxTrackerIndex(
     try {
         return await models.UTXO.findOne({
             where: {
-                transactionTracker: transactionTracker.value,
+                transactionTracker: strip0xPrefix(transactionTracker.value),
                 transactionOutputIndex: outputIndex
             }
         });
@@ -414,7 +417,7 @@ export async function getSnapshot(
     try {
         const utxoInsts = await models.UTXO.findAll({
             where: {
-                assetType: assetType.value,
+                assetType: strip0xPrefix(assetType.value),
                 usedBlockNumber: {
                     [Sequelize.Op.or]: [
                         { [Sequelize.Op.gt]: blockNumber },

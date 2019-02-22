@@ -51,7 +51,10 @@ export default (
             },
             lockScriptHash: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             parameters: {
                 allowNull: false,
@@ -68,6 +71,9 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                },
                 references: {
                     model: "Transactions",
                     key: "hash"
@@ -75,15 +81,22 @@ export default (
             },
             transactionTracker: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             transactionOutputIndex: {
                 allowNull: false,
                 type: DataTypes.INTEGER
             },
             usedTransactionHash: {
+                allowNull: true,
                 type: DataTypes.STRING,
                 onDelete: "SET NULL",
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                },
                 references: {
                     model: "Transactions",
                     key: "hash"

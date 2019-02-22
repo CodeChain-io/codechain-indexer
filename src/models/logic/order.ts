@@ -4,6 +4,7 @@ import { AssetOutPointAttribute } from "../assettransferinput";
 import models from "../index";
 import { OrderInstance } from "../order";
 import * as AddressUtil from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createOrder(
     transactionHash: string,
@@ -43,10 +44,10 @@ export async function createOrder(
         );
 
         orderInstance = await models.Order.create({
-            orderHash: order.hash().value,
-            transactionHash,
-            assetTypeFrom: order.assetTypeFrom.value,
-            assetTypeTo: order.assetTypeTo.value,
+            orderHash: strip0xPrefix(order.hash().value),
+            transactionHash: strip0xPrefix(transactionHash),
+            assetTypeFrom: strip0xPrefix(order.assetTypeFrom.value),
+            assetTypeTo: strip0xPrefix(order.assetTypeTo.value),
             assetTypeFee: order.assetTypeFee.value,
             shardIdFrom: order.shardIdFrom,
             shardIdTo: order.shardIdTo,
@@ -56,8 +57,10 @@ export async function createOrder(
             assetQuantityTo: order.assetQuantityTo.value.toString(10),
             assetQuantityFee: order.assetQuantityFee.value.toString(10),
             expiration: order.expiration.value.toString(10),
-            lockScriptHashFrom: order.lockScriptHashFrom.value,
-            parametersFrom: order.parametersFrom.map(p => p.toString("hex")),
+            lockScriptHashFrom: strip0xPrefix(order.lockScriptHashFrom.value),
+            parametersFrom: order.parametersFrom.map(p =>
+                strip0xPrefix(p.toString("hex"))
+            ),
             lockScriptHashFee: order.lockScriptHashFee.value,
             parametersFee: order.parametersFee.map(p => p.toString("hex"))
         });

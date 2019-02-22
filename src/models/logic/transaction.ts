@@ -49,6 +49,7 @@ import { createStore } from "./store";
 import { createTransferAsset } from "./transferAsset";
 import { createUnwrapCCC } from "./unwrapCCC";
 import { getOwner } from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 import { createUTXO, getByTxHashIndex, setUsed } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
@@ -80,21 +81,21 @@ export async function createTransaction(
             ? ((tx.unsigned as any) as AssetTransaction).tracker().value
             : null;
         const txInstance = await models.Transaction.create({
-            hash,
+            hash: strip0xPrefix(hash),
             type,
             blockNumber: tx.blockNumber,
-            blockHash: tx.blockHash && tx.blockHash.value,
-            tracker,
+            blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
+            tracker: tracker && strip0xPrefix(tracker),
             transactionIndex: tx.transactionIndex,
             seq: tx.unsigned.seq()!,
             fee: tx.unsigned.fee()!.toString(10)!,
             networkId: tx.unsigned.networkId(),
-            sig: tx.toJSON().sig,
+            sig: strip0xPrefix(tx.toJSON().sig),
             signer: tx.getSignerAddress({
                 networkId: tx.unsigned.networkId()
             }).value,
             success,
-            errorHint,
+            errorHint: errorHint && strip0xPrefix(errorHint),
             timestamp,
             isPending,
             pendingTimestamp: isPending ? +new Date() / 1000 : null
@@ -256,11 +257,11 @@ export async function updatePendingTransaction(
     try {
         await models.Transaction.update(
             {
-                blockHash: params.blockHash.value,
+                blockHash: strip0xPrefix(params.blockHash.value),
                 transactionIndex: params.transactionIndex,
                 blockNumber: params.blockNumber,
                 success: params.success,
-                errorHint: params.errorHint,
+                errorHint: params.errorHint && strip0xPrefix(params.errorHint),
                 timestamp: params.timestamp,
                 isPending: false
             },
@@ -302,7 +303,7 @@ async function updateCreateShard(tx: TransactionInstance, sdk: SDK) {
         },
         {
             where: {
-                transactionHash: hash
+                transactionHash: strip0xPrefix(hash)
             }
         }
     );
@@ -783,7 +784,7 @@ export async function getPendingTransactions(params: {
             },
             order: [["pendingTimestamp", "DESC"]],
             include: includeArray
-        }).then(instances => instances.map(i => i.get().hash));
+        }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
         return await models.Transaction.findAll({
             where: {
                 hash: {
@@ -825,7 +826,7 @@ export async function getByHash(
     try {
         return await models.Transaction.findOne({
             where: {
-                hash: hash.value
+                hash: strip0xPrefix(hash.value)
             },
             include: includeArray
         });
@@ -981,7 +982,7 @@ export async function getTransactions(params: {
             offset: (page! - 1) * itemsPerPage!,
             subQuery: false,
             include: includeArray
-        }).then(instances => instances.map(i => i.get().hash));
+        }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
         return await models.Transaction.findAll({
             where: {
                 hash: {
@@ -1041,7 +1042,7 @@ export async function getNumberOfTransactions(params: {
 export async function deleteByHash(hash: H256) {
     try {
         return await models.Transaction.destroy({
-            where: { hash: hash.value }
+            where: { hash: strip0xPrefix(hash.value) }
         });
     } catch (err) {
         console.log(err);
@@ -1055,7 +1056,7 @@ export async function getSuccessfulTransaction(
     try {
         return await models.Transaction.findOne({
             where: {
-                tracker,
+                tracker: strip0xPrefix(tracker),
                 success: true
             }
         });

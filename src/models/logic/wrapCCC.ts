@@ -3,6 +3,7 @@ import models from "../index";
 import { WrapCCCInstance } from "../wrapCCC";
 import { createAssetSchemeOfWCCC } from "./assetscheme";
 import { getOwner } from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createWrapCCC(
     transactionHash: string,
@@ -20,10 +21,10 @@ export async function createWrapCCC(
     const recipient = getOwner(new H160(lockScriptHash), parameters, networkId);
 
     const result = await models.WrapCCC.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         shardId,
-        lockScriptHash,
-        parameters,
+        lockScriptHash: strip0xPrefix(lockScriptHash),
+        parameters: parameters.map(p => strip0xPrefix(p)),
         quantity,
         recipient
     });

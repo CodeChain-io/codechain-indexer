@@ -5,6 +5,7 @@ import { AssetTransferInputInstance } from "../assettransferinput";
 import models from "../index";
 import { UTXOAttribute } from "../utxo";
 import * as AddressUtil from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 import { getByTxTrackerIndex } from "./utxo";
 
 // FIXME: This is duplicated with asset transfer-burn, decompose input
@@ -39,23 +40,23 @@ export async function createAssetTransferInput(
                 options.networkId
             );
         assetTransferInputInstance = await models.AssetTransferInput.create({
-            transactionHash,
+            transactionHash: strip0xPrefix(transactionHash),
             timelock: input.timelock,
             lockScript: input.lockScript,
             unlockScript: input.unlockScript,
             owner,
-            assetType: input.prevOut.assetType.value,
+            assetType: strip0xPrefix(input.prevOut.assetType.value),
             shardId: input.prevOut.shardId,
             prevOut: {
-                tracker: input.prevOut.tracker.value,
-                hash: prevHash,
+                tracker: strip0xPrefix(input.prevOut.tracker.value),
+                hash: strip0xPrefix(prevHash),
                 index: input.prevOut.index,
-                assetType: input.prevOut.assetType.value,
+                assetType: strip0xPrefix(input.prevOut.assetType.value),
                 shardId: input.prevOut.shardId,
                 quantity: input.prevOut.quantity.value.toString(10),
                 owner,
-                lockScriptHash,
-                parameters
+                lockScriptHash: strip0xPrefix(lockScriptHash),
+                parameters: parameters.map(p => strip0xPrefix(p))
             }
         });
     } catch (err) {
@@ -72,7 +73,7 @@ export async function getByTransactionHash(
     try {
         return await models.AssetTransferInput.findAll({
             where: {
-                transactionHash
+                transactionHash: strip0xPrefix(transactionHash)
             }
         });
     } catch (err) {

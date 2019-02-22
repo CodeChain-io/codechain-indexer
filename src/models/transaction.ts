@@ -107,7 +107,10 @@ export default (
             hash: {
                 primaryKey: true,
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
             blockNumber: {
                 type: DataTypes.INTEGER
@@ -118,11 +121,17 @@ export default (
                 references: {
                     model: "Blocks",
                     key: "hash"
+                },
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
                 }
             },
 
             tracker: {
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{64}$"]
+                }
             },
 
             transactionIndex: {
@@ -146,7 +155,10 @@ export default (
             },
             sig: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{130}$"]
+                }
             },
             signer: {
                 allowNull: false,

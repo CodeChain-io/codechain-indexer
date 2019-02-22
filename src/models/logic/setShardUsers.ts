@@ -1,5 +1,6 @@
 import models from "../index";
 import { SetShardUsersInstance } from "../setShardUsers";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createSetShardUsers(
     transactionHash: string,
@@ -7,7 +8,7 @@ export async function createSetShardUsers(
     users: string[]
 ): Promise<SetShardUsersInstance> {
     return await models.SetShardUsers.create({
-        transactionHash,
+        transactionHash: strip0xPrefix(transactionHash),
         shardId,
         users
     });

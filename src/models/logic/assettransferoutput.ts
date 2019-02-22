@@ -4,6 +4,7 @@ import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
+import { strip0xPrefix } from "./utils/format";
 
 export async function createAssetTransferOutput(
     transactionHash: string,
@@ -23,10 +24,10 @@ export async function createAssetTransferOutput(
             params.networkId
         );
         assetTransferOuputInstance = await models.AssetTransferOutput.create({
-            transactionHash,
-            lockScriptHash: output.lockScriptHash.value,
-            parameters,
-            assetType: output.assetType.value,
+            transactionHash: strip0xPrefix(transactionHash),
+            lockScriptHash: strip0xPrefix(output.lockScriptHash.value),
+            parameters: parameters.map(p => strip0xPrefix(p)),
+            assetType: strip0xPrefix(output.assetType.value),
             shardId: output.shardId,
             quantity: output.quantity.value.toString(10),
             owner
@@ -45,7 +46,7 @@ export async function getByTransactionHash(
     try {
         return await models.AssetTransferOutput.findAll({
             where: {
-                transactionHash
+                transactionHash: strip0xPrefix(transactionHash)
             }
         });
     } catch (err) {
