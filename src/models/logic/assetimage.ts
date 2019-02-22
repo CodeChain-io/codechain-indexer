@@ -19,7 +19,7 @@ export async function createAssetImage(
                 .toBuffer();
         }
     } catch (e) {
-        console.log(e);
+        // assetURL can be an invalid form or unable to download.
     }
     if (imageDataBuffer) {
         try {
