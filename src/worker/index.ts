@@ -162,10 +162,15 @@ export default class Worker {
                 };
             })
         );
-        await BlockModel.createBlock(block, sdk, {
-            miningReward: new U64(miningReward),
-            invoices
-        });
+        try {
+            await BlockModel.createBlock(block, sdk, {
+                miningReward: new U64(miningReward),
+                invoices
+            });
+        } catch (err) {
+            await BlockModel.deleteBlockByNumber(block.number);
+            throw err;
+        }
         const blockInstance = await BlockModel.getByHash(block.hash);
         const blockAttribute = blockInstance!.get({ plain: true });
         await AccountUtil.updateAccount(
