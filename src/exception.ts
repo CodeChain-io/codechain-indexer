@@ -4,11 +4,6 @@ interface Exception {
     data?: any;
 }
 
-export const NotFound: Exception = {
-    code: 101,
-    message: "NotFound"
-};
-
 export const AlreadyExist: Exception = {
     code: 102,
     message: "AlreadyExist"
@@ -24,11 +19,6 @@ export const InvalidTransaction: Exception = {
     message: "InvalidTransaction"
 };
 
-export const InvalidAction: Exception = {
-    code: 105,
-    message: "InvalidAction"
-};
-
 export const InvalidBlockNumber: Exception = {
     code: 107,
     message: "InvalidBlockNumber"
@@ -42,11 +32,6 @@ export const InvalidUTXO: Exception = {
 export const InvalidLogType: Exception = {
     code: 109,
     message: "InvalidLogType"
-};
-
-export const NotImplmeneted: Exception = {
-    code: 110,
-    message: "NotImplemented"
 };
 
 export const InvalidDateParam: Exception = {
