@@ -1,7 +1,14 @@
 import { H160, H256 } from "codechain-primitives/lib";
 import { Router } from "express";
+import * as Joi from "joi";
 import { IndexerContext } from "../context";
 import * as TxModel from "../models/logic/transaction";
+import {
+    paginationSchema,
+    pendingTxSchema,
+    txSchema,
+    validate
+} from "./validator";
 
 /**
  * @swagger
@@ -82,47 +89,57 @@ export function handle(_C: IndexerContext, router: Router) {
      *           items:
      *             $ref: '#/definitions/Transaction'
      */
-    router.get("/tx", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const type = req.query.type;
-        const trackerString = req.query.tracker;
-        const page = req.query.page && parseInt(req.query.page, 10);
-        const itemsPerPage =
-            req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
-        const onlyConfirmed =
-            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
-        const onlySuccessful =
-            req.query.onlySuccessful && req.query.onlySuccessful === "true";
-        const confirmThreshold =
-            req.query.confirmThreshold &&
-            parseInt(req.query.confirmThreshold, 10);
-        let assetType;
-        let tracker;
-        try {
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/tx",
+        validate({
+            query: {
+                ...txSchema,
+                ...paginationSchema
             }
-            if (trackerString) {
-                tracker = new H256(trackerString);
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const type = req.query.type;
+            const trackerString = req.query.tracker;
+            const page = req.query.page && parseInt(req.query.page, 10);
+            const itemsPerPage =
+                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+            const onlyConfirmed =
+                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+            const onlySuccessful =
+                req.query.onlySuccessful && req.query.onlySuccessful === "true";
+            const confirmThreshold =
+                req.query.confirmThreshold &&
+                parseInt(req.query.confirmThreshold, 10);
+            let assetType;
+            let tracker;
+            try {
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                if (trackerString) {
+                    tracker = new H256(trackerString);
+                }
+                const txInsts = await TxModel.getTransactions({
+                    address,
+                    assetType,
+                    type:
+                        typeof type === "string" ? type.split(",") : undefined,
+                    tracker,
+                    page,
+                    itemsPerPage,
+                    onlyConfirmed,
+                    onlySuccessful,
+                    confirmThreshold
+                });
+                const txs = txInsts.map(tx => tx.get({ plain: true }));
+                res.json(txs);
+            } catch (e) {
+                next(e);
             }
-            const txInsts = await TxModel.getTransactions({
-                address,
-                assetType,
-                type: typeof type === "string" ? type.split(",") : undefined,
-                tracker,
-                page,
-                itemsPerPage,
-                onlyConfirmed,
-                onlySuccessful,
-                confirmThreshold
-            });
-            const txs = txInsts.map(tx => tx.get({ plain: true }));
-            res.json(txs);
-        } catch (e) {
-            next(e);
         }
-    });
+    );
 
     /**
      * @swagger
@@ -173,41 +190,48 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: number
      *           example: 24
      */
-    router.get("/tx/count", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const type = req.query.type;
-        const trackerString = req.query.tracker;
-        const onlyConfirmed =
-            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
-        const onlySuccessful =
-            req.query.onlySuccessful && req.query.onlySuccessful === "true";
-        const confirmThreshold =
-            req.query.confirmThreshold &&
-            parseInt(req.query.confirmThreshold, 10);
-        let assetType;
-        let tracker;
-        try {
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/tx/count",
+        validate({
+            query: { ...txSchema }
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const type = req.query.type;
+            const trackerString = req.query.tracker;
+            const onlyConfirmed =
+                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+            const onlySuccessful =
+                req.query.onlySuccessful && req.query.onlySuccessful === "true";
+            const confirmThreshold =
+                req.query.confirmThreshold &&
+                parseInt(req.query.confirmThreshold, 10);
+            let assetType;
+            let tracker;
+            try {
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                if (trackerString) {
+                    tracker = new H256(trackerString);
+                }
+                const count = await TxModel.getNumberOfTransactions({
+                    address,
+                    assetType,
+                    type:
+                        typeof type === "string" ? type.split(",") : undefined,
+                    tracker,
+                    onlyConfirmed,
+                    onlySuccessful,
+                    confirmThreshold
+                });
+                res.json(count);
+            } catch (e) {
+                next(e);
             }
-            if (trackerString) {
-                tracker = new H256(trackerString);
-            }
-            const count = await TxModel.getNumberOfTransactions({
-                address,
-                assetType,
-                type: typeof type === "string" ? type.split(",") : undefined,
-                tracker,
-                onlyConfirmed,
-                onlySuccessful,
-                confirmThreshold
-            });
-            res.json(count);
-        } catch (e) {
-            next(e);
         }
-    });
+    );
 
     /**
      * @swagger
@@ -228,16 +252,24 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: object
      *           $ref: '#/definitions/Transaction'
      */
-    router.get("/tx/:hash", async (req, res, next) => {
-        const hashString = req.params.hash;
-        try {
-            const hash = new H256(hashString);
-            const txInst = await TxModel.getByHash(hash);
-            res.json(txInst ? txInst.get({ plain: true }) : null);
-        } catch (e) {
-            next(e);
+    router.get(
+        "/tx/:hash",
+        validate({
+            params: {
+                hash: Joi.string().regex(/^(0x)?[0-9a-f]{64}$/)
+            }
+        }),
+        async (req, res, next) => {
+            const hashString = req.params.hash;
+            try {
+                const hash = new H256(hashString);
+                const txInst = await TxModel.getByHash(hash);
+                res.json(txInst ? txInst.get({ plain: true }) : null);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -269,28 +301,36 @@ export function handle(_C: IndexerContext, router: Router) {
      *           items:
      *             $ref: '#/definitions/Transaction'
      */
-    router.get("/pending-tx", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const type = req.query.type;
-        try {
-            let assetType;
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/pending-tx",
+        validate({
+            query: {
+                ...pendingTxSchema
             }
-            const pendingTxInsts = await TxModel.getPendingTransactions({
-                address,
-                assetType,
-                type: typeof type === "string" ? type.split(",") : undefined
-            });
-            const pendingTxs = pendingTxInsts.map(tx =>
-                tx.get({ plain: true })
-            );
-            res.json(pendingTxs);
-        } catch (e) {
-            next(e);
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const type = req.query.type;
+            try {
+                let assetType;
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                const pendingTxInsts = await TxModel.getPendingTransactions({
+                    address,
+                    assetType,
+                    type: typeof type === "string" ? type.split(",") : undefined
+                });
+                const pendingTxs = pendingTxInsts.map(tx =>
+                    tx.get({ plain: true })
+                );
+                res.json(pendingTxs);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
     /**
      * @swagger
      * /pending-tx/count:
@@ -320,23 +360,31 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: number
      *           example: 12
      */
-    router.get("/pending-tx/count", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const type = req.query.type;
-        try {
-            let assetType;
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/pending-tx/count",
+        validate({
+            query: {
+                ...pendingTxSchema
             }
-            const count = await TxModel.getNumberOfPendingTransactions({
-                address,
-                assetType,
-                type: typeof type === "string" ? type.split(",") : undefined
-            });
-            res.json(count);
-        } catch (e) {
-            next(e);
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const type = req.query.type;
+            try {
+                let assetType;
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                const count = await TxModel.getNumberOfPendingTransactions({
+                    address,
+                    assetType,
+                    type: typeof type === "string" ? type.split(",") : undefined
+                });
+                res.json(count);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 }
