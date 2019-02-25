@@ -55,7 +55,11 @@ export function createServer(context: IndexerContext) {
 
 const handleErrors: express.ErrorRequestHandler = (err, _R, res, next) => {
     if (err.status >= 400 && err.status < 500) {
-        return res.status(err.status).send(err.statusText);
+        if (process.env.NODE_ENV === "production") {
+            return res.status(err.status).send(err.statusText);
+        } else {
+            return res.status(err.status).send(err);
+        }
     }
 
     log.error(err);
