@@ -148,8 +148,10 @@ export default class Worker {
         }
         const invoices = await Promise.all(
             block.transactions.map(async tx => {
-                const invoice = await sdk.rpc.chain.getInvoice(tx.hash());
-                if (invoice) {
+                const result = await sdk.rpc.chain.getTransactionResult(
+                    tx.hash()
+                );
+                if (result) {
                     return {
                         success: true,
                         errorHint: undefined

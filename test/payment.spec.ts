@@ -54,10 +54,9 @@ test("Pay large amount", async done => {
             seq
         })
     );
-    const invoice = (await Helper.sdk.rpc.chain.getInvoice(hash, {
+    expect(await Helper.sdk.rpc.chain.getTransactionResult(hash, {
         timeout: 300 * 1000
-    }))!;
-    expect(invoice).toEqual(true);
+    })).toEqual(true);
 
     const paymentBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
     const paymentBlock = await Helper.sdk.rpc.chain.getBlock(

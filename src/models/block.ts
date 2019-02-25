@@ -10,7 +10,7 @@ export interface BlockAttribute {
     extraData: Buffer;
     transactionsRoot: string;
     stateRoot: string;
-    invoicesRoot: string;
+    resultsRoot: string;
     score: string;
     seal: Buffer[];
     miningReward: string;
@@ -73,7 +73,7 @@ export default (
                     is: ["^[a-f0-9]{64}$"]
                 }
             },
-            invoicesRoot: {
+            resultsRoot: {
                 allowNull: false,
                 type: DataTypes.STRING,
                 validate: {
