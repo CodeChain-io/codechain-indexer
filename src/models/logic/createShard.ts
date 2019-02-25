@@ -3,9 +3,11 @@ import models from "../index";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createCreateShard(
-    transactionHash: string
+    transactionHash: string,
+    users: string[]
 ): Promise<CreateShardInstance> {
     return await models.CreateShard.create({
-        transactionHash: strip0xPrefix(transactionHash)
+        transactionHash: strip0xPrefix(transactionHash),
+        users
     });
 }

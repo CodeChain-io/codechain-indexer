@@ -14,6 +14,7 @@ import {
 } from "codechain-sdk/lib/core/classes";
 import { AssetTransaction } from "codechain-sdk/lib/core/Transaction";
 import { ComposeAssetActionJSON } from "codechain-sdk/lib/core/transaction/ComposeAsset";
+import { CreateShardActionJSON } from "codechain-sdk/lib/core/transaction/CreateShard";
 import { CustomActionJSON } from "codechain-sdk/lib/core/transaction/Custom";
 import { DecomposeAssetActionJSON } from "codechain-sdk/lib/core/transaction/DecomposeAsset";
 import { IncreaseAssetSupply } from "codechain-sdk/lib/core/transaction/IncreaseAssetSupply";
@@ -162,7 +163,8 @@ export async function createTransaction(
                 break;
             }
             case "createShard": {
-                await createCreateShard(hash);
+                const { users } = tx.toJSON().action as CreateShardActionJSON;
+                await createCreateShard(hash, users);
                 break;
             }
             case "setShardOwners": {

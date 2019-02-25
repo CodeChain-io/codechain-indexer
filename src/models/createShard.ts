@@ -3,6 +3,7 @@ import * as Sequelize from "sequelize";
 export interface CreateShardAttribute {
     transactionHash: string;
     shardId?: number;
+    users: string[];
 }
 
 export interface CreateShardInstance
@@ -31,6 +32,10 @@ export default (
 
             shardId: {
                 type: DataTypes.INTEGER
+            },
+            users: {
+                allowNull: false,
+                type: DataTypes.JSONB
             },
 
             createdAt: {
