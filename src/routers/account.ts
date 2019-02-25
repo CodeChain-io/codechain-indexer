@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as AccountModel from "../models/logic/account";
+import { paginationSchema, platformAddressSchema, validate } from "./validator";
 
 /**
  * @swagger
@@ -41,23 +42,27 @@ export function handle(_C: IndexerContext, router: Router) {
      *                 type: number
      *                 example: 1231
      */
-    router.get("/account", async (req, res, next) => {
-        const page = req.query.page && parseInt(req.query.page, 10);
-        const itemsPerPage =
-            req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
-        try {
-            const accountInsts = await AccountModel.getAccounts({
-                page,
-                itemsPerPage
-            });
-            const accounts = accountInsts.map(inst =>
-                inst.get({ plain: true })
-            );
-            res.json(accounts);
-        } catch (e) {
-            next(e);
+    router.get(
+        "/account",
+        validate({ query: { ...paginationSchema } }),
+        async (req, res, next) => {
+            const page = req.query.page && parseInt(req.query.page, 10);
+            const itemsPerPage =
+                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+            try {
+                const accountInsts = await AccountModel.getAccounts({
+                    page,
+                    itemsPerPage
+                });
+                const accounts = accountInsts.map(inst =>
+                    inst.get({ plain: true })
+                );
+                res.json(accounts);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -105,13 +110,17 @@ export function handle(_C: IndexerContext, router: Router) {
      *               type: number
      *               example: 1231
      */
-    router.get("/account/:address", async (req, res, next) => {
-        const address = req.params.address;
-        try {
-            const accountInst = await AccountModel.getByAddress(address);
-            res.json(accountInst ? accountInst.get({ plain: true }) : null);
-        } catch (e) {
-            next(e);
+    router.get(
+        "/account/:address",
+        validate({ params: { address: platformAddressSchema } }),
+        async (req, res, next) => {
+            const address = req.params.address;
+            try {
+                const accountInst = await AccountModel.getByAddress(address);
+                res.json(accountInst ? accountInst.get({ plain: true }) : null);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 }

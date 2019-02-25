@@ -2,6 +2,7 @@ import { Router } from "express";
 import { IndexerContext } from "../context";
 import { LogType } from "../models/log";
 import * as LogModel from "../models/logic/log";
+import { logCountSchema, logMinersSchema, validate } from "./validator";
 
 /**
  * @swagger
@@ -35,30 +36,26 @@ export function handle(_C: IndexerContext, router: Router) {
      *       400:
      *         description: either filter or date is invalid
      */
-    router.get("/log/count", async (req, res) => {
-        const filter = req.query.filter;
-        const date = req.query.date;
-        if (!isFilterValid(filter)) {
-            res.status(400).send();
-            return;
+    router.get(
+        "/log/count",
+        validate({ query: { ...logCountSchema } }),
+        async (req, res) => {
+            const filter = req.query.filter;
+            const date = req.query.date;
+            LogModel.getLog(date, getLogTypeFromFilter(filter), null)
+                .then(instance => {
+                    if (instance == null) {
+                        res.json(0);
+                        return;
+                    }
+                    res.json(instance.get().count);
+                })
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).send();
+                });
         }
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-            res.status(400).send();
-            return;
-        }
-        LogModel.getLog(date, getLogTypeFromFilter(filter), null)
-            .then(instance => {
-                if (instance == null) {
-                    res.json(0);
-                    return;
-                }
-                res.json(instance.get().count);
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).send();
-            });
-    });
+    );
 
     /**
      * @swagger
@@ -78,49 +75,27 @@ export function handle(_C: IndexerContext, router: Router) {
      *       400:
      *         description: date is invalid
      */
-    router.get("/log/miners", async (req, res, next) => {
-        const date = req.query.date;
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-            res.status(400).send();
-            return;
+    router.get(
+        "/log/miners",
+        validate({ query: { ...logMinersSchema } }),
+        async (req, res, next) => {
+            const date = req.query.date;
+            LogModel.getMiningCountLogs(date, 5)
+                .then(logs => {
+                    res.json(
+                        logs.map(log => ({
+                            address: log.value,
+                            count: log.count
+                        }))
+                    );
+                })
+                .catch(err => {
+                    console.error(err);
+                    next(err);
+                });
         }
-        LogModel.getMiningCountLogs(date, 5)
-            .then(logs => {
-                res.json(
-                    logs.map(log => ({ address: log.value, count: log.count }))
-                );
-            })
-            .catch(err => {
-                console.error(err);
-                next(err);
-            });
-    });
-}
-
-const isFilterValid = (filter: string): boolean => {
-    return (
-        [
-            "block",
-            "tx",
-            "pay",
-            "setRegularKey",
-            "setShardOwner",
-            "setShardUser",
-            "createShard",
-            "mintAsset",
-            "transferAsset",
-            "composeAsset",
-            "decomposeAsset",
-            "changeAssetScheme",
-            "increaseAssetSupply",
-            "store",
-            "remove",
-            "custom",
-            "wrapCCC",
-            "unwrapCCC"
-        ].findIndex(type => type.toLowerCase() === filter.toLowerCase()) >= 0
     );
-};
+}
 
 const getLogTypeFromFilter = (filter: string): LogType => {
     switch (filter.toLowerCase()) {

@@ -7,6 +7,13 @@ import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
 import * as BlockModel from "../models/logic/block";
 import * as UTXOModel from "../models/logic/utxo";
+import {
+    assetTypeSchema,
+    paginationSchema,
+    snapshotSchema,
+    utxoSchema,
+    validate
+} from "./validator";
 
 /**
  * @swagger
@@ -94,36 +101,45 @@ export function handle(_C: IndexerContext, router: Router) {
      *           items:
      *             $ref: '#/definitions/UTXO'
      */
-    router.get("/utxo", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const page = req.query.page && parseInt(req.query.page, 10);
-        const itemsPerPage =
-            req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
-        const onlyConfirmed =
-            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
-        const confirmThreshold =
-            req.query.confirmThreshold &&
-            parseInt(req.query.confirmThreshold, 10);
-        let assetType;
-        try {
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/utxo",
+        validate({
+            query: {
+                ...utxoSchema,
+                ...paginationSchema
             }
-            const utxoInsts = await UTXOModel.getUTXO({
-                address,
-                assetType,
-                page,
-                itemsPerPage,
-                onlyConfirmed,
-                confirmThreshold
-            });
-            const utxo = utxoInsts.map(inst => inst.get({ plain: true }));
-            res.json(utxo);
-        } catch (e) {
-            next(e);
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const page = req.query.page && parseInt(req.query.page, 10);
+            const itemsPerPage =
+                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+            const onlyConfirmed =
+                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+            const confirmThreshold =
+                req.query.confirmThreshold &&
+                parseInt(req.query.confirmThreshold, 10);
+            let assetType;
+            try {
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                const utxoInsts = await UTXOModel.getUTXO({
+                    address,
+                    assetType,
+                    page,
+                    itemsPerPage,
+                    onlyConfirmed,
+                    confirmThreshold
+                });
+                const utxo = utxoInsts.map(inst => inst.get({ plain: true }));
+                res.json(utxo);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -144,20 +160,28 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: object
      *           $ref: '#/definitions/AssetScheme'
      */
-    router.get("/asset-scheme/:assetType", async (req, res, next) => {
-        const assetTypeString = req.params.assetType;
-        try {
-            const assetType = new H160(assetTypeString);
-            const assetSchemeInst = await AssetSchemeModel.getByAssetType(
-                assetType
-            );
-            res.json(
-                assetSchemeInst ? assetSchemeInst.get({ plain: true }) : null
-            );
-        } catch (e) {
-            next(e);
+    router.get(
+        "/asset-scheme/:assetType",
+        validate({
+            params: { assetType: assetTypeSchema.required() }
+        }),
+        async (req, res, next) => {
+            const assetTypeString = req.params.assetType;
+            try {
+                const assetType = new H160(assetTypeString);
+                const assetSchemeInst = await AssetSchemeModel.getByAssetType(
+                    assetType
+                );
+                res.json(
+                    assetSchemeInst
+                        ? assetSchemeInst.get({ plain: true })
+                        : null
+                );
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -177,27 +201,35 @@ export function handle(_C: IndexerContext, router: Router) {
      *         schema:
      *           type: image
      */
-    router.get("/asset-image/:assetType", async (req, res, next) => {
-        const assetTypeString = req.params.assetType;
-        try {
-            const assetType = new H160(assetTypeString);
-            const assetImageInst = await AssetImageModel.getByAssetType(
-                assetType
-            );
-            if (!assetImageInst) {
-                res.status(404).send("Not found");
-                return;
+    router.get(
+        "/asset-image/:assetType",
+        validate({
+            params: {
+                assetType: assetTypeSchema.required()
             }
-            const { image } = assetImageInst.get();
-            res.writeHead(200, {
-                "Content-Type": "image/png",
-                "Content-Length": image.byteLength
-            });
-            res.end(image);
-        } catch (e) {
-            next(e);
+        }),
+        async (req, res, next) => {
+            const assetTypeString = req.params.assetType;
+            try {
+                const assetType = new H160(assetTypeString);
+                const assetImageInst = await AssetImageModel.getByAssetType(
+                    assetType
+                );
+                if (!assetImageInst) {
+                    res.status(404).send("Not found");
+                    return;
+                }
+                const { image } = assetImageInst.get();
+                res.writeHead(200, {
+                    "Content-Type": "image/png",
+                    "Content-Length": image.byteLength
+                });
+                res.end(image);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -243,36 +275,45 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: object
      *           $ref: '#/definitions/AggsUTXO'
      */
-    router.get("/aggs-utxo", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const page = req.query.page && parseInt(req.query.page, 10);
-        const itemsPerPage =
-            req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
-        const onlyConfirmed =
-            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
-        const confirmThreshold =
-            req.query.confirmThreshold &&
-            parseInt(req.query.confirmThreshold, 10);
-        let assetType;
-        try {
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/aggs-utxo",
+        validate({
+            query: {
+                ...utxoSchema,
+                ...paginationSchema
             }
-            const aggsInst = await UTXOModel.getAggsUTXO({
-                address,
-                assetType,
-                page,
-                itemsPerPage,
-                onlyConfirmed,
-                confirmThreshold
-            });
-            const utxo = aggsInst.map(inst => inst.get({ plain: true }));
-            res.json(utxo);
-        } catch (e) {
-            next(e);
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const page = req.query.page && parseInt(req.query.page, 10);
+            const itemsPerPage =
+                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+            const onlyConfirmed =
+                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+            const confirmThreshold =
+                req.query.confirmThreshold &&
+                parseInt(req.query.confirmThreshold, 10);
+            let assetType;
+            try {
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                const aggsInst = await UTXOModel.getAggsUTXO({
+                    address,
+                    assetType,
+                    page,
+                    itemsPerPage,
+                    onlyConfirmed,
+                    confirmThreshold
+                });
+                const utxo = aggsInst.map(inst => inst.get({ plain: true }));
+                res.json(utxo);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -308,30 +349,38 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: object
      *           $ref: '#/definitions/AggsUTXO'
      */
-    router.get("/aggs-utxo/count", async (req, res, next) => {
-        const address = req.query.address;
-        const assetTypeString = req.query.assetType;
-        const onlyConfirmed =
-            req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
-        const confirmThreshold =
-            req.query.confirmThreshold &&
-            parseInt(req.query.confirmThreshold, 10);
-        let assetType;
-        try {
-            if (assetTypeString) {
-                assetType = new H160(assetTypeString);
+    router.get(
+        "/aggs-utxo/count",
+        validate({
+            query: {
+                ...utxoSchema
             }
-            const count = await UTXOModel.getCountOfAggsUTXO({
-                address,
-                assetType,
-                onlyConfirmed,
-                confirmThreshold
-            });
-            res.json(count);
-        } catch (e) {
-            next(e);
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const assetTypeString = req.query.assetType;
+            const onlyConfirmed =
+                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+            const confirmThreshold =
+                req.query.confirmThreshold &&
+                parseInt(req.query.confirmThreshold, 10);
+            let assetType;
+            try {
+                if (assetTypeString) {
+                    assetType = new H160(assetTypeString);
+                }
+                const count = await UTXOModel.getCountOfAggsUTXO({
+                    address,
+                    assetType,
+                    onlyConfirmed,
+                    confirmThreshold
+                });
+                res.json(count);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -365,33 +414,43 @@ export function handle(_C: IndexerContext, router: Router) {
      *               items:
      *                 $ref: '#/definitions/UTXO'
      */
-    router.get("/snapshot", async (req, res, next) => {
-        const assetTypeString = req.query.assetType;
-        const date = req.query.date;
-        try {
-            const assetType = new H160(assetTypeString);
-            const snapshotTime = moment(date);
-            if (!snapshotTime.isValid()) {
-                throw Exception.InvalidDateParam();
+    router.get(
+        "/snapshot",
+        validate({
+            query: {
+                ...snapshotSchema
             }
+        }),
+        async (req, res, next) => {
+            const assetTypeString = req.query.assetType;
+            const date = req.query.date;
+            try {
+                const assetType = new H160(assetTypeString);
+                const snapshotTime = moment(date);
+                if (!snapshotTime.isValid()) {
+                    throw Exception.InvalidDateParam();
+                }
 
-            const block = await BlockModel.getByTime(snapshotTime.utc().unix());
-            if (!block) {
-                res.json(null);
-                return;
+                const block = await BlockModel.getByTime(
+                    snapshotTime.utc().unix()
+                );
+                if (!block) {
+                    res.json(null);
+                    return;
+                }
+
+                const snapshot = await UTXOModel.getSnapshot(
+                    assetType,
+                    block.get("number")
+                );
+                res.json({
+                    blockHash: block.get("hash"),
+                    blockNumber: block.get("number"),
+                    snapshot
+                });
+            } catch (e) {
+                next(e);
             }
-
-            const snapshot = await UTXOModel.getSnapshot(
-                assetType,
-                block.get("number")
-            );
-            res.json({
-                blockHash: block.get("hash"),
-                blockNumber: block.get("number"),
-                snapshot
-            });
-        } catch (e) {
-            next(e);
         }
-    });
+    );
 }

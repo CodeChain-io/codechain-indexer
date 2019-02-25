@@ -2,6 +2,7 @@ import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
+import { blockSchema, paginationSchema, validate } from "./validator";
 
 /**
  * @swagger
@@ -64,17 +65,25 @@ export function handle(_C: IndexerContext, router: Router) {
      *           type: number
      *           example: 12
      */
-    router.get("/block/count", async (req, res, next) => {
-        const address = req.query.address;
-        try {
-            const count = await BlockModel.getNumberOfBlocks({
-                address
-            });
-            res.json(count);
-        } catch (e) {
-            next(e);
+    router.get(
+        "/block/count",
+        validate({
+            query: {
+                ...blockSchema
+            }
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            try {
+                const count = await BlockModel.getNumberOfBlocks({
+                    address
+                });
+                res.json(count);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -151,24 +160,33 @@ export function handle(_C: IndexerContext, router: Router) {
      *           items:
      *             $ref: '#/definitions/Block'
      */
-    router.get("/block", async (req, res, next) => {
-        const address = req.query.address;
-        const page = req.query.page && parseInt(req.query.page, 10);
-        const itemsPerPage =
-            req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+    router.get(
+        "/block",
+        validate({
+            query: {
+                ...blockSchema,
+                ...paginationSchema
+            }
+        }),
+        async (req, res, next) => {
+            const address = req.query.address;
+            const page = req.query.page && parseInt(req.query.page, 10);
+            const itemsPerPage =
+                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
 
-        try {
-            const blockInsts = await BlockModel.getBlocks({
-                address,
-                page,
-                itemsPerPage
-            });
-            const blocks = blockInsts.map(blockInst =>
-                blockInst.get({ plain: true })
-            );
-            res.json(blocks);
-        } catch (e) {
-            next(e);
+            try {
+                const blockInsts = await BlockModel.getBlocks({
+                    address,
+                    page,
+                    itemsPerPage
+                });
+                const blocks = blockInsts.map(blockInst =>
+                    blockInst.get({ plain: true })
+                );
+                res.json(blocks);
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 }
