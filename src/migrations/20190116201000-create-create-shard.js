@@ -17,6 +17,10 @@ module.exports = {
             shardId: {
                 type: DataTypes.INTEGER
             },
+            users: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,
