@@ -26,7 +26,7 @@ export async function createBlock(
             extraData: Buffer.from(block.extraData),
             transactionsRoot: strip0xPrefix(block.transactionsRoot.value),
             stateRoot: strip0xPrefix(block.stateRoot.value),
-            invoicesRoot: strip0xPrefix(block.invoicesRoot.value),
+            resultsRoot: strip0xPrefix(block.resultsRoot.value),
             score: block.score.value.toString(10),
             seal: block.seal.map(s => Buffer.from(s)),
             hash: strip0xPrefix(block.hash.value),

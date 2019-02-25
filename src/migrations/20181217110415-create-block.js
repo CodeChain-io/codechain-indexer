@@ -36,7 +36,7 @@ module.exports = {
                     allowNull: false,
                     type: Sequelize.STRING
                 },
-                invoicesRoot: {
+                resultsRoot: {
                     allowNull: false,
                     type: Sequelize.STRING
                 },
