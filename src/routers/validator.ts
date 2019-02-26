@@ -3,12 +3,10 @@ import * as Joi from "joi";
 
 const expressValidation = require("express-validation");
 
-export const validate: (
-    params: {
-        query?: Joi.SchemaLike;
-        params?: Joi.SchemaLike;
-    }
-) => express.RequestHandler = params => {
+export const validate: (params: {
+    query?: Joi.SchemaLike;
+    params?: Joi.SchemaLike;
+}) => express.RequestHandler = params => {
     return expressValidation({
         query: params.query && Joi.compile(params.query),
         params: params.params && Joi.compile(params.params),
