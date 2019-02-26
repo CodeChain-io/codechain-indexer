@@ -42,22 +42,34 @@ export default class Worker {
             return;
         }
         this.watchJob = scheduleJob(this.config.watchSchedule, async () => {
-            if (this.jobIsRunning) {
-                return;
-            }
-            this.jobIsRunning = true;
             try {
                 await this.sync();
             } catch (error) {
                 console.error(error);
                 this.watchJob.cancel(false);
             }
-            this.jobIsRunning = false;
         });
     };
 
     public sync = async () => {
         console.log("================ sync start ==================");
+        await this.waitForJobFinish();
+        this.jobIsRunning = true;
+        await this.indexTransactionsAndSync();
+        this.jobIsRunning = false;
+        console.log("================ sync done ===================\n");
+    };
+
+    private waitForJobFinish = async (): Promise<void> => {
+        while (this.jobIsRunning === true) {
+            await new Promise(resolve => {
+                console.log("waiting");
+                setTimeout(resolve, 1000);
+            });
+        }
+    };
+
+    private indexTransactionsAndSync = async (): Promise<void> => {
         const { sdk } = this.context;
         const latestIndexedBlockInst = await BlockModel.getLatestBlock();
         const chainBestBlockNumber = await sdk.rpc.chain.getBestBlockNumber();
@@ -100,7 +112,6 @@ export default class Worker {
             lastIndexedBlockNumber = nextBlockNumber;
         }
         await this.indexPendingTransaction();
-        console.log("================ sync done ===================\n");
     };
 
     private checkRetractAndReturnSyncNumber = async (

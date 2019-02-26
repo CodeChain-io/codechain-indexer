@@ -49,6 +49,7 @@ const type = Joi.string().regex(
 );
 const onlyConfirmed = Joi.boolean();
 const onlySuccessful = Joi.boolean();
+const sync = Joi.boolean();
 const confirmThreshold = Joi.number()
     .min(0)
     .integer();
@@ -69,13 +70,15 @@ export const txSchema = {
     type,
     onlyConfirmed,
     onlySuccessful,
-    confirmThreshold
+    confirmThreshold,
+    sync
 };
 
 export const pendingTxSchema = {
     address,
     assetType: assetTypeSchema,
-    type
+    type,
+    sync
 };
 
 export const blockSchema = {

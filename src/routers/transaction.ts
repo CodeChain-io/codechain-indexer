@@ -1,5 +1,5 @@
 import { H160, H256 } from "codechain-primitives/lib";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import * as Joi from "joi";
 import { IndexerContext } from "../context";
 import * as TxModel from "../models/logic/transaction";
@@ -28,7 +28,17 @@ import {
  *         type: string
  *         description: Transaction example
  */
-export function handle(_C: IndexerContext, router: Router) {
+export function handle(context: IndexerContext, router: Router) {
+    const syncIfNeeded: RequestHandler = async (req, _R, next) => {
+        if (req.query.sync === true) {
+            try {
+                await context.worker.sync();
+            } catch (error) {
+                next(error);
+            }
+        }
+        next();
+    };
     /**
      * @swagger
      * /tx:
@@ -81,6 +91,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: latest transactions
@@ -97,6 +112,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -183,6 +199,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: total count of the transactions
@@ -195,6 +216,7 @@ export function handle(_C: IndexerContext, router: Router) {
         validate({
             query: { ...txSchema }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -245,6 +267,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: true
      *         in: path
      *         type: string
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: specific transaction
@@ -259,6 +286,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 hash: Joi.string().regex(/^(0x)?[0-9a-f]{64}$/)
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const hashString = req.params.hash;
             try {
@@ -293,6 +321,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: pending transactions
@@ -308,6 +341,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...pendingTxSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -353,6 +387,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: pending transactions count
@@ -367,6 +406,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...pendingTxSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
