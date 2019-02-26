@@ -106,9 +106,9 @@ export function handle(_C: IndexerContext, router: Router) {
             const itemsPerPage =
                 req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
             const onlyConfirmed =
-                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+                req.query.onlyConfirmed && req.query.onlyConfirmed === true;
             const onlySuccessful =
-                req.query.onlySuccessful && req.query.onlySuccessful === "true";
+                req.query.onlySuccessful && req.query.onlySuccessful === true;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
@@ -201,9 +201,9 @@ export function handle(_C: IndexerContext, router: Router) {
             const type = req.query.type;
             const trackerString = req.query.tracker;
             const onlyConfirmed =
-                req.query.onlyConfirmed && req.query.onlyConfirmed === "true";
+                req.query.onlyConfirmed && req.query.onlyConfirmed === true;
             const onlySuccessful =
-                req.query.onlySuccessful && req.query.onlySuccessful === "true";
+                req.query.onlySuccessful && req.query.onlySuccessful === true;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
