@@ -26,11 +26,8 @@ export async function createAssetTransferInput(
         } = await getByTxTrackerIndex(
             input.prevOut.tracker,
             input.prevOut.index
-        ).then(
-            utxo =>
-                utxo === null
-                    ? ({} as UTXOAttribute)
-                    : utxo.get({ plain: true })
+        ).then(utxo =>
+            utxo === null ? ({} as UTXOAttribute) : utxo.get({ plain: true })
         );
         const owner =
             lockScriptHash &&
