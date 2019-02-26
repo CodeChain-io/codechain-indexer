@@ -1,4 +1,4 @@
-# CodeChain Indexer [![Build Status](https://travis-ci.org/CodeChain-io/codechain-indexer.svg?branch=master)](https://travis-ci.org/CodeChain-io/codechain-indexer)
+# CodeChain Indexer [![Build Status](https://travis-ci.org/CodeChain-io/codechain-indexer.svg?branch=master)](https://travis-ci.org/CodeChain-io/codechain-indexer) [![codecov](https://codecov.io/gh/CodeChain-io/codechain-indexer/branch/master/graph/badge.svg)](https://codecov.io/gh/Codechain-io/codechain-indexer)
 
 A blockchain data indexing tool for CodeChain
 

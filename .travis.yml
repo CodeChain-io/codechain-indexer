@@ -19,6 +19,7 @@ jobs:
         - yarn run lint
         - NODE_ENV=test yarn migrate
         - yarn run test
+        - yarn codecov
 services:
   - docker
   - postgresql
