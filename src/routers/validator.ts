@@ -82,7 +82,12 @@ export const pendingTxSchema = {
 };
 
 export const blockSchema = {
-    address
+    address,
+    sync
+};
+
+export const syncSchema = {
+    sync
 };
 
 const logFilter = Joi.string().regex(
@@ -103,7 +108,8 @@ export const utxoSchema = {
     address,
     assetType: assetTypeSchema,
     onlyConfirmed,
-    confirmThreshold
+    confirmThreshold,
+    sync
 };
 
 export const snapshotSchema = {

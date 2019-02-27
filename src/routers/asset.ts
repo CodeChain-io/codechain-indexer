@@ -1,5 +1,5 @@
 import { H160 } from "codechain-sdk/lib/core/classes";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import * as moment from "moment";
 import { IndexerContext } from "../context";
 import * as Exception from "../exception";
@@ -55,7 +55,17 @@ import {
  *         type: string
  *         description: AggUTXO exampl
  */
-export function handle(_C: IndexerContext, router: Router) {
+export function handle(context: IndexerContext, router: Router) {
+    const syncIfNeeded: RequestHandler = async (req, _R, next) => {
+        if (req.query.sync === true) {
+            try {
+                await context.worker.sync();
+            } catch (error) {
+                next(error);
+            }
+        }
+        next();
+    };
     /**
      * @swagger
      * /utxo:
@@ -93,6 +103,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: utxo
@@ -109,6 +124,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -268,6 +284,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: aggregated utxo
@@ -283,6 +304,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -342,6 +364,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: aggregated utxo
@@ -356,6 +383,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...utxoSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
