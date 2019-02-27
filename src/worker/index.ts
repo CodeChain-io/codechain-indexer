@@ -146,12 +146,9 @@ export default class Worker {
             }
             miningReward = miningRewardResponse;
         }
-        const invoices = await Promise.all(
+        const results = await Promise.all(
             block.transactions.map(async tx => {
-                const result = await sdk.rpc.chain.getTransactionResult(
-                    tx.hash()
-                );
-                if (result) {
+                if (tx.result!) {
                     return {
                         success: true,
                         errorHint: undefined
@@ -167,7 +164,7 @@ export default class Worker {
         try {
             await BlockModel.createBlock(block, sdk, {
                 miningReward: new U64(miningReward),
-                invoices
+                results
             });
         } catch (err) {
             await BlockModel.deleteBlockByNumber(block.number);

@@ -27,7 +27,7 @@ async function check(blockResponse: Block, type: string) {
 
     const blockInst = await BlockModel.createBlock(blockResponse, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true }]
+        results: [{ success: true }]
     });
     const blockDoc = blockInst.get({ plain: true });
     expect(blockDoc.hash).toEqual(blockResponse.hash.value);
@@ -61,7 +61,7 @@ test("Check duplicated block", async done => {
     try {
         await BlockModel.createBlock(transferBlock, Helper.sdk, {
             miningReward: new U64("1000"),
-            invoices: [{ success: true }]
+            results: [{ success: true }]
         });
         done.fail();
     } catch (e) {
