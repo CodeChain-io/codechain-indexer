@@ -19,7 +19,7 @@ async function check(blockNumber: number, typeName: string, typeInstance: any) {
 
     const blockInst = await createBlock(blockResponse, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true }]
+        results: [{ success: true }]
     });
 
     const blockDoc = blockInst.get({ plain: true });

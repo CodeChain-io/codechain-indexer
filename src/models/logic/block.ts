@@ -13,7 +13,7 @@ export async function createBlock(
     sdk: SDK,
     params: {
         miningReward: U64;
-        invoices: { success: boolean; errorHint?: string }[];
+        results: { success: boolean; errorHint?: string }[];
     }
 ): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
@@ -34,16 +34,16 @@ export async function createBlock(
         });
 
         for (const tx of block.transactions) {
-            const invoice = params.invoices[tx.transactionIndex!];
-            if (invoice == null || invoice === undefined) {
+            const result = params.results[tx.transactionIndex!];
+            if (result == null || result === undefined) {
                 throw Error("invalid invoice");
             }
             const txInst = await TxModel.getByHash(tx.hash());
             if (txInst) {
                 await TxModel.updatePendingTransaction(tx.hash(), sdk, {
                     timestamp: block.timestamp,
-                    success: invoice.success,
-                    errorHint: invoice.errorHint,
+                    success: result.success,
+                    errorHint: result.errorHint,
                     transactionIndex: tx.transactionIndex!,
                     blockNumber: tx.blockNumber!,
                     blockHash: tx.blockHash!
@@ -51,8 +51,8 @@ export async function createBlock(
             } else {
                 await TxModel.createTransaction(tx, sdk, false, {
                     timestamp: block.timestamp,
-                    success: invoice.success,
-                    errorHint: invoice.errorHint
+                    success: result.success,
+                    errorHint: result.errorHint
                 });
             }
         }

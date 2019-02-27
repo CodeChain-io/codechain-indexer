@@ -28,7 +28,7 @@ test("Create payment block", async done => {
     expect(miningRewardResponse).toBeTruthy();
     await BlockModel.createBlock(paymentBlock!, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true }]
+        results: [{ success: true }]
     });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
@@ -71,7 +71,7 @@ test("Pay large amount", async done => {
     expect(miningRewardResponse).toBeTruthy();
     await BlockModel.createBlock(paymentBlock!, Helper.sdk, {
         miningReward: new U64("1000"),
-        invoices: [{ success: true }]
+        results: [{ success: true }]
     });
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
