@@ -1,8 +1,13 @@
 import { H256 } from "codechain-primitives/lib";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
-import { blockSchema, paginationSchema, validate } from "./validator";
+import {
+    blockSchema,
+    paginationSchema,
+    syncSchema,
+    validate
+} from "./validator";
 
 /**
  * @swagger
@@ -22,29 +27,61 @@ import { blockSchema, paginationSchema, validate } from "./validator";
  *         type: string
  *         description: block example
  */
-export function handle(_C: IndexerContext, router: Router) {
+export function handle(context: IndexerContext, router: Router) {
+    const syncIfNeeded: RequestHandler = async (req, _R, next) => {
+        if (req.query.sync === true) {
+            try {
+                await context.worker.sync();
+            } catch (error) {
+                next(error);
+            }
+        }
+        next();
+    };
     /**
      * @swagger
      * /block/latest:
      *   get:
      *     summary: Returns latest block
      *     tags: [Block]
+     *     parameters:
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: latest block
      *         schema:
      *           $ref: '#/definitions/Block'
      */
-    router.get("/block/latest", async (_A, req, next) => {
-        try {
-            const latestBlockInst = await BlockModel.getLatestBlock();
-            req.json(
-                latestBlockInst ? latestBlockInst.get({ plain: true }) : null
-            );
-        } catch (e) {
-            next(e);
+    router.get(
+        "/block/latest",
+        validate({
+            query: {
+                ...syncSchema
+            }
+        }),
+        syncIfNeeded,
+        async (_A, res, next) => {
+            try {
+                const latestBlockInst = await BlockModel.getLatestBlock();
+                res.json(
+                    latestBlockInst
+                        ? latestBlockInst.get({ plain: true })
+                        : null
+                );
+            } catch (e) {
+                next(e);
+            }
         }
-    });
+    );
 
     /**
      * @swagger
@@ -58,6 +95,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: total count of the blocks
@@ -72,6 +114,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...blockSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             try {
@@ -97,38 +140,54 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: true
      *         in: path
      *         type: string
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: specific block
      *         schema:
      *           $ref: '#/definitions/Block'
      */
-    router.get("/block/:hashOrNumber", async (req, res, next) => {
-        const hashOrNumber = req.params.hashOrNumber;
-        let hashValue;
-        let numberValue;
-        // FIXME: Throw an error if hashOrNumber is not hash or number
-        try {
-            hashValue = new H256(hashOrNumber);
-        } catch (e) {
-            if (!isNaN(hashOrNumber)) {
-                numberValue = parseInt(hashOrNumber, 10);
+    router.get(
+        "/block/:hashOrNumber",
+        validate({
+            query: {
+                ...syncSchema
+            }
+        }),
+        syncIfNeeded,
+        async (req, res, next) => {
+            const hashOrNumber = req.params.hashOrNumber;
+            let hashValue;
+            let numberValue;
+            // FIXME: Throw an error if hashOrNumber is not hash or number
+            try {
+                hashValue = new H256(hashOrNumber);
+            } catch (e) {
+                if (!isNaN(hashOrNumber)) {
+                    numberValue = parseInt(hashOrNumber, 10);
+                }
+            }
+            try {
+                let latestBlockInst;
+                if (hashValue) {
+                    latestBlockInst = await BlockModel.getByHash(hashValue);
+                } else if (numberValue !== undefined) {
+                    latestBlockInst = await BlockModel.getByNumber(numberValue);
+                }
+                res.json(
+                    latestBlockInst
+                        ? latestBlockInst.get({ plain: true })
+                        : null
+                );
+            } catch (e) {
+                next(e);
             }
         }
-        try {
-            let latestBlockInst;
-            if (hashValue) {
-                latestBlockInst = await BlockModel.getByHash(hashValue);
-            } else if (numberValue !== undefined) {
-                latestBlockInst = await BlockModel.getByNumber(numberValue);
-            }
-            res.json(
-                latestBlockInst ? latestBlockInst.get({ plain: true }) : null
-            );
-        } catch (e) {
-            next(e);
-        }
-    });
+    );
 
     /**
      * @swagger
@@ -152,6 +211,11 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: sync
+     *         description: wait for sync
+     *         in: query
+     *         required: false
+     *         type: boolean
      *     responses:
      *       200:
      *         description: blocks
@@ -168,6 +232,7 @@ export function handle(_C: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
+        syncIfNeeded,
         async (req, res, next) => {
             const address = req.query.address;
             const page = req.query.page && parseInt(req.query.page, 10);
