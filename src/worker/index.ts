@@ -63,7 +63,6 @@ export default class Worker {
     private waitForJobFinish = async (): Promise<void> => {
         while (this.jobIsRunning === true) {
             await new Promise(resolve => {
-                console.log("waiting");
                 setTimeout(resolve, 1000);
             });
         }
