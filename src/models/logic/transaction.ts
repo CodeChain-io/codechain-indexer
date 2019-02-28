@@ -35,7 +35,7 @@ import { updateAssetScheme } from "./assetscheme";
 import * as BlockModel from "./block";
 import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
-import { createCreateShard } from "./createShard";
+import { createCreateShard, updateShardId } from "./createShard";
 import { createCustom } from "./custom";
 import { createDecomposeAsset } from "./decomposeAsset";
 import { createIncreaseAssetSupply } from "./increaseassetsupply";
@@ -210,7 +210,7 @@ export async function createTransaction(
             await transferUTXO(txInst, tx.blockNumber!);
         }
         if (type === "createShard" && success === true) {
-            await updateCreateShard(txInstance, sdk);
+            await updateShardId(txInstance, sdk);
         }
         if (type === "changeAssetScheme" && success === true) {
             const txInst = await getByHash(tx.hash());
@@ -280,7 +280,7 @@ export async function updatePendingTransaction(
             txInst!.get().type === "createShard" &&
             txInst!.get().success === true
         ) {
-            await updateCreateShard(txInst!, sdk);
+            await updateShardId(txInst!, sdk);
         }
         if (type === "changeAssetScheme" && success === true) {
             await updateAssetScheme(txInst!);
@@ -292,21 +292,6 @@ export async function updatePendingTransaction(
         console.error(err);
         throw Exception.DBError();
     }
-}
-
-async function updateCreateShard(tx: TransactionInstance, sdk: SDK) {
-    const { hash } = tx.get();
-    const shardId = await sdk.rpc.chain.getShardIdByHash(hash);
-    await models.CreateShard.update(
-        {
-            shardId: shardId!
-        },
-        {
-            where: {
-                transactionHash: strip0xPrefix(hash)
-            }
-        }
-    );
 }
 
 const includeArray = [
