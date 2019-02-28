@@ -68,15 +68,7 @@ export async function createTransaction(
         const type = tx.unsigned.type();
         const hash = tx.hash().value;
         // FIXME: Add a method to SDK
-        const isAssetTransaction =
-            type === "mintAsset" ||
-            type === "transferAsset" ||
-            type === "composeAsset" ||
-            type === "decomposeAsset" ||
-            type === "increaseAssetSupply" ||
-            type === "wrapCCC" ||
-            type === "unwrapCCC";
-        const tracker = isAssetTransaction
+        const tracker = isAssetTransactionType(type)
             ? ((tx.unsigned as any) as AssetTransaction).tracker().value
             : null;
         const txInstance = await models.Transaction.create({
@@ -202,30 +194,11 @@ export async function createTransaction(
                 throw new Error(`${type} is not an expected transaction type`);
         }
 
-        if (!isPending && isAssetTransaction && success === true) {
-            const txInst = await getByHash(tx.hash());
-            if (!txInst) {
-                throw Exception.InvalidTransaction();
-            }
-            await transferUTXO(txInst, tx.blockNumber!);
+        const txInst = await getByHash(tx.hash());
+        if (!txInst) {
+            throw Exception.InvalidTransaction();
         }
-        if (type === "createShard" && success === true) {
-            await updateShardId(txInstance, sdk);
-        }
-        if (type === "changeAssetScheme" && success === true) {
-            const txInst = await getByHash(tx.hash());
-            if (!txInst) {
-                throw Exception.InvalidTransaction();
-            }
-            await updateAssetScheme(txInst);
-        }
-        if (type === "increaseAssetSupply" && success === true) {
-            const txInst = await getByHash(tx.hash());
-            if (!txInst) {
-                throw Exception.InvalidTransaction();
-            }
-            await updateAssetScheme(txInst);
-        }
+        await applyTransaction(txInst, sdk);
         return txInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -272,26 +245,43 @@ export async function updatePendingTransaction(
             }
         );
         const txInst = await getByHash(hash);
-        const { type, success } = txInst!.get();
-        if (txInst!.get().tracker != null && success === true) {
-            await transferUTXO(txInst!, params.blockNumber);
+        if (!txInst) {
+            throw Exception.InvalidTransaction();
         }
-        if (
-            txInst!.get().type === "createShard" &&
-            txInst!.get().success === true
-        ) {
-            await updateShardId(txInst!, sdk);
-        }
-        if (type === "changeAssetScheme" && success === true) {
-            await updateAssetScheme(txInst!);
-        }
-        if (type === "increaseAssetSupply" && success === true) {
-            await updateAssetScheme(txInst!);
-        }
+        await applyTransaction(txInst, sdk);
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
     }
+}
+
+async function applyTransaction(tx: TransactionInstance, sdk: SDK) {
+    const { type, success, isPending, blockNumber } = tx.get();
+    if (isPending === true || success === false) {
+        return;
+    }
+
+    if (isAssetTransactionType(type!)) {
+        await transferUTXO(tx, blockNumber!);
+    }
+    if (type === "createShard") {
+        await updateShardId(tx, sdk);
+    }
+    if (type === "changeAssetScheme" || type === "increaseAssetSupply") {
+        await updateAssetScheme(tx);
+    }
+}
+
+function isAssetTransactionType(type: string) {
+    return (
+        type === "mintAsset" ||
+        type === "transferAsset" ||
+        type === "composeAsset" ||
+        type === "decomposeAsset" ||
+        type === "increaseAssetSupply" ||
+        type === "wrapCCC" ||
+        type === "unwrapCCC"
+    );
 }
 
 const includeArray = [
