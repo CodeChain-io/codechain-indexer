@@ -29,7 +29,6 @@ import { TransferAssetActionJSON } from "codechain-sdk/lib/core/transaction/Tran
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
-import { AssetTransferOutputAttribute } from "../assettransferoutput";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
 import { updateAssetScheme } from "./assetscheme";
@@ -49,9 +48,8 @@ import { createSetShardUsers } from "./setShardUsers";
 import { createStore } from "./store";
 import { createTransferAsset } from "./transferAsset";
 import { createUnwrapCCC } from "./unwrapCCC";
-import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
-import { createUTXO, getByTxHashIndex, setUsed } from "./utxo";
+import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
 export async function createTransaction(
@@ -209,7 +207,7 @@ export async function createTransaction(
             if (!txInst) {
                 throw Exception.InvalidTransaction();
             }
-            await handleUTXO(txInst, tx.blockNumber!);
+            await transferUTXO(txInst, tx.blockNumber!);
         }
         if (type === "createShard" && success === true) {
             await updateCreateShard(txInstance, sdk);
@@ -276,7 +274,7 @@ export async function updatePendingTransaction(
         const txInst = await getByHash(hash);
         const { type, success } = txInst!.get();
         if (txInst!.get().tracker != null && success === true) {
-            await handleUTXO(txInst!, params.blockNumber);
+            await transferUTXO(txInst!, params.blockNumber);
         }
         if (
             txInst!.get().type === "createShard" &&
@@ -427,323 +425,6 @@ const includeArray = [
         model: models.Custom
     }
 ];
-
-async function handleUTXO(txInst: TransactionInstance, blockNumber: number) {
-    const tx = txInst.get({ plain: true });
-    const networkId = tx.networkId;
-    const transactionHash = new H256(tx.hash);
-    const transactionTracker = new H256(tx.tracker!);
-    const txType = tx.type;
-    if (txType === "mintAsset") {
-        const mintAsset = (await txInst.getMintAsset())!.get();
-        const lockScriptHash = new H160(mintAsset.lockScriptHash);
-        const parameters = mintAsset.parameters;
-        const recipient = getOwner(lockScriptHash, parameters, networkId);
-        const assetType = new H160(mintAsset.assetType);
-        const shardId = mintAsset.shardId;
-        const quantity = new U64(mintAsset.supply);
-        const transactionOutputIndex = 0;
-        return await createUTXO(
-            recipient,
-            {
-                assetType,
-                shardId,
-                lockScriptHash,
-                parameters,
-                quantity,
-                transactionHash,
-                transactionTracker,
-                transactionOutputIndex
-            },
-            blockNumber
-        );
-    }
-    if (txType === "transferAsset") {
-        const transferAsset = (await txInst.getTransferAsset())!;
-        const outputs = (await transferAsset.getOutputs())!.map(output =>
-            output.get({ plain: true })
-        );
-        await Promise.all(
-            outputs!.map(
-                async (
-                    output: AssetTransferOutputAttribute,
-                    transactionOutputIndex: number
-                ) => {
-                    const recipient = getOwner(
-                        new H160(output.lockScriptHash),
-                        output.parameters,
-                        networkId
-                    );
-                    const assetType = new H160(output.assetType);
-                    const shardId = output.shardId;
-                    const lockScriptHash = new H160(output.lockScriptHash);
-                    const parameters = output.parameters;
-                    const quantity = new U64(output.quantity);
-                    const orderOnTransfer = (await transferAsset.getOrders()).find(
-                        o =>
-                            o
-                                .get({ plain: true })
-                                .outputIndices.includes(transactionOutputIndex)
-                    );
-                    const order =
-                        orderOnTransfer && (await orderOnTransfer.getOrder());
-                    const orderHash = order && new H256(order.get().orderHash);
-                    return createUTXO(
-                        recipient,
-                        {
-                            assetType,
-                            shardId,
-                            lockScriptHash,
-                            parameters,
-                            quantity,
-                            orderHash,
-                            transactionHash,
-                            transactionTracker,
-                            transactionOutputIndex
-                        },
-                        blockNumber
-                    );
-                }
-            )
-        );
-        const inputs = await transferAsset.getInputs();
-        if (inputs) {
-            await Promise.all(
-                inputs.map(async inputInst => {
-                    const input = inputInst.get({ plain: true })!;
-                    const prevTracker = input.prevOut.tracker;
-                    const prevTransaction = await getSuccessfulTransaction(
-                        prevTracker
-                    );
-                    if (!prevTransaction) {
-                        throw Exception.InvalidUTXO();
-                    }
-                    const utxoInst = await getByTxHashIndex(
-                        new H256(prevTransaction.get("hash")),
-                        input.prevOut.index
-                    );
-                    if (!utxoInst) {
-                        throw Exception.InvalidUTXO();
-                    }
-                    return await setUsed(
-                        utxoInst.get("id"),
-                        blockNumber,
-                        transactionHash
-                    );
-                })
-            );
-        }
-        const burns = await transferAsset.getBurns();
-        if (burns) {
-            await Promise.all(
-                burns.map(async burnInst => {
-                    const burn = burnInst.get({ plain: true })!;
-                    const prevTracker = burn.prevOut.tracker;
-                    const prevTransaction = await getSuccessfulTransaction(
-                        prevTracker
-                    );
-                    if (!prevTransaction) {
-                        throw Exception.InvalidUTXO();
-                    }
-                    const utxoInst = await getByTxHashIndex(
-                        new H256(prevTransaction.get("hash")),
-                        burn.prevOut.index
-                    );
-                    if (!utxoInst) {
-                        throw Exception.InvalidUTXO();
-                    }
-                    return setUsed(
-                        utxoInst.get("id"),
-                        blockNumber,
-                        transactionHash
-                    );
-                })
-            );
-        }
-        return;
-    }
-    if (txType === "composeAsset") {
-        const composeAsset = (await txInst.getComposeAsset())!;
-        const inputs = (await composeAsset.getInputs())!;
-        await Promise.all(
-            inputs!.map(async inputInst => {
-                const input = inputInst.get({ plain: true });
-                const prevTracker = input.prevOut.tracker;
-                const prevTransaction = await getSuccessfulTransaction(
-                    prevTracker
-                );
-                if (!prevTransaction) {
-                    throw Exception.InvalidUTXO();
-                }
-                const utxoInst = await getByTxHashIndex(
-                    new H256(prevTransaction.get("hash")),
-                    input.prevOut.index
-                );
-                if (!utxoInst) {
-                    throw Exception.InvalidUTXO();
-                }
-                return setUsed(
-                    utxoInst.get("id"),
-                    blockNumber,
-                    transactionHash
-                );
-            })
-        );
-        const output = (await composeAsset.get())!;
-        const recipient = getOwner(
-            new H160(output.lockScriptHash),
-            output.parameters,
-            networkId
-        );
-        const assetType = new H160(output.assetType);
-        const shardId = output.shardId;
-        const lockScriptHash = new H160(output.lockScriptHash);
-        const parameters = output.parameters;
-        const quantity = new U64(output.supply);
-        const transactionOutputIndex = 0;
-        return createUTXO(
-            recipient,
-            {
-                assetType,
-                shardId,
-                lockScriptHash,
-                parameters,
-                quantity,
-                transactionHash,
-                transactionTracker,
-                transactionOutputIndex
-            },
-            blockNumber
-        );
-    }
-    if (txType === "decomposeAsset") {
-        const decomposeAsset = (await txInst.getDecomposeAsset())!;
-        const input = (await decomposeAsset.getInput())!.get({ plain: true });
-        const prevTracker = input.prevOut.tracker;
-        const prevTransaction = await getSuccessfulTransaction(prevTracker);
-        if (!prevTransaction) {
-            throw Exception.InvalidUTXO();
-        }
-        const utxoInst = await getByTxHashIndex(
-            new H256(prevTransaction.get("hash")),
-            input.prevOut.index
-        );
-        if (!utxoInst) {
-            throw Exception.InvalidUTXO();
-        }
-        await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
-
-        const outputs = (await decomposeAsset.getOutputs())!;
-        return await Promise.all(
-            outputs!.map((outputInst, transactionOutputIndex: number) => {
-                const output = outputInst.get({ plain: true });
-                const recipient = getOwner(
-                    new H160(output.lockScriptHash),
-                    output.parameters,
-                    networkId
-                );
-                const assetType = new H160(output.assetType);
-                const shardId = output.shardId;
-                const lockScriptHash = new H160(output.lockScriptHash);
-                const parameters = output.parameters;
-                const quantity = new U64(output.quantity);
-                return createUTXO(
-                    recipient,
-                    {
-                        assetType,
-                        shardId,
-                        lockScriptHash,
-                        parameters,
-                        quantity,
-                        transactionHash,
-                        transactionTracker,
-                        transactionOutputIndex
-                    },
-                    blockNumber
-                );
-            })
-        );
-    }
-    if (txType === "increaseAssetSupply") {
-        const incAssetSupply = (await txInst.getIncreaseAssetSupply())!.get();
-
-        const assetType = new H160(incAssetSupply.assetType);
-        const { shardId, parameters } = incAssetSupply;
-        const lockScriptHash = new H160(incAssetSupply.lockScriptHash);
-        const quantity = new U64(incAssetSupply.supply);
-        const transactionOutputIndex = 0;
-
-        const recipient = getOwner(
-            new H160(incAssetSupply.lockScriptHash),
-            incAssetSupply.parameters,
-            networkId
-        );
-
-        return createUTXO(
-            recipient,
-            {
-                assetType,
-                shardId,
-                lockScriptHash,
-                parameters,
-                quantity,
-                transactionHash,
-                transactionTracker,
-                transactionOutputIndex
-            },
-            blockNumber
-        );
-    }
-    if (txType === "wrapCCC") {
-        const wrapCCC = (await txInst.getWrapCCC())!.get();
-
-        const recipient = getOwner(
-            new H160(wrapCCC.lockScriptHash),
-            wrapCCC.parameters,
-            networkId
-        );
-
-        const assetType = H160.zero();
-        const shardId = wrapCCC.shardId;
-        const lockScriptHash = new H160(wrapCCC.lockScriptHash);
-        const parameters = wrapCCC.parameters;
-        const quantity = new U64(wrapCCC.quantity);
-        const transactionOutputIndex = 0;
-        return createUTXO(
-            recipient,
-            {
-                assetType,
-                shardId,
-                lockScriptHash,
-                parameters,
-                quantity,
-                transactionHash,
-                transactionTracker,
-                transactionOutputIndex
-            },
-            blockNumber
-        );
-    }
-    if (txType === "unwrapCCC") {
-        const prevOut = (await (await txInst.getUnwrapCCC())!.getBurn())!.get(
-            "prevOut"
-        );
-        const prevTracker = prevOut.tracker;
-        const prevTransaction = await getSuccessfulTransaction(prevTracker);
-
-        if (!prevTransaction) {
-            throw Exception.InvalidUTXO();
-        }
-        const utxoInst = await getByTxHashIndex(
-            new H256(prevTransaction.get("hash")),
-            prevOut.index
-        );
-        if (!utxoInst) {
-            throw Exception.InvalidUTXO();
-        }
-        await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
-    }
-}
 
 function getPendingTransactionsQuery(params: {
     address?: string | null;
