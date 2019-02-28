@@ -275,7 +275,7 @@ export async function updatePendingTransaction(
         );
         const txInst = await getByHash(hash);
         const { type, success } = txInst!.get();
-        if (txInst!.get().tracker != null) {
+        if (txInst!.get().tracker != null && success === true) {
             await handleUTXO(txInst!, params.blockNumber);
         }
         if (
