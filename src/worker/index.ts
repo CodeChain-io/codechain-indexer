@@ -208,52 +208,28 @@ export default class Worker {
     };
 
     private indexPendingTransaction = async () => {
-        console.log("========== indexing pending transactions ==========");
-        const pendingTransactions = await this.context.sdk.rpc.chain.getPendingTransactions();
-        const indexedTransactionsInst = await TxModel.getPendingTransactions(
-            {}
-        );
-        const indexedTransactions = indexedTransactionsInst.map(inst =>
-            inst.get({ plain: true })
+        console.log("======== indexing pending transactions =======");
+        const pendings = await this.context.sdk.rpc.chain.getPendingTransactions();
+        const indexeds = await TxModel.getPendingTransactions({}).then(
+            instances => instances.map(i => i.get({ plain: true }))
         );
 
-        console.log(
-            "current indexed pending transactions : %d",
-            indexedTransactions.length
-        );
-        console.log(
-            "codechain pending transactions : %d",
-            pendingTransactions.length
-        );
+        console.log(`Indexed: ${indexeds.length} / RPC: ${pendings.length}`);
 
-        // Remove dead pending transactions
-        const pendingTxHashList = pendingTransactions.map(p => p.hash().value);
-        const removedPendingTransactions = _.filter(
-            indexedTransactions,
-            indexedTx => !_.includes(pendingTxHashList, indexedTx.hash)
-        );
-        await Promise.all(
-            removedPendingTransactions.map(async removedPendingTransaction => {
-                const blockedTxInst = await TxModel.getByHash(
-                    new H256(removedPendingTransaction.hash)
-                );
-                if (!blockedTxInst) {
-                    await TxModel.deleteByHash(
-                        new H256(removedPendingTransaction.hash)
-                    );
-                }
-            })
-        );
+        // Remove dropped pending transactions
+        const pendingHashes = pendings.map(p => p.hash().value);
+        const droppedPendingHashes = indexeds
+            .filter(indexed => !pendingHashes.includes(indexed.hash))
+            .map(tx => new H256(tx.hash));
+        if (droppedPendingHashes.length > 0) {
+            TxModel.removePendings(droppedPendingHashes);
+        }
 
         // Index new pending transactions
-        const indexedPendingTxHashList = _.map(
-            indexedTransactions,
-            p => p.hash
-        );
+        const indexedHashes = _.map(indexeds, p => p.hash);
         const newPendingTransactions = _.filter(
-            pendingTransactions,
-            pending =>
-                !_.includes(indexedPendingTxHashList, pending.hash().value)
+            pendings,
+            pending => !_.includes(indexedHashes, pending.hash().value)
         );
         for (const pending of newPendingTransactions) {
             await TxModel.createTransaction(pending, this.context.sdk, true);

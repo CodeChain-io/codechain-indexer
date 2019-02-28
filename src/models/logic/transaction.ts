@@ -838,6 +838,22 @@ export async function getByHash(
     }
 }
 
+export async function removePendings(hashes: H256[]): Promise<void> {
+    try {
+        await models.Transaction.destroy({
+            where: {
+                hash: {
+                    [Sequelize.Op.in]: [hashes.map(h => strip0xPrefix(h.value))]
+                },
+                isPending: true
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 function addAddressQuery(query: any[], address: string) {
     query.push({
         [Sequelize.Op.or]: [
