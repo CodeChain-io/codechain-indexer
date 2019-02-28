@@ -3,7 +3,6 @@ import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferInputInstance } from "../assettransferinput";
 import models from "../index";
-import { UTXOAttribute } from "../utxo";
 import * as AddressUtil from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 import { getByTxTrackerIndex } from "./utxo";
@@ -27,10 +26,17 @@ export async function createAssetTransferInput(
             input.prevOut.tracker,
             input.prevOut.index
         ).then(utxo =>
-            utxo === null ? ({} as UTXOAttribute) : utxo.get({ plain: true })
+            utxo === null
+                ? ({} as {
+                      lockScriptHash: undefined;
+                      parameters: undefined;
+                      transactionHash: undefined;
+                  })
+                : utxo.get({ plain: true })
         );
         const owner =
             lockScriptHash &&
+            parameters &&
             AddressUtil.getOwner(
                 H160.ensure(lockScriptHash),
                 parameters,
@@ -46,14 +52,14 @@ export async function createAssetTransferInput(
             shardId: input.prevOut.shardId,
             prevOut: {
                 tracker: strip0xPrefix(input.prevOut.tracker.value),
-                hash: strip0xPrefix(prevHash),
+                hash: prevHash && strip0xPrefix(prevHash),
                 index: input.prevOut.index,
                 assetType: strip0xPrefix(input.prevOut.assetType.value),
                 shardId: input.prevOut.shardId,
                 quantity: input.prevOut.quantity.value.toString(10),
                 owner,
-                lockScriptHash: strip0xPrefix(lockScriptHash),
-                parameters: parameters.map(p => strip0xPrefix(p))
+                lockScriptHash: lockScriptHash && strip0xPrefix(lockScriptHash),
+                parameters: parameters && parameters.map(p => strip0xPrefix(p))
             }
         });
     } catch (err) {
