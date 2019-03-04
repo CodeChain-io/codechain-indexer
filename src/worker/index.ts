@@ -1,3 +1,4 @@
+import * as AsyncLock from "async-lock";
 import { SDK } from "codechain-sdk";
 import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
@@ -9,6 +10,8 @@ import * as TxModel from "../models/logic/transaction";
 import * as AccountUtil from "./account";
 import * as LogUtil from "./log";
 
+const ASYNC_LOCK_KEY = "worker";
+
 export interface WorkerContext {
     sdk: SDK;
 }
@@ -19,13 +22,13 @@ export interface WorkerConfig {
 export default class Worker {
     public context: WorkerContext;
     private watchJob!: Job;
-    private jobIsRunning: boolean;
     private config: WorkerConfig;
+    private lock: AsyncLock;
 
     constructor(context: WorkerContext, config: WorkerConfig) {
         this.context = context;
         this.config = config;
-        this.jobIsRunning = false;
+        this.lock = new AsyncLock({ timeout: 30000, maxPending: 100 });
     }
 
     public destroy() {
@@ -35,43 +38,44 @@ export default class Worker {
     }
 
     public run = async () => {
-        try {
-            await this.sync();
-        } catch (error) {
-            console.log(error);
-            return;
-        }
         this.watchJob = scheduleJob(this.config.watchSchedule, async () => {
             try {
-                await this.sync();
+                if (this.lock.isBusy(ASYNC_LOCK_KEY) === false) {
+                    await this.sync();
+                }
             } catch (error) {
                 console.error(error);
                 this.watchJob.cancel(false);
             }
         });
+        this.watchJob.invoke();
     };
 
     public sync = async () => {
-        console.log("================ sync start ==================");
-        await this.waitForJobFinish();
-        this.jobIsRunning = true;
-        await this.indexTransactionsAndSync();
-        this.jobIsRunning = false;
-        console.log("================ sync done ===================\n");
-    };
-
-    private waitForJobFinish = async (): Promise<void> => {
-        while (this.jobIsRunning === true) {
-            await new Promise(resolve => {
-                setTimeout(resolve, 1000);
+        const { sdk } = this.context;
+        const chainBestBlockNumber = await sdk.rpc.chain.getBestBlockNumber();
+        console.log("latest codechain block number : %d", chainBestBlockNumber);
+        await this.lock
+            .acquire(ASYNC_LOCK_KEY, () => {
+                console.log("================ sync start ==================");
+                return this.indexTransactionsAndSync(chainBestBlockNumber);
+            })
+            .then(() => {
+                console.log("================ sync done ===================\n");
+            })
+            .catch(err => {
+                console.error(
+                    "================ sync failed ===================\n"
+                );
+                throw err;
             });
-        }
     };
 
-    private indexTransactionsAndSync = async (): Promise<void> => {
+    private indexTransactionsAndSync = async (
+        chainBestBlockNumber: number
+    ): Promise<void> => {
         const { sdk } = this.context;
         const latestIndexedBlockInst = await BlockModel.getLatestBlock();
-        const chainBestBlockNumber = await sdk.rpc.chain.getBestBlockNumber();
         if (!latestIndexedBlockInst) {
             console.log("There is no synchronized block");
         } else {
@@ -80,7 +84,6 @@ export default class Worker {
                 latestIndexedBlockInst.get({ plain: true }).number
             );
         }
-        console.log("latest codechain block number : %d", chainBestBlockNumber);
 
         let lastIndexedBlockNumber = latestIndexedBlockInst
             ? latestIndexedBlockInst.get().number

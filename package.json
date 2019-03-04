@@ -9,6 +9,7 @@
     "yarn": "^1.10.0"
   },
   "dependencies": {
+    "async-lock": "^1.1.4",
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
     "codechain-indexer-types": "^0.6.0-alpha.0",
@@ -41,6 +42,7 @@
     "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write"
   },
   "devDependencies": {
+    "@types/async-lock": "^1.1.1",
     "@types/body-parser": "^1.17.0",
     "@types/cors": "^2.8.4",
     "@types/dotenv": "^4.0.3",
