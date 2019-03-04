@@ -431,8 +431,10 @@ export async function getPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
     type?: string[] | null;
+    page?: number | null;
+    itemsPerPage?: number | null;
 }) {
-    const { address, assetType, type } = params;
+    const { address, assetType, type, page = 1, itemsPerPage = 15 } = params;
     const query = getPendingTransactionsQuery({ address, assetType, type });
     try {
         const hashes = await models.Transaction.findAll({
@@ -450,6 +452,8 @@ export async function getPendingTransactions(params: {
                 }
             },
             order: [["pendingTimestamp", "DESC"]],
+            limit: itemsPerPage!,
+            offset: (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {

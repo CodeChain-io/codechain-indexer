@@ -317,6 +317,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: page
+     *         description: page for the pagination
+     *         in: query
+     *         required: false
+     *         type: number
+     *       - name: itemsPerPage
+     *         description: items per page for the pagination
+     *         in: query
+     *         required: false
+     *         type: number
      *       - name: sync
      *         description: wait for sync
      *         in: query
@@ -334,7 +344,8 @@ export function handle(context: IndexerContext, router: Router) {
         "/pending-tx",
         validate({
             query: {
-                ...pendingTxSchema
+                ...pendingTxSchema,
+                ...paginationSchema
             }
         }),
         syncIfNeeded,
@@ -342,6 +353,8 @@ export function handle(context: IndexerContext, router: Router) {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
+            const page = req.query.page;
+            const itemsPerPage = req.query.itemsPerPage;
             try {
                 let assetType;
                 if (assetTypeString) {
@@ -350,7 +363,10 @@ export function handle(context: IndexerContext, router: Router) {
                 const pendingTxInsts = await TxModel.getPendingTransactions({
                     address,
                     assetType,
-                    type: typeof type === "string" ? type.split(",") : undefined
+                    type:
+                        typeof type === "string" ? type.split(",") : undefined,
+                    page,
+                    itemsPerPage
                 });
                 const pendingTxs = pendingTxInsts.map(tx =>
                     tx.get({ plain: true })
