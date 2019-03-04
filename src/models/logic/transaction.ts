@@ -442,8 +442,7 @@ export async function getPendingTransactions(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [["pendingTimestamp", "DESC"]],
-            include: includeArray
+            order: [["pendingTimestamp", "DESC"]]
         }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
         return await models.Transaction.findAll({
             where: {
@@ -658,8 +657,7 @@ export async function getTransactions(params: {
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
-            subQuery: false,
-            include: includeArray
+            subQuery: false
         }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
         return await models.Transaction.findAll({
             where: {
