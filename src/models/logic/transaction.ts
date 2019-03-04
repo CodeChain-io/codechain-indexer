@@ -49,6 +49,7 @@ import { createStore } from "./store";
 import { createTransferAsset } from "./transferAsset";
 import { createUnwrapCCC } from "./unwrapCCC";
 import { strip0xPrefix } from "./utils/format";
+import { fullIncludeArray, includeArray } from "./utils/includeArray";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
@@ -284,123 +285,6 @@ function isAssetTransactionType(type: string) {
     );
 }
 
-const includeArray = [
-    {
-        as: "mintAsset",
-        model: models.MintAsset
-    },
-    {
-        as: "transferAsset",
-        model: models.TransferAsset,
-        include: [
-            {
-                as: "outputs",
-                model: models.AssetTransferOutput,
-                include: [
-                    {
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                as: "inputs",
-                model: models.AssetTransferInput,
-                include: [
-                    {
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                as: "burns",
-                model: models.AssetTransferBurn,
-                include: [
-                    {
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                as: "orders",
-                model: models.OrderOnTransfer
-            }
-        ]
-    },
-    {
-        as: "composeAsset",
-        model: models.ComposeAsset,
-        include: [
-            {
-                as: "inputs",
-                model: models.AssetTransferInput
-            }
-        ]
-    },
-    {
-        as: "decomposeAsset",
-        model: models.DecomposeAsset,
-        include: [
-            {
-                as: "input",
-                model: models.AssetTransferInput
-            },
-            {
-                as: "outputs",
-                model: models.AssetTransferOutput
-            }
-        ]
-    },
-    {
-        as: "changeAssetScheme",
-        model: models.ChangeAssetScheme
-    },
-    {
-        as: "increaseAssetSupply",
-        model: models.IncreaseAssetSupply
-    },
-    {
-        as: "wrapCCC",
-        model: models.WrapCCC
-    },
-    {
-        as: "unwrapCCC",
-        model: models.UnwrapCCC,
-        include: [
-            {
-                as: "burn",
-                model: models.AssetTransferBurn
-            }
-        ]
-    },
-    {
-        as: "pay",
-        model: models.Pay
-    },
-    {
-        as: "setRegularKey",
-        model: models.SetRegularKey
-    },
-    {
-        as: "createShard",
-        model: models.CreateShard
-    },
-    {
-        as: "store",
-        model: models.Store
-    },
-    {
-        as: "remove",
-        model: models.Remove
-    },
-    {
-        as: "custom",
-        model: models.Custom
-    }
-];
-
 function getPendingTransactionsQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
@@ -442,7 +326,9 @@ export async function getPendingTransactions(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [["pendingTimestamp", "DESC"]]
+            group: ["hash"],
+            order: [["pendingTimestamp", "DESC"]],
+            include: includeArray
         }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
         return await models.Transaction.findAll({
             where: {
@@ -453,7 +339,7 @@ export async function getPendingTransactions(params: {
             order: [["pendingTimestamp", "DESC"]],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
-            include: includeArray
+            include: fullIncludeArray
         });
     } catch (err) {
         console.error(err);
@@ -654,10 +540,12 @@ export async function getTransactions(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
+            group: ["hash"],
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
-            subQuery: false
+            subQuery: false,
+            include: includeArray
         }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
         return await models.Transaction.findAll({
             where: {
@@ -666,7 +554,7 @@ export async function getTransactions(params: {
                 }
             },
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
-            include: includeArray
+            include: fullIncludeArray
         });
     } catch (err) {
         console.error(err);
