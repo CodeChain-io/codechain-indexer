@@ -18,6 +18,11 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
+"@types/async-lock@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@types/async-lock/-/async-lock-1.1.1.tgz#81f218213bebcc5f740efe9648272c774a2e4b4b"
+  integrity sha512-TU1X8jmAU2BjwKryBFV/GDezz7Ge0xu9ZuYC7dy6wKj4hnL0JcxeseCOr/G2JkGylff6hdUBrR+Ee5ApAQeU5g==
+
 "@types/bluebird@*":
   version "3.5.25"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.25.tgz#59188b871208092e37767e4b3d80c3b3eaae43bd"
@@ -439,6 +444,11 @@ async-limiter@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.0.tgz#78faed8c3d074ab81f22b4e985d79e8738f720f8"
   integrity sha512-jp/uFnooOiO+L211eZOoSyzpOITMXx1rBITauYykG3BRYPu8h0UcxsPNB04RR5vo4Tyz3+ay17tR6JVf9qzYWg==
+
+async-lock@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/async-lock/-/async-lock-1.1.4.tgz#863aff9d5c243f75034349be7df9c3ceb7a54254"
+  integrity sha512-9vsVXt+mIvb8rV0G6V1x68Bvp/VksPJoZJxF/n/l9N60chNJ44opPr9WdZZfAV3leUdXt4xNvfyNWyY/j5enBA==
 
 async@^2.1.4, async@^2.5.0:
   version "2.6.2"
