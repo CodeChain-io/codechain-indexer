@@ -1,7 +1,8 @@
 import { H256 } from "codechain-primitives/lib";
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
+import { syncIfNeeded } from "../models/logic/utils/middleware";
 import {
     blockSchema,
     paginationSchema,
@@ -28,16 +29,6 @@ import {
  *         description: block example
  */
 export function handle(context: IndexerContext, router: Router) {
-    const syncIfNeeded: RequestHandler = async (req, _R, next) => {
-        if (req.query.sync === true) {
-            try {
-                await context.worker.sync();
-            } catch (error) {
-                next(error);
-            }
-        }
-        next();
-    };
     /**
      * @swagger
      * /block/latest:
@@ -68,7 +59,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...syncSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (_A, res, next) => {
             try {
                 const latestBlockInst = await BlockModel.getLatestBlock();
@@ -114,7 +105,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...blockSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             try {
@@ -158,7 +149,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...syncSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const hashOrNumber = req.params.hashOrNumber;
             let hashValue;
@@ -232,7 +223,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const page = req.query.page && parseInt(req.query.page, 10);

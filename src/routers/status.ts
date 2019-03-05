@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { SERVICE_UNAVAILABLE } from "http-status-codes";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
-
 /**
  * @swagger
  * tags:
@@ -27,6 +27,10 @@ export function handle(context: IndexerContext, router: Router) {
             const pong = await context.sdk.rpc.node.ping();
             res.json(pong);
         } catch (e) {
+            const error = e as Error;
+            if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
+                res.status(SERVICE_UNAVAILABLE).send();
+            }
             next(e);
         }
     });
@@ -84,6 +88,10 @@ export function handle(context: IndexerContext, router: Router) {
                 blackList
             });
         } catch (e) {
+            const error = e as Error;
+            if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
+                res.status(SERVICE_UNAVAILABLE).send();
+            }
             next(e);
         }
     });
@@ -133,6 +141,10 @@ export function handle(context: IndexerContext, router: Router) {
                     : null
             });
         } catch (e) {
+            const error = e as Error;
+            if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
+                res.status(SERVICE_UNAVAILABLE).send();
+            }
             next(e);
         }
     });

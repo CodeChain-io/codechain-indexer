@@ -1,11 +1,12 @@
 import { H160 } from "codechain-sdk/lib/core/classes";
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import * as moment from "moment";
 import { IndexerContext } from "../context";
 import * as Exception from "../exception";
 import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
 import * as BlockModel from "../models/logic/block";
+import { syncIfNeeded } from "../models/logic/utils/middleware";
 import * as UTXOModel from "../models/logic/utxo";
 import {
     assetTypeSchema,
@@ -56,16 +57,6 @@ import {
  *         description: AggUTXO exampl
  */
 export function handle(context: IndexerContext, router: Router) {
-    const syncIfNeeded: RequestHandler = async (req, _R, next) => {
-        if (req.query.sync === true) {
-            try {
-                await context.worker.sync();
-            } catch (error) {
-                next(error);
-            }
-        }
-        next();
-    };
     /**
      * @swagger
      * /utxo:
@@ -124,7 +115,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -303,7 +294,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -381,7 +372,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...utxoSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
