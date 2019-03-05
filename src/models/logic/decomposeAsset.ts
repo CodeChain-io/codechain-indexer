@@ -5,7 +5,6 @@ import { DecomposeAssetInstance } from "../decomposeAsset";
 import models from "../index";
 import { createAssetTransferBurn } from "./assettransferburn";
 import { createAssetTransferOutput } from "./assettransferoutput";
-import { getAssetScheme } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createDecomposeAsset(
@@ -25,17 +24,14 @@ export async function createDecomposeAsset(
         approvals
     });
     const input = decompose.input(0)!;
-    const inputAssetScheme = await getAssetScheme(input.prevOut.assetType);
     await createAssetTransferBurn(transactionHash, input, {
-        networkId,
-        assetScheme: inputAssetScheme
+        networkId
     });
 
     await Promise.all(
         outputs.map(async (json: any, transactionOutputIndex: number) => {
             // FIXME
             const output = AssetTransferOutput.fromJSON(json);
-            const assetScheme = await getAssetScheme(output.assetType);
             await createAssetTransferOutput(transactionHash, output, {
                 networkId,
                 asset: new Asset({
@@ -47,8 +43,7 @@ export async function createDecomposeAsset(
                     orderHash: null,
                     tracker: decompose.tracker(),
                     transactionOutputIndex
-                }),
-                assetScheme
+                })
             });
         })
     );

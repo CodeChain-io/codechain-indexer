@@ -1,6 +1,5 @@
 import { AssetTransferInput, H160 } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
-import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferBurnInstance } from "../assettransferburn";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
@@ -13,7 +12,6 @@ export async function createAssetTransferBurn(
     burn: AssetTransferInput,
     options: {
         networkId: string;
-        assetScheme: AssetSchemeAttribute;
     }
 ): Promise<AssetTransferBurnInstance> {
     let assetTransferBurnInstance: AssetTransferBurnInstance;

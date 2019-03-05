@@ -1,6 +1,5 @@
 import { Asset, AssetTransferOutput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
-import { AssetSchemeAttribute } from "../assetscheme";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
 import models from "../index";
 import * as AddressUtil from "./utils/address";
@@ -11,7 +10,6 @@ export async function createAssetTransferOutput(
     output: AssetTransferOutput,
     params: {
         networkId: string;
-        assetScheme: AssetSchemeAttribute;
         asset: Asset;
     }
 ): Promise<AssetTransferOutputInstance> {
