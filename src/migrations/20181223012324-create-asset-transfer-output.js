@@ -27,11 +27,7 @@ module.exports = {
             },
             assetType: {
                 allowNull: false,
-                type: Sequelize.STRING,
-                references: {
-                    model: "AssetSchemes",
-                    key: "assetType"
-                }
+                type: Sequelize.STRING
             },
             shardId: {
                 allowNull: false,
