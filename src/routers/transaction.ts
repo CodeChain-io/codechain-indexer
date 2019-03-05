@@ -1,8 +1,9 @@
 import { H160, H256 } from "codechain-primitives/lib";
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import * as Joi from "joi";
 import { IndexerContext } from "../context";
 import * as TxModel from "../models/logic/transaction";
+import { syncIfNeeded } from "../models/logic/utils/middleware";
 import {
     paginationSchema,
     pendingTxSchema,
@@ -29,16 +30,6 @@ import {
  *         description: Transaction example
  */
 export function handle(context: IndexerContext, router: Router) {
-    const syncIfNeeded: RequestHandler = async (req, _R, next) => {
-        if (req.query.sync === true) {
-            try {
-                await context.worker.sync();
-            } catch (error) {
-                next(error);
-            }
-        }
-        next();
-    };
     /**
      * @swagger
      * /tx:
@@ -112,7 +103,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -214,7 +205,7 @@ export function handle(context: IndexerContext, router: Router) {
         validate({
             query: { ...txSchema }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -282,7 +273,7 @@ export function handle(context: IndexerContext, router: Router) {
                 hash: Joi.string().regex(/^(0x)?[0-9a-f]{64}$/)
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const hashString = req.params.hash;
             try {
@@ -348,7 +339,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...paginationSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
@@ -418,7 +409,7 @@ export function handle(context: IndexerContext, router: Router) {
                 ...pendingTxSchema
             }
         }),
-        syncIfNeeded,
+        syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;

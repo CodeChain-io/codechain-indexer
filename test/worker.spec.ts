@@ -1,4 +1,5 @@
 import { Pay } from "codechain-sdk/lib/core/classes";
+import * as sinon from "sinon";
 import models from "../src/models";
 import * as AccountModel from "../src/models/logic/account";
 import * as BlockModel from "../src/models/logic/block";
@@ -67,7 +68,8 @@ test(
         );
         expect(paymentBlock!.transactions[0]!.unsigned.type()).toEqual("pay");
         // FIXME: remove any
-        const receiver = ((paymentBlock!.transactions[0]!.unsigned as Pay) as any).receiver.value;
+        const receiver = ((paymentBlock!.transactions[0]!
+            .unsigned as Pay) as any).receiver.value;
         const receiverInst = await AccountModel.getByAddress(receiver);
         const receiverBalance = receiverInst!.get("balance");
 
@@ -82,3 +84,83 @@ test(
     },
     1000 * 30
 );
+
+test.skip("worker/account rpc fail", async done => {
+    await Helper.worker.sync();
+
+    const getBalanceStub = sinon.stub(
+        Helper.worker.context.sdk.rpc.chain,
+        "getBalance"
+    );
+    const getSeqStub = sinon.stub(
+        Helper.worker.context.sdk.rpc.chain,
+        "getSeq"
+    );
+
+    getBalanceStub.rejects(Error("ECONNREFUSED"));
+    getSeqStub.rejects(Error("ECONNREFUSED"));
+
+    const prevBlockCount = await BlockModel.getNumberOfBlocks({});
+    await Helper.runExample("send-signed-tx");
+    await Helper.worker.sync();
+    const blockCount = await BlockModel.getNumberOfBlocks({});
+
+    getBalanceStub.restore();
+    getSeqStub.restore();
+    await Helper.worker.sync();
+    const newBlockCount = await BlockModel.getNumberOfBlocks({});
+
+    expect(blockCount).toEqual(prevBlockCount);
+    expect(newBlockCount).toEqual(blockCount + 1);
+    done();
+});
+
+test("worker/account rpc fail", async done => {
+    await Helper.worker.sync();
+
+    const sendRpcRequestStub = sinon.stub(
+        Helper.worker.context.sdk.rpc,
+        "sendRpcRequest"
+    );
+
+    sendRpcRequestStub
+        .withArgs("chain_getGenesisAccounts", [])
+        .rejects(Error("ECONNREFUSED"));
+    sendRpcRequestStub.callThrough();
+
+    await Helper.runExample("send-signed-tx");
+    await Helper.worker.sync();
+    sendRpcRequestStub.restore();
+    done();
+});
+
+test.skip("worker/index getBestBlockNumber rpc fail", async done => {
+    await Helper.worker.sync();
+
+    const getBestBlockNumberStub = sinon.stub(
+        Helper.worker.context.sdk.rpc.chain,
+        "getBestBlockNumber"
+    );
+    getBestBlockNumberStub.rejects(Error("ECONNREFUSED"));
+
+    await Helper.runExample("send-signed-tx");
+    await Helper.worker.sync();
+    getBestBlockNumberStub.restore();
+    done();
+});
+
+test("worker/index rpc fail", async done => {
+    await Helper.worker.sync();
+
+    const getBlockStub = sinon.stub(
+        Helper.worker.context.sdk.rpc.chain,
+        "getBlock"
+    );
+
+    getBlockStub.rejects(Error("ECONNREFUSED"));
+
+    await Helper.runExample("send-signed-tx");
+    await expect(Helper.worker.sync()).rejects.toEqual(Error("ECONNREFUSED"));
+    getBlockStub.restore();
+    done();
+});

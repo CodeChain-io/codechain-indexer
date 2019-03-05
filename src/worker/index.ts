@@ -43,9 +43,14 @@ export default class Worker {
                 if (this.lock.isBusy(ASYNC_LOCK_KEY) === false) {
                     await this.sync();
                 }
-            } catch (error) {
-                console.error(error);
-                this.watchJob.cancel(false);
+            } catch (err) {
+                const error = err as Error;
+                if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
+                    console.error("RPC Error");
+                } else {
+                    console.error(error);
+                    this.watchJob.cancel(false);
+                }
             }
         });
         this.watchJob.invoke();
