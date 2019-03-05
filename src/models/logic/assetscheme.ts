@@ -101,7 +101,7 @@ export async function createAssetSchemeOfWCCC(
 export async function updateAssetScheme(
     tx: TransactionInstance
 ): Promise<AssetSchemeInstance> {
-    const { changeAssetScheme, increaseAssetSupply } = tx.get();
+    const { changeAssetScheme, increaseAssetSupply } = tx.get({ plain: true });
     if (changeAssetScheme) {
         const {
             assetType,
