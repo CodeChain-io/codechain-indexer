@@ -5,7 +5,7 @@ import models from "../index";
 import { createAssetScheme } from "./assetscheme";
 import { createAssetTransferInput } from "./assettransferinput";
 import { getOwner } from "./utils/address";
-import { getAssetName, getAssetScheme } from "./utils/asset";
+import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createComposeAsset(
@@ -69,13 +69,8 @@ export async function createComposeAsset(
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
             const input = compose.input(index)!;
-            const inputAssetScheme: any = await getAssetScheme(
-                input.prevOut.assetType
-            );
-            inputAssetScheme.networkId = inputAssetScheme.networkId!;
             await createAssetTransferInput(transactionHash, input, {
-                networkId,
-                assetScheme: inputAssetScheme
+                networkId
             });
         })
     );
