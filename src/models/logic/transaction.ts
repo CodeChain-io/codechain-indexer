@@ -375,7 +375,7 @@ export async function getByHash(
             where: {
                 hash: strip0xPrefix(hash.value)
             },
-            include: includeArray
+            include: fullIncludeArray
         });
     } catch (err) {
         console.error(err);
