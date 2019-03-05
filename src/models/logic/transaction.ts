@@ -26,6 +26,7 @@ import { SetShardOwnersActionJSON } from "codechain-sdk/lib/core/transaction/Set
 import { SetShardUsersActionJSON } from "codechain-sdk/lib/core/transaction/SetShardUsers";
 import { StoreActionJSON } from "codechain-sdk/lib/core/transaction/Store";
 import { TransferAssetActionJSON } from "codechain-sdk/lib/core/transaction/TransferAsset";
+import { UnwrapCCCActionJSON } from "codechain-sdk/lib/core/transaction/UnwrapCCC";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
@@ -129,7 +130,13 @@ export async function createTransaction(
             }
             case "unwrapCCC": {
                 const unwrap = tx.unsigned as UnwrapCCC;
-                await createUnwrapCCC(hash, unwrap, tx.unsigned.networkId());
+                const { receiver } = tx.toJSON().action as UnwrapCCCActionJSON;
+                await createUnwrapCCC(
+                    hash,
+                    receiver,
+                    unwrap,
+                    tx.unsigned.networkId()
+                );
                 break;
             }
             case "changeAssetScheme": {

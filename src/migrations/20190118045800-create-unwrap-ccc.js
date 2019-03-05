@@ -13,6 +13,10 @@ module.exports = {
                     key: "hash"
                 }
             },
+            receiver: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
 
             createdAt: {
                 allowNull: false,

@@ -31,6 +31,12 @@ export async function updateAccount(
                 affectedAddresses.push(tx.pay!.receiver);
             }
         });
+        const unwrapCCCs = transactions.filter(
+            tx => tx.type === "unwrapCCC" && tx.success
+        );
+        unwrapCCCs.forEach(tx => {
+            affectedAddresses.push(tx.unwrapCCC!.receiver);
+        });
     }
 
     return Promise.all(

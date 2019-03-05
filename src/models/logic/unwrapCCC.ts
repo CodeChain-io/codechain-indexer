@@ -7,6 +7,7 @@ import { strip0xPrefix } from "./utils/format";
 
 export async function createUnwrapCCC(
     transactionHash: string,
+    receiver: string,
     unwrap: UnwrapCCC,
     networkId: NetworkId
 ): Promise<UnwrapCCCInstance> {
@@ -15,6 +16,7 @@ export async function createUnwrapCCC(
         networkId
     });
     return await models.UnwrapCCC.create({
-        transactionHash: strip0xPrefix(transactionHash)
+        transactionHash: strip0xPrefix(transactionHash),
+        receiver
     });
 }
