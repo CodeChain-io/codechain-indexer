@@ -1,5 +1,8 @@
 import { SignedTransaction } from "codechain-sdk/lib/core/classes";
-import { UnwrapCCC } from "codechain-sdk/lib/core/transaction/UnwrapCCC";
+import {
+    UnwrapCCC,
+    UnwrapCCCActionJSON
+} from "codechain-sdk/lib/core/transaction/UnwrapCCC";
 import models from "../index";
 import { UnwrapCCCInstance } from "../unwrapCCC";
 import { createAssetTransferBurn } from "./assettransferburn";
@@ -11,11 +14,13 @@ export async function createUnwrapCCC(
     const transactionHash = transaction.hash().value;
     const unwrap = transaction.unsigned as UnwrapCCC;
     const burn = unwrap.burn(0)!;
+    const { receiver } = unwrap.toJSON().action as UnwrapCCCActionJSON;
     const networkId = transaction.unsigned.networkId();
     await createAssetTransferBurn(transactionHash, burn, {
         networkId
     });
     return await models.UnwrapCCC.create({
-        transactionHash: strip0xPrefix(transactionHash)
+        transactionHash: strip0xPrefix(transactionHash),
+        receiver
     });
 }

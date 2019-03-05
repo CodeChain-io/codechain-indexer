@@ -4,6 +4,7 @@ import { AssetTransferInputAttribute } from "./assettransferinput";
 
 export interface UnwrapCCCAttribute {
     transactionHash: string;
+    receiver: string;
     burn?: AssetTransferInputAttribute;
 }
 
@@ -31,6 +32,10 @@ export default (
                     model: "Transactions",
                     key: "hash"
                 }
+            },
+            receiver: {
+                allowNull: false,
+                type: DataTypes.STRING
             },
 
             createdAt: {
