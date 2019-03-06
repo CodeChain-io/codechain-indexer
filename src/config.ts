@@ -2,6 +2,7 @@ import * as pg from "pg";
 
 export interface IndexerConfig {
     version: number;
+    publicAddress: string;
     httpPort: number;
     codechain: {
         host: string;
