@@ -38,9 +38,8 @@ export async function createBlock(
             if (result == null || result === undefined) {
                 throw Error("invalid invoice");
             }
-            const txInst = await TxModel.getByHash(tx.hash());
-            if (txInst) {
-                await TxModel.updatePendingTransaction(tx.hash(), sdk, {
+            if (await TxModel.checkIfHashExists(tx.hash())) {
+                await TxModel.updatePendingTransaction(tx.hash(), {
                     timestamp: block.timestamp,
                     success: result.success,
                     errorHint: result.errorHint,
@@ -49,11 +48,16 @@ export async function createBlock(
                     blockHash: tx.blockHash!
                 });
             } else {
-                await TxModel.createTransaction(tx, sdk, false, {
+                await TxModel.createTransaction(tx, false, {
                     timestamp: block.timestamp,
                     success: result.success,
                     errorHint: result.errorHint
                 });
+            }
+        }
+        for (const tx of block.transactions) {
+            if (tx.result) {
+                await TxModel.applyTransaction(tx, sdk, block.number);
             }
         }
     } catch (err) {

@@ -55,7 +55,6 @@ import { createWrapCCC } from "./wrapCCC";
 
 export async function createTransaction(
     tx: SignedTransaction,
-    sdk: SDK,
     isPending: boolean,
     params?: {
         timestamp?: number | null;
@@ -93,12 +92,6 @@ export async function createTransaction(
             pendingTimestamp: isPending ? +new Date() / 1000 : null
         });
         await createTransactionAction(tx);
-
-        const txInst = await getByHash(tx.hash());
-        if (!txInst) {
-            throw Exception.InvalidTransaction();
-        }
-        await applyTransaction(txInst, sdk);
         return txInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -117,7 +110,6 @@ export async function createTransaction(
 
 export async function updatePendingTransaction(
     hash: H256,
-    sdk: SDK,
     params: {
         success?: boolean | null;
         errorHint?: string;
@@ -144,11 +136,6 @@ export async function updatePendingTransaction(
                 }
             }
         );
-        const txInst = await getByHash(hash);
-        if (!txInst) {
-            throw Exception.InvalidTransaction();
-        }
-        await applyTransaction(txInst, sdk);
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -261,20 +248,20 @@ async function createTransactionAction(tx: SignedTransaction) {
     }
 }
 
-async function applyTransaction(tx: TransactionInstance, sdk: SDK) {
-    const { type, success, isPending, blockNumber } = tx.get();
-    if (isPending === true || success === false) {
-        return;
-    }
-
-    if (isAssetTransactionType(type!)) {
-        await transferUTXO(tx, blockNumber!);
+export async function applyTransaction(
+    tx: SignedTransaction,
+    sdk: SDK,
+    blockNumber: number
+) {
+    const type = tx.unsigned.type();
+    if (isAssetTransactionType(type)) {
+        await transferUTXO((await getByHash(tx.hash()))!, blockNumber!);
     }
     if (type === "createShard") {
-        await updateShardId(tx, sdk);
+        await updateShardId((await getByHash(tx.hash()))!, sdk);
     }
     if (type === "changeAssetScheme" || type === "increaseAssetSupply") {
-        await updateAssetScheme(tx);
+        await updateAssetScheme((await getByHash(tx.hash()))!);
     }
 }
 
@@ -397,6 +384,20 @@ export async function getByHash(
             },
             include: fullIncludeArray
         });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+export async function checkIfHashExists(hash: H256): Promise<boolean> {
+    try {
+        return models.Transaction.findOne({
+            attributes: [],
+            where: {
+                hash: strip0xPrefix(hash.value)
+            }
+        }).then(instance => instance != null);
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
