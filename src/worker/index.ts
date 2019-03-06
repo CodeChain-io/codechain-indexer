@@ -227,7 +227,7 @@ export default class Worker {
             .filter(indexedHash => !pendingHashes.includes(indexedHash))
             .map(indexedHash => new H256(indexedHash));
         if (droppedPendingHashes.length > 0) {
-            TxModel.removePendings(droppedPendingHashes);
+            await TxModel.removePendings(droppedPendingHashes);
         }
 
         // Index new pending transactions
