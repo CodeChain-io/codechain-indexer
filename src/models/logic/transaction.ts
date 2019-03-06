@@ -347,6 +347,21 @@ export async function getPendingTransactions(params: {
     }
 }
 
+export async function getAllPendingTransactionHashes() {
+    try {
+        return models.Transaction.findAll({
+            attributes: ["hash"],
+            where: {
+                isPending: true
+            },
+            order: [["pendingTimestamp", "DESC"]]
+        }).then(instances => instances.map(i => i.get().hash));
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 export async function getNumberOfPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;

@@ -215,23 +215,22 @@ export default class Worker {
     private indexPendingTransaction = async () => {
         console.log("======== indexing pending transactions =======");
         const pendings = await this.context.sdk.rpc.chain.getPendingTransactions();
-        const indexeds = await TxModel.getPendingTransactions({}).then(
-            instances => instances.map(i => i.get({ plain: true }))
-        );
+        const indexedHashes = await TxModel.getAllPendingTransactionHashes();
 
-        console.log(`Indexed: ${indexeds.length} / RPC: ${pendings.length}`);
+        console.log(
+            `Indexed: ${indexedHashes.length} / RPC: ${pendings.length}`
+        );
 
         // Remove dropped pending transactions
         const pendingHashes = pendings.map(p => p.hash().value);
-        const droppedPendingHashes = indexeds
-            .filter(indexed => !pendingHashes.includes(indexed.hash))
-            .map(tx => new H256(tx.hash));
+        const droppedPendingHashes = indexedHashes
+            .filter(indexedHash => !pendingHashes.includes(indexedHash))
+            .map(indexedHash => new H256(indexedHash));
         if (droppedPendingHashes.length > 0) {
             TxModel.removePendings(droppedPendingHashes);
         }
 
         // Index new pending transactions
-        const indexedHashes = _.map(indexeds, p => p.hash);
         const newPendingTransactions = _.filter(
             pendings,
             pending => !_.includes(indexedHashes, pending.hash().value)
