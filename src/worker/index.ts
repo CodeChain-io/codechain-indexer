@@ -164,26 +164,23 @@ export default class Worker {
             }
             miningReward = miningRewardResponse;
         }
-        const results = await Promise.all(
+        const errorHints: { [transactionIndex: number]: string } = {};
+        await Promise.all(
             block.transactions.map(async tx => {
-                if (tx.result!) {
-                    return {
-                        success: true,
-                        errorHint: undefined
-                    };
+                if (tx.result === false) {
+                    errorHints[
+                        tx.transactionIndex!
+                    ] = (await sdk.rpc.chain.getErrorHint(tx.hash()))!;
                 }
-                const errorHint = await sdk.rpc.chain.getErrorHint(tx.hash());
-                return {
-                    success: false,
-                    errorHint: errorHint ? errorHint : undefined
-                };
             })
         );
         try {
-            await BlockModel.createBlock(block, sdk, {
-                miningReward: new U64(miningReward),
-                results
-            });
+            await BlockModel.createBlock(
+                block,
+                sdk,
+                new U64(miningReward),
+                errorHints
+            );
         } catch (err) {
             await BlockModel.deleteBlockByNumber(block.number);
             throw err;
@@ -235,8 +232,6 @@ export default class Worker {
             pendings,
             pending => !_.includes(indexedHashes, pending.hash().value)
         );
-        for (const pending of newPendingTransactions) {
-            await TxModel.createTransaction(pending, true);
-        }
+        await TxModel.createTransactions(newPendingTransactions, true);
     };
 }

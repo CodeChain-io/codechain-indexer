@@ -11,10 +11,8 @@ import { strip0xPrefix } from "./utils/format";
 export async function createBlock(
     block: Block,
     sdk: SDK,
-    params: {
-        miningReward: U64;
-        results: { success: boolean; errorHint?: string }[];
-    }
+    miningReward: U64,
+    errorHints: { [transactionIndex: number]: string }
 ): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
     try {
@@ -30,31 +28,18 @@ export async function createBlock(
             score: block.score.value.toString(10),
             seal: block.seal.map(s => Buffer.from(s)),
             hash: strip0xPrefix(block.hash.value),
-            miningReward: params.miningReward.value.toString(10)
+            miningReward: miningReward.value.toString(10)
         });
 
-        for (const tx of block.transactions) {
-            const result = params.results[tx.transactionIndex!];
-            if (result == null || result === undefined) {
-                throw Error("invalid invoice");
-            }
-            if (await TxModel.checkIfHashExists(tx.hash())) {
-                await TxModel.updatePendingTransaction(tx.hash(), {
-                    timestamp: block.timestamp,
-                    success: result.success,
-                    errorHint: result.errorHint,
-                    transactionIndex: tx.transactionIndex!,
-                    blockNumber: tx.blockNumber!,
-                    blockHash: tx.blockHash!
-                });
-            } else {
-                await TxModel.createTransaction(tx, false, {
-                    timestamp: block.timestamp,
-                    success: result.success,
-                    errorHint: result.errorHint
-                });
-            }
-        }
+        // FIXME: Currently, Sequelize doesn't support a bulkUpsert() for Postgres.
+        await TxModel.removePendings(block.transactions.map(t => t.hash()));
+        await TxModel.createTransactions(
+            block.transactions,
+            false,
+            block.timestamp,
+            errorHints
+        );
+
         for (const tx of block.transactions) {
             if (tx.result) {
                 await TxModel.applyTransaction(tx, sdk, block.number);
