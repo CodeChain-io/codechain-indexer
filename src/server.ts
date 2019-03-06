@@ -7,13 +7,14 @@ import { IndexerConfig } from "./config";
 import { IndexerContext } from "./context";
 import log from "./log";
 
-const httpPort = (require("config") as IndexerConfig).httpPort || 9001;
+const config = require("config") as IndexerConfig;
+const { publicAddress, httpPort } = config;
 const swaggerDefinition = {
     info: {
         title: "CodeChain Indexer API",
         version: "1.0.0"
     },
-    host: `localhost:${httpPort}`,
+    host: `${publicAddress}:${httpPort}`,
     basePath: "/api"
 };
 

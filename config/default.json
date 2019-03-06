@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "publicAddress": "localhost",
   "httpPort": 9001,
   "codechain": {
     "host": "http://localhost:8080",
