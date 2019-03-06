@@ -53,46 +53,48 @@ import { fullIncludeArray, includeArray } from "./utils/includeArray";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
-export async function createTransaction(
-    tx: SignedTransaction,
+export async function createTransactions(
+    txs: SignedTransaction[],
     isPending: boolean,
-    params?: {
-        timestamp?: number | null;
-        success?: boolean | null;
-        errorHint?: string;
-    } | null
-): Promise<TransactionInstance> {
-    const { timestamp = null, success = null } = params || {};
-    const errorHint = params ? params.errorHint : undefined;
+    timestamp?: number | null,
+    errorHints?: { [transactionIndex: number]: string } | null
+): Promise<TransactionInstance[]> {
     try {
-        const type = tx.unsigned.type();
-        const hash = tx.hash().value;
         // FIXME: Add a method to SDK
-        const tracker = isAssetTransactionType(type)
-            ? ((tx.unsigned as any) as AssetTransaction).tracker().value
-            : null;
-        const txInstance = await models.Transaction.create({
-            hash: strip0xPrefix(hash),
-            type,
-            blockNumber: tx.blockNumber,
-            blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
-            tracker: tracker && strip0xPrefix(tracker),
-            transactionIndex: tx.transactionIndex,
-            seq: tx.unsigned.seq()!,
-            fee: tx.unsigned.fee()!.toString(10)!,
-            networkId: tx.unsigned.networkId(),
-            sig: strip0xPrefix(tx.toJSON().sig),
-            signer: tx.getSignerAddress({
-                networkId: tx.unsigned.networkId()
-            }).value,
-            success,
-            errorHint: errorHint && strip0xPrefix(errorHint),
-            timestamp,
-            isPending,
-            pendingTimestamp: isPending ? +new Date() / 1000 : null
-        });
-        await createTransactionAction(tx);
-        return txInstance;
+        const txInstances = await models.Transaction.bulkCreate(
+            txs.map(tx => ({
+                hash: strip0xPrefix(tx.hash().value),
+                type: tx.unsigned.type(),
+                blockNumber: tx.blockNumber,
+                blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
+                tracker: isAssetTransactionType(tx.unsigned.type())
+                    ? strip0xPrefix(
+                          ((tx.unsigned as any) as AssetTransaction).tracker()
+                              .value
+                      )
+                    : null,
+                transactionIndex: tx.transactionIndex,
+                seq: tx.unsigned.seq()!,
+                fee: tx.unsigned.fee()!.toString(10)!,
+                networkId: tx.unsigned.networkId(),
+                sig: strip0xPrefix(tx.toJSON().sig),
+                signer: tx.getSignerAddress({
+                    networkId: tx.unsigned.networkId()
+                }).value,
+                success: tx.result,
+                errorHint:
+                    errorHints == null
+                        ? undefined
+                        : errorHints[tx.transactionIndex!],
+                timestamp,
+                isPending,
+                pendingTimestamp: isPending ? +new Date() / 1000 : null
+            }))
+        );
+        for (const tx of txs) {
+            await createTransactionAction(tx);
+        }
+        return txInstances;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
@@ -103,40 +105,6 @@ export async function createTransaction(
         if (err.message === "InvalidTransaction") {
             throw err;
         }
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
-
-export async function updatePendingTransaction(
-    hash: H256,
-    params: {
-        success?: boolean | null;
-        errorHint?: string;
-        timestamp: number;
-        transactionIndex: number;
-        blockNumber: number;
-        blockHash: H256;
-    }
-) {
-    try {
-        await models.Transaction.update(
-            {
-                blockHash: strip0xPrefix(params.blockHash.value),
-                transactionIndex: params.transactionIndex,
-                blockNumber: params.blockNumber,
-                success: params.success,
-                errorHint: params.errorHint && strip0xPrefix(params.errorHint),
-                timestamp: params.timestamp,
-                isPending: false
-            },
-            {
-                where: {
-                    hash: hash.value
-                }
-            }
-        );
-    } catch (err) {
         console.error(err);
         throw Exception.DBError();
     }
@@ -197,7 +165,7 @@ async function createTransactionAction(tx: SignedTransaction) {
         }
         case "pay": {
             const { quantity, receiver } = tx.toJSON().action as PayActionJSON;
-            await createPay(hash, new U64(quantity).toString(10), receiver);
+            await createPay(hash, new U64(quantity).toString(), receiver);
             break;
         }
         case "setRegularKey": {
