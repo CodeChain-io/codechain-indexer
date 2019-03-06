@@ -92,108 +92,7 @@ export async function createTransaction(
             isPending,
             pendingTimestamp: isPending ? +new Date() / 1000 : null
         });
-        switch (type) {
-            case "mintAsset": {
-                const mintAsset = tx.unsigned as MintAsset;
-                await createMintAsset(
-                    hash,
-                    mintAsset.getMintedAsset(),
-                    mintAsset.getAssetScheme(),
-                    tx.toJSON().action as MintAssetActionJSON
-                );
-                break;
-            }
-            case "transferAsset": {
-                const transferAsset = tx.unsigned as TransferAsset;
-                await createTransferAsset(hash, transferAsset, tx.toJSON()
-                    .action as TransferAssetActionJSON);
-                break;
-            }
-            case "composeAsset": {
-                const composeAsset = tx.unsigned as ComposeAsset;
-                await createComposeAsset(hash, composeAsset, tx.toJSON()
-                    .action as ComposeAssetActionJSON);
-                break;
-            }
-            case "decomposeAsset": {
-                const decomposeAsset = tx.unsigned as DecomposeAsset;
-                await createDecomposeAsset(hash, decomposeAsset, tx.toJSON()
-                    .action as DecomposeAssetActionJSON);
-                break;
-            }
-            case "wrapCCC": {
-                const wrap = tx.unsigned as WrapCCC;
-                // FIXME: any
-                await createWrapCCC(hash, wrap.toJSON().action as any);
-                break;
-            }
-            case "unwrapCCC": {
-                const unwrap = tx.unsigned as UnwrapCCC;
-                await createUnwrapCCC(hash, unwrap, tx.unsigned.networkId());
-                break;
-            }
-            case "changeAssetScheme": {
-                const changeAssetScheme = tx.unsigned as ChangeAssetScheme;
-                await createChangeAssetScheme(hash, changeAssetScheme);
-                break;
-            }
-            case "increaseAssetSupply": {
-                const increaseAssetSupply = tx.unsigned as IncreaseAssetSupply;
-                await createIncreaseAssetSupply(hash, increaseAssetSupply);
-                break;
-            }
-            case "pay": {
-                const { quantity, receiver } = tx.toJSON()
-                    .action as PayActionJSON;
-                await createPay(hash, new U64(quantity).toString(10), receiver);
-                break;
-            }
-            case "setRegularKey": {
-                const { key } = tx.toJSON().action as SetRegularKeyActionJSON;
-                await createSetRegularKey(hash, key);
-                break;
-            }
-            case "createShard": {
-                const { users } = tx.toJSON().action as CreateShardActionJSON;
-                await createCreateShard(hash, users);
-                break;
-            }
-            case "setShardOwners": {
-                const { shardId, owners } = tx.toJSON()
-                    .action as SetShardOwnersActionJSON;
-                await createSetShardOwners(hash, shardId, owners);
-                break;
-            }
-            case "setShardUsers": {
-                const { shardId, users } = tx.toJSON()
-                    .action as SetShardUsersActionJSON;
-                await createSetShardUsers(hash, shardId, users);
-                break;
-            }
-            case "store": {
-                const { content, certifier, signature } = tx.toJSON()
-                    .action as StoreActionJSON;
-                await createStore(hash, content, certifier, signature);
-                break;
-            }
-            case "remove": {
-                const action = tx.toJSON().action as RemoveActionJSON;
-                await createRemove(hash, action.hash, action.signature);
-                break;
-            }
-            case "custom": {
-                const { handlerId, buffer } = tx.toJSON()
-                    .action as CustomActionJSON;
-                await createCustom(
-                    hash,
-                    parseInt(handlerId, 10),
-                    Buffer.from(buffer).toString("hex")
-                );
-                break;
-            }
-            default:
-                throw new Error(`${type} is not an expected transaction type`);
-        }
+        await createTransactionAction(tx);
 
         const txInst = await getByHash(tx.hash());
         if (!txInst) {
@@ -253,6 +152,112 @@ export async function updatePendingTransaction(
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
+    }
+}
+
+async function createTransactionAction(tx: SignedTransaction) {
+    const type = tx.unsigned.type();
+    const hash = tx.hash().value;
+    switch (type) {
+        case "mintAsset": {
+            const mintAsset = tx.unsigned as MintAsset;
+            await createMintAsset(
+                hash,
+                mintAsset.getMintedAsset(),
+                mintAsset.getAssetScheme(),
+                tx.toJSON().action as MintAssetActionJSON
+            );
+            break;
+        }
+        case "transferAsset": {
+            const transferAsset = tx.unsigned as TransferAsset;
+            await createTransferAsset(hash, transferAsset, tx.toJSON()
+                .action as TransferAssetActionJSON);
+            break;
+        }
+        case "composeAsset": {
+            const composeAsset = tx.unsigned as ComposeAsset;
+            await createComposeAsset(hash, composeAsset, tx.toJSON()
+                .action as ComposeAssetActionJSON);
+            break;
+        }
+        case "decomposeAsset": {
+            const decomposeAsset = tx.unsigned as DecomposeAsset;
+            await createDecomposeAsset(hash, decomposeAsset, tx.toJSON()
+                .action as DecomposeAssetActionJSON);
+            break;
+        }
+        case "wrapCCC": {
+            const wrap = tx.unsigned as WrapCCC;
+            // FIXME: any
+            await createWrapCCC(hash, wrap.toJSON().action as any);
+            break;
+        }
+        case "unwrapCCC": {
+            const unwrap = tx.unsigned as UnwrapCCC;
+            await createUnwrapCCC(hash, unwrap, tx.unsigned.networkId());
+            break;
+        }
+        case "changeAssetScheme": {
+            const changeAssetScheme = tx.unsigned as ChangeAssetScheme;
+            await createChangeAssetScheme(hash, changeAssetScheme);
+            break;
+        }
+        case "increaseAssetSupply": {
+            const increaseAssetSupply = tx.unsigned as IncreaseAssetSupply;
+            await createIncreaseAssetSupply(hash, increaseAssetSupply);
+            break;
+        }
+        case "pay": {
+            const { quantity, receiver } = tx.toJSON().action as PayActionJSON;
+            await createPay(hash, new U64(quantity).toString(10), receiver);
+            break;
+        }
+        case "setRegularKey": {
+            const { key } = tx.toJSON().action as SetRegularKeyActionJSON;
+            await createSetRegularKey(hash, key);
+            break;
+        }
+        case "createShard": {
+            const { users } = tx.toJSON().action as CreateShardActionJSON;
+            await createCreateShard(hash, users);
+            break;
+        }
+        case "setShardOwners": {
+            const { shardId, owners } = tx.toJSON()
+                .action as SetShardOwnersActionJSON;
+            await createSetShardOwners(hash, shardId, owners);
+            break;
+        }
+        case "setShardUsers": {
+            const { shardId, users } = tx.toJSON()
+                .action as SetShardUsersActionJSON;
+            await createSetShardUsers(hash, shardId, users);
+            break;
+        }
+        case "store": {
+            const { content, certifier, signature } = tx.toJSON()
+                .action as StoreActionJSON;
+            await createStore(hash, content, certifier, signature);
+            break;
+        }
+        case "remove": {
+            const action = tx.toJSON().action as RemoveActionJSON;
+            await createRemove(hash, action.hash, action.signature);
+            break;
+        }
+        case "custom": {
+            const { handlerId, buffer } = tx.toJSON()
+                .action as CustomActionJSON;
+            await createCustom(
+                hash,
+                parseInt(handlerId, 10),
+                Buffer.from(buffer).toString("hex")
+            );
+            break;
+        }
+        default:
+            throw new Error(`${type} is not an expected transaction type`);
     }
 }
 
