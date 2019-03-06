@@ -236,7 +236,7 @@ export default class Worker {
             pending => !_.includes(indexedHashes, pending.hash().value)
         );
         for (const pending of newPendingTransactions) {
-            await TxModel.createTransaction(pending, this.context.sdk, true);
+            await TxModel.createTransaction(pending, true);
         }
     };
 }
