@@ -25,6 +25,7 @@ import { createTransferAsset } from "./transferAsset";
 import { createUnwrapCCC } from "./unwrapCCC";
 import { strip0xPrefix } from "./utils/format";
 import { fullIncludeArray, includeArray } from "./utils/includeArray";
+import { getSigners } from "./utils/workerpool";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
@@ -35,9 +36,9 @@ export async function createTransactions(
     errorHints?: { [transactionIndex: number]: string } | null
 ): Promise<TransactionInstance[]> {
     try {
-        // FIXME: Add a method to SDK
+        const signers = await getSigners(txs);
         const txInstances = await models.Transaction.bulkCreate(
-            txs.map(tx => ({
+            txs.map((tx, i) => ({
                 hash: strip0xPrefix(tx.hash().value),
                 type: tx.unsigned.type(),
                 blockNumber: tx.blockNumber,
@@ -52,10 +53,8 @@ export async function createTransactions(
                 seq: tx.unsigned.seq()!,
                 fee: tx.unsigned.fee()!.toString(10)!,
                 networkId: tx.unsigned.networkId(),
-                sig: strip0xPrefix(tx.toJSON().sig),
-                signer: tx.getSignerAddress({
-                    networkId: tx.unsigned.networkId()
-                }).value,
+                sig: strip0xPrefix(tx.signature()),
+                signer: signers[i],
                 success: tx.result,
                 errorHint:
                     errorHints == null
