@@ -17,10 +17,12 @@ async function check(blockNumber: number, typeName: string, typeInstance: any) {
     expect(blockResponse).toBeTruthy();
     expect(blockResponse.transactions.length).toBe(1);
 
-    const blockInst = await createBlock(blockResponse, Helper.sdk, {
-        miningReward: new U64("1000"),
-        results: [{ success: true }]
-    });
+    const blockInst = await createBlock(
+        blockResponse,
+        Helper.sdk,
+        new U64("1000"),
+        {}
+    );
 
     const blockDoc = blockInst.get({ plain: true });
     expect(blockDoc.hash).toEqual(blockResponse.hash.value);
