@@ -31,6 +31,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("AssetImages");
+        return queryInterface.dropTable("AssetImages", { force: true });
     }
 };

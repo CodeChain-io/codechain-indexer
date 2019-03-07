@@ -79,6 +79,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("Transactions");
+        return queryInterface.dropTable("Transactions", { force: true });
     }
 };

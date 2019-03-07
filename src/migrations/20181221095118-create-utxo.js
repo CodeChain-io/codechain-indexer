@@ -88,6 +88,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("UTXOs");
+        return queryInterface.dropTable("UTXOs", { force: true });
     }
 };
