@@ -39,6 +39,7 @@
     "drop": "sequelize db:migrate:undo:all",
     "migrate": "sequelize db:migrate",
     "start": "ts-node src/index.ts",
+    "del": "ts-node script/deleteBlock.ts",
     "test": "jest --env node --runInBand",
     "lint": "tslint -p . && prettier '{src, scripts}/**/*.{ts,js,json}' -l",
     "fmt": "tslint -p . --fix && prettier '{src, scripts}/**/*.{ts,js,json}' --write"
