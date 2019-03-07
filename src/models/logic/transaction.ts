@@ -403,7 +403,7 @@ export async function removePendings(hashes: H256[]): Promise<void> {
         await models.Transaction.destroy({
             where: {
                 hash: {
-                    [Sequelize.Op.in]: [hashes.map(h => strip0xPrefix(h.value))]
+                    [Sequelize.Op.in]: hashes.map(h => strip0xPrefix(h.value))
                 },
                 isPending: true
             }
