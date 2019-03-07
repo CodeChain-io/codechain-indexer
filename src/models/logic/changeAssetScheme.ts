@@ -1,4 +1,7 @@
-import { ChangeAssetScheme } from "codechain-sdk/lib/core/classes";
+import {
+    ChangeAssetScheme,
+    SignedTransaction
+} from "codechain-sdk/lib/core/classes";
 import { ChangeAssetSchemeActionJSON } from "codechain-sdk/lib/core/transaction/ChangeAssetScheme";
 import models from "..";
 import { ChangeAssetSchemeInstance } from "../changeAssetScheme";
@@ -6,9 +9,10 @@ import * as AssetImageModel from "./assetimage";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createChangeAssetScheme(
-    transactionHash: string,
-    changeAssetScheme: ChangeAssetScheme
+    transaction: SignedTransaction
 ): Promise<ChangeAssetSchemeInstance> {
+    const transactionHash = transaction.hash().value;
+    const changeAssetScheme = transaction.unsigned as ChangeAssetScheme;
     const {
         assetType,
         networkId,

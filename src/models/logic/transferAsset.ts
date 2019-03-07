@@ -1,6 +1,10 @@
 import { Asset } from "codechain-sdk/lib/core/Asset";
+import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
-import { TransferAsset } from "codechain-sdk/lib/core/transaction/TransferAsset";
+import {
+    TransferAsset,
+    TransferAssetActionJSON
+} from "codechain-sdk/lib/core/transaction/TransferAsset";
 import models from "../index";
 import { TransferAssetInstance } from "../transferAsset";
 import { createAssetTransferBurn } from "./assettransferburn";
@@ -10,17 +14,17 @@ import { createOrderOnTransfer } from "./orderontransfer";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createTransferAsset(
-    transactionHash: string,
-    transfer: TransferAsset,
-    params: {
-        networkId: string;
-        approvals: string[];
-        inputs: any[];
-        burns: any[];
-        outputs: any[];
-    }
+    transaction: SignedTransaction
 ): Promise<TransferAssetInstance> {
-    const { networkId, approvals, inputs, outputs, burns } = params;
+    const {
+        networkId,
+        approvals,
+        inputs,
+        outputs,
+        burns
+    } = transaction.toJSON().action as TransferAssetActionJSON;
+    const transfer = transaction.unsigned as TransferAsset;
+    const transactionHash = transaction.hash().value;
     const result = await models.TransferAsset.create({
         transactionHash: strip0xPrefix(transactionHash),
         networkId,
