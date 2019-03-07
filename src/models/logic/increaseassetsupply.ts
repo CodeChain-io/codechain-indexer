@@ -1,4 +1,5 @@
 import { H160 } from "codechain-primitives/lib";
+import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import {
     IncreaseAssetSupply,
@@ -10,9 +11,10 @@ import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createIncreaseAssetSupply(
-    transactionHash: string,
-    increaseAssetSupply: IncreaseAssetSupply
+    transaction: SignedTransaction
 ): Promise<IncreaseAssetSupplyInstance> {
+    const transactionHash = transaction.hash().value;
+    const increaseAssetSupply = transaction.unsigned as IncreaseAssetSupply;
     const { networkId, action } = increaseAssetSupply.toJSON();
     const {
         shardId,

@@ -1,13 +1,16 @@
 import { SDK } from "codechain-sdk";
+import { SignedTransaction } from "codechain-sdk/lib/core/classes";
+import { CreateShardActionJSON } from "codechain-sdk/lib/core/transaction/CreateShard";
 import { CreateShardInstance } from "../createShard";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createCreateShard(
-    transactionHash: string,
-    users: string[]
+    transaction: SignedTransaction
 ): Promise<CreateShardInstance> {
+    const transactionHash = transaction.hash().value;
+    const { users } = transaction.toJSON().action as CreateShardActionJSON;
     return await models.CreateShard.create({
         transactionHash: strip0xPrefix(transactionHash),
         users

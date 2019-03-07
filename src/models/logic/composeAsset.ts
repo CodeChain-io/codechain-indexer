@@ -1,5 +1,9 @@
+import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
-import { ComposeAsset } from "codechain-sdk/lib/core/transaction/ComposeAsset";
+import {
+    ComposeAsset,
+    ComposeAssetActionJSON
+} from "codechain-sdk/lib/core/transaction/ComposeAsset";
 import { ComposeAssetInstance } from "../composeAsset";
 import models from "../index";
 import { createAssetScheme } from "./assetscheme";
@@ -9,20 +13,10 @@ import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createComposeAsset(
-    transactionHash: string,
-    compose: ComposeAsset,
-    params: {
-        networkId: string;
-        shardId: number;
-        metadata: string;
-        approver?: string | null;
-        administrator?: string | null;
-        allowedScriptHashes: string[];
-        approvals: string[];
-        inputs: any[];
-        output: any;
-    }
+    transaction: SignedTransaction
 ): Promise<ComposeAssetInstance> {
+    const transactionHash = transaction.hash().value;
+    const compose = transaction.unsigned as ComposeAsset;
     const {
         networkId,
         shardId,
@@ -33,7 +27,7 @@ export async function createComposeAsset(
         allowedScriptHashes,
         output,
         inputs
-    } = params;
+    } = transaction.toJSON().action as ComposeAssetActionJSON;
     const assetName = getAssetName(metadata);
 
     const asset = compose.getComposedAsset();

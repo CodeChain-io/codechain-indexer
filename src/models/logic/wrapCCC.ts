@@ -1,4 +1,5 @@
-import { H160, U64 } from "codechain-sdk/lib/core/classes";
+import { H160, SignedTransaction, U64 } from "codechain-sdk/lib/core/classes";
+import { WrapCCCActionJSON } from "codechain-sdk/lib/core/transaction/WrapCCC";
 import models from "../index";
 import { WrapCCCInstance } from "../wrapCCC";
 import { createAssetSchemeOfWCCC } from "./assetscheme";
@@ -6,17 +7,16 @@ import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createWrapCCC(
-    transactionHash: string,
-    params: {
-        networkId: string;
-        shardId: number;
-        lockScriptHash: string;
-        parameters: string[];
-        quantity: string;
-    }
+    transaction: SignedTransaction
 ): Promise<WrapCCCInstance> {
-    const { networkId, shardId, lockScriptHash, parameters } = params;
-    const quantity = U64.ensure(params.quantity).toString(10);
+    const transactionHash = transaction.hash().value;
+    const {
+        shardId,
+        lockScriptHash,
+        parameters,
+        quantity
+    } = transaction.toJSON().action as WrapCCCActionJSON;
+    const networkId = transaction.unsigned.networkId();
 
     const recipient = getOwner(new H160(lockScriptHash), parameters, networkId);
 
@@ -25,7 +25,7 @@ export async function createWrapCCC(
         shardId,
         lockScriptHash: strip0xPrefix(lockScriptHash),
         parameters: parameters.map(p => strip0xPrefix(p)),
-        quantity,
+        quantity: new U64(quantity).toString(),
         recipient
     });
     const existing = await models.AssetScheme.findByPk(H160.zero().toString());
