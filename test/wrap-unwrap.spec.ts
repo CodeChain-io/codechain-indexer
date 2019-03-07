@@ -21,10 +21,12 @@ beforeAll(async done => {
 async function check(blockResponse: Block, type: string) {
     expect(blockResponse).toBeTruthy();
 
-    const blockInst = await BlockModel.createBlock(blockResponse, Helper.sdk, {
-        miningReward: new U64("1000"),
-        results: [{ success: true }]
-    });
+    const blockInst = await BlockModel.createBlock(
+        blockResponse,
+        Helper.sdk,
+        new U64("1000"),
+        {}
+    );
     const blockDoc = blockInst.get({ plain: true });
     expect(blockDoc.hash).toEqual(blockResponse.hash.value);
 
@@ -55,10 +57,12 @@ test("Check duplicated block", async done => {
 
     // Duplicated error test
     try {
-        await BlockModel.createBlock(unwrapBlock, Helper.sdk, {
-            miningReward: new U64("1000"),
-            results: [{ success: true }]
-        });
+        await BlockModel.createBlock(
+            unwrapBlock,
+            Helper.sdk,
+            new U64("1000"),
+            {}
+        );
         done.fail();
     } catch (e) {
         expect(e).toBeTruthy();
