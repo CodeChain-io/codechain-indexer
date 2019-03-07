@@ -25,6 +25,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("Accounts");
+        return queryInterface.dropTable("Accounts", { force: true });
     }
 };

@@ -51,6 +51,8 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable("AssetTransferOutputs");
+        return queryInterface.dropTable("AssetTransferOutputs", {
+            force: true
+        });
     }
 };
