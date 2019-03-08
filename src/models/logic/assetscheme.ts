@@ -14,7 +14,7 @@ export async function createAssetScheme(
     assetScheme: {
         metadata: string;
         approver: PlatformAddress | null;
-        administrator: PlatformAddress | null;
+        registrar: PlatformAddress | null;
         allowedScriptHashes: H160[];
         supply: U64;
         networkId: string;
@@ -28,8 +28,7 @@ export async function createAssetScheme(
             assetType: strip0xPrefix(assetType),
             metadata: assetScheme.metadata,
             approver: assetScheme.approver && assetScheme.approver.value,
-            administrator:
-                assetScheme.administrator && assetScheme.administrator.value,
+            registrar: assetScheme.registrar && assetScheme.registrar.value,
             allowedScriptHashes: assetScheme.allowedScriptHashes.map(hash =>
                 strip0xPrefix(hash.value)
             ),
@@ -77,7 +76,7 @@ export async function createAssetSchemeOfWCCC(
             assetType: strip0xPrefix(assetType),
             metadata,
             approver: null,
-            administrator: null,
+            registrar: null,
             allowedScriptHashes: [],
             supply: U64.MAX_VALUE.toString(10),
             networkId,
@@ -106,7 +105,7 @@ export async function updateAssetScheme(
         const {
             assetType,
             metadata,
-            administrator,
+            registrar,
             approver,
             allowedScriptHashes
         } = changeAssetScheme;
@@ -115,7 +114,7 @@ export async function updateAssetScheme(
                 {
                     metadata,
                     approver,
-                    administrator,
+                    registrar,
                     allowedScriptHashes: allowedScriptHashes.map(hash =>
                         strip0xPrefix(hash)
                     )

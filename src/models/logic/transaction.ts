@@ -333,7 +333,7 @@ function addAddressQuery(query: any[], address: string) {
         [Sequelize.Op.or]: [
             { signer: address },
             { "$mintAsset.approver$": address },
-            { "$mintAsset.administrator$": address },
+            { "$mintAsset.registrar$": address },
             { "$mintAsset.recipient$": address },
 
             { "$transferAsset.inputs.owner$": address },
@@ -341,7 +341,7 @@ function addAddressQuery(query: any[], address: string) {
             { "$transferAsset.burns.owner$": address },
 
             { "$composeAsset.approver$": address },
-            { "$composeAsset.administrator$": address },
+            { "$composeAsset.registrar$": address },
             { "$composeAsset.recipient$": address },
             { "$composeAsset.inputs.owner$": address },
 

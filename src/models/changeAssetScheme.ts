@@ -7,7 +7,7 @@ export interface ChangeAssetSchemeAttribute {
     shardId: number;
     metadata: string;
     approver?: string | null;
-    administrator?: string | null;
+    registrar?: string | null;
     allowedScriptHashes: string[];
     approvals: string[];
 }
@@ -57,7 +57,7 @@ export default (
             approver: {
                 type: DataTypes.STRING
             },
-            administrator: {
+            registrar: {
                 type: DataTypes.STRING
             },
             allowedScriptHashes: {

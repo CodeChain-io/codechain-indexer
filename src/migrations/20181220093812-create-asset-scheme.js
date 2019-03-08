@@ -27,7 +27,7 @@ module.exports = {
             approver: {
                 type: Sequelize.STRING
             },
-            administrator: {
+            registrar: {
                 type: Sequelize.STRING
             },
             allowedScriptHashes: {

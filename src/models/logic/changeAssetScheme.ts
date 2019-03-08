@@ -19,7 +19,7 @@ export async function createChangeAssetScheme(
         shardId,
         metadata,
         approver,
-        administrator,
+        registrar,
         allowedScriptHashes,
         approvals
     } = changeAssetScheme.toJSON().action as ChangeAssetSchemeActionJSON;
@@ -30,7 +30,7 @@ export async function createChangeAssetScheme(
         shardId,
         metadata,
         approver,
-        administrator,
+        registrar,
         allowedScriptHashes: allowedScriptHashes.map(hash =>
             strip0xPrefix(hash)
         ),

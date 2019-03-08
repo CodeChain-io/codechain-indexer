@@ -20,7 +20,7 @@ export async function createMintAsset(
         shardId,
         metadata,
         approver = null,
-        administrator = null,
+        registrar = null,
         approvals,
         allowedScriptHashes,
         output
@@ -42,7 +42,7 @@ export async function createMintAsset(
         shardId,
         metadata,
         approver,
-        administrator,
+        registrar,
         allowedScriptHashes: allowedScriptHashes.map(scripthash =>
             strip0xPrefix(scripthash)
         ),

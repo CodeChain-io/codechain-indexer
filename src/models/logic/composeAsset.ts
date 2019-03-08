@@ -22,7 +22,7 @@ export async function createComposeAsset(
         shardId,
         metadata,
         approver = null,
-        administrator = null,
+        registrar = null,
         approvals,
         allowedScriptHashes,
         output,
@@ -47,7 +47,7 @@ export async function createComposeAsset(
         shardId,
         metadata,
         approver,
-        administrator,
+        registrar,
         allowedScriptHashes: allowedScriptHashes.map(hash =>
             strip0xPrefix(hash)
         ),
