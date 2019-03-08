@@ -29,7 +29,7 @@ module.exports = {
             approver: {
                 type: DataTypes.STRING
             },
-            administrator: {
+            registrar: {
                 type: DataTypes.STRING
             },
             allowedScriptHashes: {
