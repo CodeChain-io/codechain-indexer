@@ -16,14 +16,11 @@ beforeAll(async done => {
     await Helper.runExample("mint-and-transfer");
     const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
     const mintBlockNumber = bestBlockNumber - 1;
-    mintBlock = (await Helper.sdk.rpc.chain.getBlock(
-        mintBlockNumber
-    ))!;
-    const assetMintTransaction = mintBlock.transactions[0].unsigned as MintAsset;
+    mintBlock = (await Helper.sdk.rpc.chain.getBlock(mintBlockNumber))!;
+    const assetMintTransaction = mintBlock.transactions[0]
+        .unsigned as MintAsset;
     assetType = assetMintTransaction.getAssetType();
-    transferBlock = (await Helper.sdk.rpc.chain.getBlock(
-        bestBlockNumber
-    ))!;
+    transferBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber))!;
     done();
 }, 30_000);
 
@@ -50,7 +47,9 @@ test("Get the mint snapshot", async done => {
     const snapshot = await UTXOModel.getSnapshot(assetType, mintBlock.number);
     expect(snapshot).toHaveLength(1);
     expect(snapshot[0].blockNumber).toBe(mintBlock.number);
-    expect(snapshot[0].transactionHash).toBe(mintBlock.transactions[0].hash().value);
+    expect(snapshot[0].transactionHash).toBe(
+        mintBlock.transactions[0].hash().value
+    );
     expect(snapshot[0].usedBlockNumber).toBeNull();
     expect(snapshot[0].usedTransactionHash).toBeNull();
     done();
@@ -60,7 +59,7 @@ test("Fail to get the transfer block by timestamp", async done => {
     const block = await BlockModel.getByTime(transferBlock.timestamp);
     expect(block).toBeNull();
     done();
-})
+});
 
 test("Add another block", async done => {
     const prevBlockCount = await BlockModel.getNumberOfBlocks({});
@@ -69,27 +68,36 @@ test("Add another block", async done => {
     const blockCount = await BlockModel.getNumberOfBlocks({});
     expect(blockCount).toBe(prevBlockCount + 1);
     done();
-})
+});
 
 test("Get the transfer block by timestamp", async done => {
     const block = await BlockModel.getByTime(transferBlock.timestamp);
     expect(block).toBeTruthy();
     done();
-})
+});
 
 test("Get the transfer snapshot", async done => {
-    const snapshot = await UTXOModel.getSnapshot(assetType, transferBlock.number);
+    const snapshot = await UTXOModel.getSnapshot(
+        assetType,
+        transferBlock.number
+    );
     expect(snapshot).toHaveLength(2);
 
     for (const utxo of snapshot) {
         expect(utxo.blockNumber).toBe(transferBlock.number);
-        expect(utxo.transactionHash).toBe(transferBlock.transactions[0].hash().value);
+        expect(utxo.transactionHash).toBe(
+            transferBlock.transactions[0].hash().value
+        );
         expect(utxo.usedBlockNumber).toBeNull();
         expect(utxo.usedTransactionHash).toBeNull();
     }
 
-    expect(new Set([snapshot[0].transactionOutputIndex, snapshot[1].transactionOutputIndex]))
-    .toEqual(new Set([0, 1]));
+    expect(
+        new Set([
+            snapshot[0].transactionOutputIndex,
+            snapshot[1].transactionOutputIndex
+        ])
+    ).toEqual(new Set([0, 1]));
 
     done();
-})
+});
