@@ -1,4 +1,4 @@
-import { Asset, AssetTransferOutput } from "codechain-sdk/lib/core/classes";
+import { AssetTransferOutput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
 import models from "../index";
@@ -8,9 +8,9 @@ import { strip0xPrefix } from "./utils/format";
 export async function createAssetTransferOutput(
     transactionHash: string,
     output: AssetTransferOutput,
+    index: number,
     params: {
         networkId: string;
-        asset: Asset;
     }
 ): Promise<AssetTransferOutputInstance> {
     let assetTransferOuputInstance: AssetTransferOutputInstance;
@@ -28,6 +28,7 @@ export async function createAssetTransferOutput(
             assetType: strip0xPrefix(output.assetType.value),
             shardId: output.shardId,
             quantity: output.quantity.value.toString(10),
+            index,
             owner
         });
     } catch (err) {

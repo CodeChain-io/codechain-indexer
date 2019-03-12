@@ -37,6 +37,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.NUMERIC({ precision: 20, scale: 0 })
             },
+            index: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
             owner: {
                 type: Sequelize.STRING
             },

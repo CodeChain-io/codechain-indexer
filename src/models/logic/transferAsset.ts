@@ -1,4 +1,3 @@
-import { Asset } from "codechain-sdk/lib/core/Asset";
 import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import {
@@ -49,19 +48,14 @@ export async function createTransferAsset(
     await Promise.all(
         outputs.map(async (json: any, transactionOutputIndex: number) => {
             const output = AssetTransferOutput.fromJSON(json);
-            return createAssetTransferOutput(transactionHash, output, {
-                networkId,
-                asset: new Asset({
-                    assetType: output.assetType,
-                    shardId: output.shardId,
-                    lockScriptHash: output.lockScriptHash,
-                    parameters: output.parameters,
-                    quantity: output.quantity,
-                    orderHash: null,
-                    tracker: transfer.tracker(),
-                    transactionOutputIndex
-                })
-            });
+            return createAssetTransferOutput(
+                transactionHash,
+                output,
+                transactionOutputIndex,
+                {
+                    networkId
+                }
+            );
         })
     );
     await Promise.all(

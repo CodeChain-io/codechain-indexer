@@ -485,47 +485,42 @@ export async function transferUTXO(
             output.get({ plain: true })
         );
         await Promise.all(
-            outputs!.map(
-                async (
-                    output: AssetTransferOutputAttribute,
-                    transactionOutputIndex: number
-                ) => {
-                    const recipient = getOwner(
-                        new H160(output.lockScriptHash),
-                        output.parameters,
-                        networkId
-                    );
-                    const assetType = new H160(output.assetType);
-                    const shardId = output.shardId;
-                    const lockScriptHash = new H160(output.lockScriptHash);
-                    const parameters = output.parameters;
-                    const quantity = new U64(output.quantity);
-                    const orderOnTransfer = (await transferAsset.getOrders()).find(
-                        o =>
-                            o
-                                .get({ plain: true })
-                                .outputIndices.includes(transactionOutputIndex)
-                    );
-                    const order =
-                        orderOnTransfer && (await orderOnTransfer.getOrder());
-                    const orderHash = order && new H256(order.get().orderHash);
-                    return createUTXO(
-                        recipient,
-                        {
-                            assetType,
-                            shardId,
-                            lockScriptHash,
-                            parameters,
-                            quantity,
-                            orderHash,
-                            transactionHash,
-                            transactionTracker,
-                            transactionOutputIndex
-                        },
-                        blockNumber
-                    );
-                }
-            )
+            outputs!.map(async (output: AssetTransferOutputAttribute) => {
+                const recipient = getOwner(
+                    new H160(output.lockScriptHash),
+                    output.parameters,
+                    networkId
+                );
+                const assetType = new H160(output.assetType);
+                const shardId = output.shardId;
+                const lockScriptHash = new H160(output.lockScriptHash);
+                const parameters = output.parameters;
+                const quantity = new U64(output.quantity);
+                const orderOnTransfer = (await transferAsset.getOrders()).find(
+                    o =>
+                        o
+                            .get({ plain: true })
+                            .outputIndices.includes(output.index)
+                );
+                const order =
+                    orderOnTransfer && (await orderOnTransfer.getOrder());
+                const orderHash = order && new H256(order.get().orderHash);
+                return createUTXO(
+                    recipient,
+                    {
+                        assetType,
+                        shardId,
+                        lockScriptHash,
+                        parameters,
+                        quantity,
+                        orderHash,
+                        transactionHash,
+                        transactionTracker,
+                        transactionOutputIndex: output.index
+                    },
+                    blockNumber
+                );
+            })
         );
         const inputs = await transferAsset.getInputs();
         if (inputs) {
@@ -656,7 +651,7 @@ export async function transferUTXO(
 
         const outputs = (await decomposeAsset.getOutputs())!;
         return await Promise.all(
-            outputs!.map((outputInst, transactionOutputIndex: number) => {
+            outputs!.map(outputInst => {
                 const output = outputInst.get({ plain: true });
                 const recipient = getOwner(
                     new H160(output.lockScriptHash),
@@ -678,7 +673,7 @@ export async function transferUTXO(
                         quantity,
                         transactionHash,
                         transactionTracker,
-                        transactionOutputIndex
+                        transactionOutputIndex: outputInst.get().index
                     },
                     blockNumber
                 );

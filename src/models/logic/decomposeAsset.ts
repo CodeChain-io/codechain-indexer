@@ -1,4 +1,3 @@
-import { Asset } from "codechain-sdk/lib/core/Asset";
 import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import {
@@ -33,19 +32,14 @@ export async function createDecomposeAsset(
         outputs.map(async (json: any, transactionOutputIndex: number) => {
             // FIXME
             const output = AssetTransferOutput.fromJSON(json);
-            await createAssetTransferOutput(transactionHash, output, {
-                networkId,
-                asset: new Asset({
-                    assetType: output.assetType,
-                    shardId: output.shardId,
-                    lockScriptHash: output.lockScriptHash,
-                    parameters: output.parameters,
-                    quantity: output.quantity,
-                    orderHash: null,
-                    tracker: decompose.tracker(),
-                    transactionOutputIndex
-                })
-            });
+            await createAssetTransferOutput(
+                transactionHash,
+                output,
+                transactionOutputIndex,
+                {
+                    networkId
+                }
+            );
         })
     );
     return result;

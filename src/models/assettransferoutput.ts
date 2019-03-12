@@ -8,6 +8,7 @@ export interface AssetTransferOutputAttribute {
     assetType: string;
     shardId: number;
     quantity: string;
+    index: number;
     owner?: string | null;
 }
 
@@ -64,6 +65,10 @@ export default (
             quantity: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+            index: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             owner: {
                 type: DataTypes.STRING
