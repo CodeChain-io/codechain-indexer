@@ -75,12 +75,12 @@ export function handle(context: IndexerContext, router: Router) {
      *         required: false
      *         type: string
      *       - name: page
-     *         description: page for the pagination
+     *         description: page for the pagination (default 1)
      *         in: query
      *         required: false
      *         type: number
      *       - name: itemsPerPage
-     *         description: items per page for the pagination
+     *         description: items per page for the pagination (default 15)
      *         in: query
      *         required: false
      *         type: number
@@ -255,12 +255,12 @@ export function handle(context: IndexerContext, router: Router) {
      *         required: false
      *         type: string
      *       - name: page
-     *         description: page for the pagination
+     *         description: page for the pagination (default 1)
      *         in: query
      *         required: false
      *         type: number
      *       - name: itemsPerPage
-     *         description: items per page for the pagination
+     *         description: items per page for the pagination (default 15)
      *         in: query
      *         required: false
      *         type: number

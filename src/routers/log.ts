@@ -65,7 +65,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     tags: [Log]
      *     parameters:
      *       - name: date
-     *         description: (YYYY-MM-DD format)
+     *         description: YYYY-MM-DD (ISO8601 format)
      *         in: query
      *         required: true
      *         type: string
