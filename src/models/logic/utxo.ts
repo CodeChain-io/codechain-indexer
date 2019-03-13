@@ -150,18 +150,7 @@ async function getUTXOQuery(params: {
                     usedTransactionHash: null
                 },
                 {
-                    [Sequelize.Op.not]: {
-                        [Sequelize.Op.and]: [
-                            {
-                                usedTransactionHash: {
-                                    [Sequelize.Op.not]: null
-                                }
-                            },
-                            {
-                                $usedTransaction$: null
-                            }
-                        ]
-                    }
+                    $usedTransaction$: null
                 }
             ]
         });
