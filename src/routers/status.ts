@@ -30,8 +30,9 @@ export function handle(context: IndexerContext, router: Router) {
             const error = e as Error;
             if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
                 res.status(SERVICE_UNAVAILABLE).send();
+            } else {
+                next(e);
             }
-            next(e);
         }
     });
 
@@ -91,8 +92,9 @@ export function handle(context: IndexerContext, router: Router) {
             const error = e as Error;
             if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
                 res.status(SERVICE_UNAVAILABLE).send();
+            } else {
+                next(e);
             }
-            next(e);
         }
     });
 
@@ -144,8 +146,9 @@ export function handle(context: IndexerContext, router: Router) {
             const error = e as Error;
             if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
                 res.status(SERVICE_UNAVAILABLE).send();
+            } else {
+                next(e);
             }
-            next(e);
         }
     });
 }
