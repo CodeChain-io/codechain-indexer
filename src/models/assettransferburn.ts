@@ -33,6 +33,10 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
+            index: {
+                allowNull: false,
+                type: DataTypes.INTEGER
+            },
             owner: {
                 type: DataTypes.STRING
             },

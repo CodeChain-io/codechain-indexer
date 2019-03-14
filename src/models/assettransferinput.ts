@@ -5,6 +5,7 @@ export interface AssetTransferInputAttribute {
     id?: string;
     transactionHash: string;
     prevOut: AssetOutPointAttribute;
+    index: number;
     timelock?: Timelock | null;
     owner?: string | null;
     assetType: string;
@@ -56,6 +57,10 @@ export default (
             prevOut: {
                 allowNull: false,
                 type: DataTypes.JSONB
+            },
+            index: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             owner: {
                 type: DataTypes.STRING

@@ -4,6 +4,7 @@ import { OrderAttribute, OrderInstance } from "./order";
 export interface OrderOnTransferAttribute {
     id?: string;
     transactionHash: string;
+    index: number;
     order?: OrderAttribute;
     spentQuantity: string;
     inputIndices: number[];
@@ -39,6 +40,10 @@ export default (
                     model: "Transactions",
                     key: "hash"
                 }
+            },
+            index: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             spentQuantity: {
                 allowNull: false,

@@ -10,6 +10,7 @@ import { getByTxTrackerIndex } from "./utxo";
 export async function createAssetTransferBurn(
     transactionHash: string,
     burn: AssetTransferInput,
+    index: number,
     options: {
         networkId: string;
     }
@@ -42,6 +43,7 @@ export async function createAssetTransferBurn(
             );
         assetTransferBurnInstance = await models.AssetTransferBurn.create({
             transactionHash: strip0xPrefix(transactionHash),
+            index,
             timelock: burn.timelock,
             lockScript: burn.lockScript,
             unlockScript: burn.unlockScript,

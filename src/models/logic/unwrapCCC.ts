@@ -16,7 +16,7 @@ export async function createUnwrapCCC(
     const burn = unwrap.burn(0)!;
     const { receiver } = unwrap.toJSON().action as UnwrapCCCActionJSON;
     const networkId = transaction.unsigned.networkId();
-    await createAssetTransferBurn(transactionHash, burn, {
+    await createAssetTransferBurn(transactionHash, burn, 0, {
         networkId
     });
     return await models.UnwrapCCC.create({
