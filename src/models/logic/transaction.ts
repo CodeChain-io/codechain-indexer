@@ -270,10 +270,12 @@ export async function getNumberOfPendingTransactions(params: {
     const { address, assetType, type } = params;
     const query = getPendingTransactionsQuery({ address, assetType, type });
     try {
-        return await models.Transaction.count({
+        return models.Transaction.count({
             where: {
                 [Sequelize.Op.and]: query
             },
+            distinct: true,
+            col: "hash",
             include: includeArray
         });
     } catch (err) {
@@ -519,10 +521,12 @@ export async function getNumberOfTransactions(params: {
         confirmThreshold
     });
     try {
-        return await models.Transaction.count({
+        return models.Transaction.count({
             where: {
                 [Sequelize.Op.and]: query
             },
+            distinct: true,
+            col: "hash",
             include: includeArray
         });
     } catch (err) {
