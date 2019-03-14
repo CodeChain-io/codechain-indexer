@@ -157,6 +157,13 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
             where: {
                 hash: strip0xPrefix(hash.value)
             },
+            order: [
+                [
+                    { model: models.Transaction, as: "transactions" },
+                    "transactionIndex",
+                    "ASC"
+                ]
+            ],
             include: includeArray
         });
     } catch (err) {
@@ -192,7 +199,14 @@ export async function getBlocks(params: {
     }
     try {
         return await models.Block.findAll({
-            order: [["number", "DESC"]],
+            order: [
+                ["number", "DESC"],
+                [
+                    { model: models.Transaction, as: "transactions" },
+                    "transactionIndex",
+                    "ASC"
+                ]
+            ],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             where: query,
@@ -225,7 +239,14 @@ export async function getNumberOfBlocks(params: { address?: string }) {
 export async function getLatestBlock(): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
-            order: [["number", "DESC"]],
+            order: [
+                ["number", "DESC"],
+                [
+                    { model: models.Transaction, as: "transactions" },
+                    "transactionIndex",
+                    "ASC"
+                ]
+            ],
             include: includeArray
         });
     } catch (err) {
@@ -242,6 +263,13 @@ export async function getByNumber(
             where: {
                 number: blockNumber
             },
+            order: [
+                [
+                    { model: models.Transaction, as: "transactions" },
+                    "transactionIndex",
+                    "ASC"
+                ]
+            ],
             include: includeArray
         });
     } catch (err) {
@@ -260,7 +288,15 @@ export async function getByTime(
                     [Sequelize.Op.lte]: timestamp
                 }
             },
-            order: [["timestamp", "DESC"], ["number", "DESC"]],
+            order: [
+                ["timestamp", "DESC"],
+                ["number", "DESC"],
+                [
+                    { model: models.Transaction, as: "transactions" },
+                    "transactionIndex",
+                    "ASC"
+                ]
+            ],
             // FIXME: Included transactions are not used anywhere. But query it for consistency with other functions.
             include: includeArray
         });
