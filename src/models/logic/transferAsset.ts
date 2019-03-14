@@ -32,7 +32,7 @@ export async function createTransferAsset(
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
             const input = transfer.input(index)!;
-            await createAssetTransferInput(transactionHash, input, {
+            await createAssetTransferInput(transactionHash, input, index, {
                 networkId
             });
         })
@@ -40,7 +40,7 @@ export async function createTransferAsset(
     await Promise.all(
         burns.map(async (_: any, index: number) => {
             const input = transfer.burn(index)!;
-            await createAssetTransferBurn(transactionHash, input, {
+            await createAssetTransferBurn(transactionHash, input, index, {
                 networkId
             });
         })
@@ -59,10 +59,11 @@ export async function createTransferAsset(
         })
     );
     await Promise.all(
-        transfer.orders().map(orderOnTransfer => {
+        transfer.orders().map((orderOnTransfer, index) => {
             return createOrderOnTransfer(
                 transactionHash,
                 orderOnTransfer,
+                index,
                 networkId
             );
         })

@@ -18,6 +18,10 @@ module.exports = {
                     key: "hash"
                 }
             },
+            index: {
+                allowNull: false,
+                type: DataTypes.INTEGER
+            },
             spentQuantity: {
                 allowNull: false,
                 type: DataTypes.INTEGER

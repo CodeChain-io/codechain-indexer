@@ -10,6 +10,7 @@ import { getByTxTrackerIndex } from "./utxo";
 export async function createAssetTransferInput(
     transactionHash: string,
     input: AssetTransferInput,
+    index: number,
     options: {
         networkId: string;
     }
@@ -42,6 +43,7 @@ export async function createAssetTransferInput(
             );
         assetTransferInputInstance = await models.AssetTransferInput.create({
             transactionHash: strip0xPrefix(transactionHash),
+            index,
             timelock: input.timelock,
             lockScript: input.lockScript,
             unlockScript: input.unlockScript,

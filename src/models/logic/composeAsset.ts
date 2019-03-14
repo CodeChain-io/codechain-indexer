@@ -63,7 +63,7 @@ export async function createComposeAsset(
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
             const input = compose.input(index)!;
-            await createAssetTransferInput(transactionHash, input, {
+            await createAssetTransferInput(transactionHash, input, index, {
                 networkId
             });
         })

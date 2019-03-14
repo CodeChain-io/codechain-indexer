@@ -9,12 +9,14 @@ import { strip0xPrefix } from "./utils/format";
 export async function createOrderOnTransfer(
     transactionHash: string,
     orderOnTransfer: OrderOnTransfer,
+    index: number,
     networkId: string
 ): Promise<OrderOnTransferInstance> {
     let orderOnTransferInstance: OrderOnTransferInstance;
     try {
         orderOnTransferInstance = await models.OrderOnTransfer.create({
             transactionHash: strip0xPrefix(transactionHash),
+            index,
             spentQuantity: orderOnTransfer.spentQuantity.value.toString(10),
             inputIndices: orderOnTransfer.inputIndices,
             outputIndices: orderOnTransfer.outputIndices

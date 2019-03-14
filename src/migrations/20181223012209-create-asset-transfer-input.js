@@ -22,6 +22,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.JSONB
             },
+            index: {
+                allowNull: false,
+                type: Sequelize.INTEGER
+            },
             owner: {
                 type: Sequelize.STRING
             },
