@@ -82,6 +82,10 @@ const includeArray = [
                     {
                         as: "burns",
                         model: models.AssetTransferBurn
+                    },
+                    {
+                        as: "orders",
+                        model: models.OrderOnTransfer
                     }
                 ]
             },
