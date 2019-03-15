@@ -386,6 +386,7 @@ async function getTransactionsQuery(params: {
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
+    includePending?: boolean | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
@@ -395,6 +396,7 @@ async function getTransactionsQuery(params: {
         assetType,
         type,
         tracker,
+        includePending,
         onlyConfirmed,
         onlySuccessful,
         confirmThreshold
@@ -432,9 +434,11 @@ async function getTransactionsQuery(params: {
             success: true
         });
     }
-    query.push({
-        isPending: false
-    });
+    if (includePending !== true) {
+        query.push({
+            isPending: false
+        });
+    }
     return query;
 }
 
@@ -445,6 +449,7 @@ export async function getTransactions(params: {
     tracker?: H256 | null;
     page?: number | null;
     itemsPerPage?: number | null;
+    includePending?: boolean | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
@@ -456,6 +461,7 @@ export async function getTransactions(params: {
         tracker,
         page = 1,
         itemsPerPage = 15,
+        includePending = false,
         onlyConfirmed = false,
         onlySuccessful = false,
         confirmThreshold = 0
@@ -465,6 +471,7 @@ export async function getTransactions(params: {
         assetType,
         type,
         tracker,
+        includePending,
         onlyConfirmed,
         onlySuccessful,
         confirmThreshold
@@ -506,6 +513,7 @@ export async function getNumberOfTransactions(params: {
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
+    includePending?: boolean | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
@@ -515,6 +523,7 @@ export async function getNumberOfTransactions(params: {
         assetType,
         type,
         tracker,
+        includePending,
         onlyConfirmed = false,
         onlySuccessful = false,
         confirmThreshold = 0
@@ -524,6 +533,7 @@ export async function getNumberOfTransactions(params: {
         assetType,
         type,
         tracker,
+        includePending,
         onlyConfirmed,
         onlySuccessful,
         confirmThreshold

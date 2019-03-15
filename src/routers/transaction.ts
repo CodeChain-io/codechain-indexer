@@ -67,6 +67,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: includePending
+     *         description: If true, the results include pending transactions. Pending transactions are ahead of confirmed transactions in terms of order.
+     *         in: query
+     *         required: false
+     *         type: boolean
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -112,6 +117,7 @@ export function handle(context: IndexerContext, router: Router) {
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
                 req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+            const includePending = req.query.includePending;
             const onlyConfirmed = req.query.onlyConfirmed;
             const onlySuccessful = req.query.onlySuccessful;
             const confirmThreshold =
@@ -134,6 +140,7 @@ export function handle(context: IndexerContext, router: Router) {
                     tracker,
                     page,
                     itemsPerPage,
+                    includePending,
                     onlyConfirmed,
                     onlySuccessful,
                     confirmThreshold
@@ -173,6 +180,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: includePending
+     *         description: If true, the results include pending transactions. Pending transactions are ahead of confirmed transactions in terms of order.
+     *         in: query
+     *         required: false
+     *         type: boolean
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -211,6 +223,7 @@ export function handle(context: IndexerContext, router: Router) {
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
             const trackerString = req.query.tracker;
+            const includePending = req.query.includePending;
             const onlyConfirmed = req.query.onlyConfirmed;
             const onlySuccessful = req.query.onlySuccessful;
             const confirmThreshold =
@@ -231,6 +244,7 @@ export function handle(context: IndexerContext, router: Router) {
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
                     tracker,
+                    includePending,
                     onlyConfirmed,
                     onlySuccessful,
                     confirmThreshold
