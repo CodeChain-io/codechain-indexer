@@ -31,7 +31,10 @@ test("Check pending transactions", async done => {
     expect(pendingTx.isPending).toEqual(true);
 
     await Helper.sdk.rpc.devel.startSealing();
-    while ((await Helper.sdk.rpc.chain.getPendingTransactions()).length !== 0) {
+    while (
+        (await Helper.sdk.rpc.chain.getPendingTransactions()).transactions
+            .length !== 0
+    ) {
         await waitForSecond(1);
         console.log("waiting ...");
     }
