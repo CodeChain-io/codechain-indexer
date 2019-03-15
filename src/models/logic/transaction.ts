@@ -236,7 +236,10 @@ export async function getPendingTransactions(params: {
                     [Sequelize.Op.in]: hashes
                 }
             },
-            order: [["pendingTimestamp", "DESC"]],
+            order: [
+                ["pendingTimestamp", "DESC"],
+                ...transactionInOutIndexOrder
+            ],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             include: fullIncludeArray
@@ -292,6 +295,7 @@ export async function getByHash(
             where: {
                 hash: strip0xPrefix(hash.value)
             },
+            order: transactionInOutIndexOrder,
             include: fullIncludeArray
         });
     } catch (err) {
@@ -484,7 +488,11 @@ export async function getTransactions(params: {
                     [Sequelize.Op.in]: hashes
                 }
             },
-            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            order: [
+                ["blockNumber", "DESC"],
+                ["transactionIndex", "DESC"],
+                ...transactionInOutIndexOrder
+            ],
             include: fullIncludeArray
         });
     } catch (err) {
@@ -562,3 +570,42 @@ export async function getSuccessfulTransaction(
         throw Exception.DBError();
     }
 }
+
+const transactionInOutIndexOrder = [
+    [
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "inputs", model: models.AssetTransferInput },
+        "index",
+        "ASC"
+    ],
+    [
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "outputs", model: models.AssetTransferOutput },
+        "index",
+        "ASC"
+    ],
+    [
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "burns", model: models.AssetTransferBurn },
+        "index",
+        "ASC"
+    ],
+    [
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "orders", model: models.OrderOnTransfer },
+        "index",
+        "ASC"
+    ],
+    [
+        { as: "composeAsset", model: models.ComposeAsset },
+        { as: "inputs", model: models.AssetTransferInput },
+        "index",
+        "ASC"
+    ],
+    [
+        { as: "decomposeAsset", model: models.DecomposeAsset },
+        { as: "outputs", model: models.AssetTransferOutput },
+        "index",
+        "ASC"
+    ]
+];
