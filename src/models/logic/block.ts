@@ -161,13 +161,7 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
             where: {
                 hash: strip0xPrefix(hash.value)
             },
-            order: [
-                [
-                    { model: models.Transaction, as: "transactions" },
-                    "transactionIndex",
-                    "ASC"
-                ]
-            ],
+            order: transactionOrder,
             include: includeArray
         });
     } catch (err) {
@@ -203,14 +197,7 @@ export async function getBlocks(params: {
     }
     try {
         return await models.Block.findAll({
-            order: [
-                ["number", "DESC"],
-                [
-                    { model: models.Transaction, as: "transactions" },
-                    "transactionIndex",
-                    "ASC"
-                ]
-            ],
+            order: [["number", "DESC"], ...transactionOrder],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             where: query,
@@ -243,14 +230,7 @@ export async function getNumberOfBlocks(params: { address?: string }) {
 export async function getLatestBlock(): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
-            order: [
-                ["number", "DESC"],
-                [
-                    { model: models.Transaction, as: "transactions" },
-                    "transactionIndex",
-                    "ASC"
-                ]
-            ],
+            order: [["number", "DESC"], ...transactionOrder],
             include: includeArray
         });
     } catch (err) {
@@ -267,13 +247,7 @@ export async function getByNumber(
             where: {
                 number: blockNumber
             },
-            order: [
-                [
-                    { model: models.Transaction, as: "transactions" },
-                    "transactionIndex",
-                    "ASC"
-                ]
-            ],
+            order: transactionOrder,
             include: includeArray
         });
     } catch (err) {
@@ -295,11 +269,7 @@ export async function getByTime(
             order: [
                 ["timestamp", "DESC"],
                 ["number", "DESC"],
-                [
-                    { model: models.Transaction, as: "transactions" },
-                    "transactionIndex",
-                    "ASC"
-                ]
+                ...transactionOrder
             ],
             // FIXME: Included transactions are not used anywhere. But query it for consistency with other functions.
             include: includeArray
@@ -321,3 +291,53 @@ export async function getByTime(
         throw Exception.DBError();
     }
 }
+
+const transactionOrder = [
+    [
+        { model: models.Transaction, as: "transactions" },
+        "transactionIndex",
+        "ASC"
+    ],
+    [
+        { model: models.Transaction, as: "transactions" },
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "inputs", model: models.AssetTransferInput },
+        "index",
+        "ASC"
+    ],
+    [
+        { model: models.Transaction, as: "transactions" },
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "outputs", model: models.AssetTransferOutput },
+        "index",
+        "ASC"
+    ],
+    [
+        { model: models.Transaction, as: "transactions" },
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "burns", model: models.AssetTransferBurn },
+        "index",
+        "ASC"
+    ],
+    [
+        { model: models.Transaction, as: "transactions" },
+        { as: "transferAsset", model: models.TransferAsset },
+        { as: "orders", model: models.OrderOnTransfer },
+        "index",
+        "ASC"
+    ],
+    [
+        { model: models.Transaction, as: "transactions" },
+        { as: "composeAsset", model: models.ComposeAsset },
+        { as: "inputs", model: models.AssetTransferInput },
+        "index",
+        "ASC"
+    ],
+    [
+        { model: models.Transaction, as: "transactions" },
+        { as: "decomposeAsset", model: models.DecomposeAsset },
+        { as: "outputs", model: models.AssetTransferOutput },
+        "index",
+        "ASC"
+    ]
+];
