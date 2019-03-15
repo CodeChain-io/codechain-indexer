@@ -53,6 +53,7 @@ const sync = Joi.boolean();
 const confirmThreshold = Joi.number()
     .min(0)
     .integer();
+const includePending = Joi.boolean();
 
 export const paginationSchema = {
     page: Joi.number()
@@ -68,8 +69,9 @@ export const txSchema = {
     assetType: assetTypeSchema,
     tracker,
     type,
-    onlyConfirmed,
+    includePending,
     onlySuccessful,
+    onlyConfirmed,
     confirmThreshold,
     sync
 };
