@@ -239,6 +239,44 @@ export function handle(context: IndexerContext, router: Router) {
                 const blocks = blockInsts.map(blockInst =>
                     blockInst.get({ plain: true })
                 );
+                blocks.forEach(b => {
+                    b.transactions = b.transactions!.map(t => {
+                        const {
+                            hash,
+                            blockNumber,
+                            blockHash,
+                            tracker,
+                            transactionIndex,
+                            type,
+                            seq,
+                            fee,
+                            networkId,
+                            sig,
+                            signer,
+                            success,
+                            timestamp,
+                            isPending,
+                            pendingTimestamp
+                        } = t;
+                        return {
+                            hash,
+                            blockNumber,
+                            blockHash,
+                            tracker,
+                            transactionIndex,
+                            type,
+                            seq,
+                            fee,
+                            networkId,
+                            sig,
+                            signer,
+                            success,
+                            timestamp,
+                            isPending,
+                            pendingTimestamp
+                        };
+                    });
+                });
                 res.json(blocks);
             } catch (e) {
                 next(e);
