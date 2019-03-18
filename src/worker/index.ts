@@ -1,6 +1,6 @@
 import * as AsyncLock from "async-lock";
 import { SDK } from "codechain-sdk";
-import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
+import { Block, H256 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import { Job, scheduleJob } from "node-schedule";
 import { InvalidBlockNumber } from "../exception";
@@ -151,18 +151,9 @@ export default class Worker {
     private indexNewBlock = async (block: Block) => {
         const { sdk } = this.context;
 
-        let miningReward;
-        if (block.number === 0) {
-            miningReward = 0;
-        } else {
-            const miningRewardResponse = await sdk.rpc.sendRpcRequest(
-                "chain_getMiningReward",
-                [block.number]
-            );
-            if (miningRewardResponse === undefined) {
-                throw InvalidBlockNumber();
-            }
-            miningReward = miningRewardResponse;
+        const miningReward = await sdk.rpc.chain.getMiningReward(block.number);
+        if (miningReward == null) {
+            throw InvalidBlockNumber();
         }
         const errorHints: { [transactionIndex: number]: string } = {};
         await Promise.all(
@@ -175,12 +166,7 @@ export default class Worker {
             })
         );
         try {
-            await BlockModel.createBlock(
-                block,
-                sdk,
-                new U64(miningReward),
-                errorHints
-            );
+            await BlockModel.createBlock(block, sdk, miningReward, errorHints);
         } catch (err) {
             await BlockModel.deleteBlockByNumber(block.number);
             throw err;
