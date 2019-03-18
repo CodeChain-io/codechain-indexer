@@ -169,7 +169,7 @@ test(
     30 * 1000
 );
 
-test.skip(
+test(
     "api /tx/count",
     done => {
         request(app)
