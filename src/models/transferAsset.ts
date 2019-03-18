@@ -15,7 +15,9 @@ import {
 export interface TransferAssetAttribute {
     transactionHash: string;
     networkId: string;
+    metadata: string;
     approvals: string[];
+    expiration?: number | null;
     inputs?: AssetTransferInputAttribute[];
     burns?: AssetTransferInputAttribute[];
     outputs?: AssetTransferOutputAttribute[];
@@ -59,9 +61,17 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            metadata: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
             approvals: {
                 allowNull: false,
                 type: DataTypes.JSONB
+            },
+            expiration: {
+                allowNull: true,
+                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,
