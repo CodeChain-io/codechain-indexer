@@ -17,7 +17,7 @@ export interface TransferAssetAttribute {
     networkId: string;
     metadata: string;
     approvals: string[];
-    expiration?: number | null;
+    expiration?: string | null;
     inputs?: AssetTransferInputAttribute[];
     burns?: AssetTransferInputAttribute[];
     outputs?: AssetTransferOutputAttribute[];
@@ -71,7 +71,7 @@ export default (
             },
             expiration: {
                 allowNull: true,
-                type: DataTypes.INTEGER
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             createdAt: {
                 allowNull: false,

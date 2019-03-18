@@ -28,7 +28,7 @@ module.exports = {
             },
             expiration: {
                 allowNull: true,
-                type: DataTypes.INTEGER
+                type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
 
             createdAt: {
