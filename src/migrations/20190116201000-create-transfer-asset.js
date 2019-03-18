@@ -18,9 +18,17 @@ module.exports = {
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            metadata: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
             approvals: {
                 allowNull: false,
                 type: DataTypes.JSONB
+            },
+            expiration: {
+                allowNull: true,
+                type: DataTypes.INTEGER
             },
 
             createdAt: {

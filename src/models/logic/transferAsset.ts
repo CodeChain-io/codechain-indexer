@@ -17,7 +17,9 @@ export async function createTransferAsset(
 ): Promise<TransferAssetInstance> {
     const {
         networkId,
+        metadata,
         approvals,
+        expiration,
         inputs,
         outputs,
         burns
@@ -27,7 +29,9 @@ export async function createTransferAsset(
     const result = await models.TransferAsset.create({
         transactionHash: strip0xPrefix(transactionHash),
         networkId,
-        approvals
+        metadata,
+        approvals,
+        expiration
     });
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
