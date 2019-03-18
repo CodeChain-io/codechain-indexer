@@ -31,7 +31,7 @@ export async function createTransferAsset(
         networkId,
         metadata,
         approvals,
-        expiration
+        expiration: expiration == null ? null : String(expiration)
     });
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
