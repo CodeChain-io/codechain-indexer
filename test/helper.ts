@@ -1,9 +1,10 @@
 import { exec, execFile } from "child_process";
 import { SDK } from "codechain-sdk";
-import { Transaction } from "codechain-sdk/lib/core/classes";
+import { Block, H256, U64, Transaction } from "codechain-sdk/lib/core/classes";
 import { readFileSync, writeFile } from "fs";
 import * as path from "path";
 import { IndexerConfig } from "../src/config";
+import * as BlockModel from "../src/models/logic/block";
 import Worker from "../src/worker";
 
 process.env.NODE_ENV = "test";
@@ -52,32 +53,33 @@ export const sendTransaction = async ({
     };
 };
 
-export const mintAsset = async ({
-    metadata,
-    supply,
-    lockScriptHash,
-    approver
-}: any) => {
-    const assetScheme = sdk.core.createAssetScheme({
-        shardId: 0,
-        metadata,
-        supply,
-        approver
-    });
-    const assetAddress = sdk.core.classes.AssetTransferAddress.fromTypeAndPayload(
-        0,
-        lockScriptHash,
-        {
-            networkId: CODECHAIN_NETWORK_ID
-        }
+export const sendTransactionAndGetBlock = async (
+    transaction: Transaction
+): Promise<{ transactionHash: H256; block: Block }> => {
+    const { hash: transactionHash } = await sendTransaction({ transaction });
+    const block = await sdk.rpc.chain.getBlock(
+        await sdk.rpc.chain.getBestBlockNumber()
     );
-    const assetMintTransaction = assetScheme.createMintTransaction({
-        recipient: assetAddress
+    return { transactionHash, block: block! };
+};
+
+export const mintAsset = async () => {
+    const scheme = sdk.core.createAssetScheme({
+        shardId: 0,
+        // NOTE: The random number prevents a conflict of assetType
+        metadata: "" + Math.random(),
+        supply: 1
     });
-    return {
-        ...(await sendTransaction({ transaction: assetMintTransaction })),
-        assetMintTransaction
-    };
+    const recipient = await sdk.key.createAssetTransferAddress();
+    const transaction = sdk.core.createMintAssetTransaction({
+        scheme,
+        recipient
+    });
+    const { transactionHash, block } = await sendTransactionAndGetBlock(
+        transaction
+    );
+    await BlockModel.createBlock(block, sdk, new U64(1), {});
+    return { transactionHash, block, transaction };
 };
 
 export const pay = async (params?: { inc_seq?: number }) => {
