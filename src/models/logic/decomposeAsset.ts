@@ -24,9 +24,7 @@ export async function createDecomposeAsset(
         approvals
     });
     const input = decompose.input(0)!;
-    await createAssetTransferBurn(transactionHash, input, 0, {
-        networkId
-    });
+    await createAssetTransferBurn(transactionHash, input, 0);
 
     await Promise.all(
         outputs.map(async (json: any, transactionOutputIndex: number) => {
