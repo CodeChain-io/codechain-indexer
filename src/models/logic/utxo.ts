@@ -8,7 +8,7 @@ import { TransactionInstance } from "../transaction";
 import { UTXOAttribute, UTXOInstance } from "../utxo";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
-import { getSuccessfulTransaction } from "./transaction";
+import { getSuccessfulByTracker } from "./transaction";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
@@ -517,8 +517,8 @@ export async function transferUTXO(
                 inputs.map(async inputInst => {
                     const input = inputInst.get({ plain: true })!;
                     const prevTracker = input.prevOut.tracker;
-                    const prevTransaction = await getSuccessfulTransaction(
-                        prevTracker
+                    const prevTransaction = await getSuccessfulByTracker(
+                        new H256(prevTracker)
                     );
                     if (!prevTransaction) {
                         throw Exception.InvalidUTXO();
@@ -544,8 +544,8 @@ export async function transferUTXO(
                 burns.map(async burnInst => {
                     const burn = burnInst.get({ plain: true })!;
                     const prevTracker = burn.prevOut.tracker;
-                    const prevTransaction = await getSuccessfulTransaction(
-                        prevTracker
+                    const prevTransaction = await getSuccessfulByTracker(
+                        new H256(prevTracker)
                     );
                     if (!prevTransaction) {
                         throw Exception.InvalidUTXO();
@@ -574,8 +574,8 @@ export async function transferUTXO(
             inputs!.map(async inputInst => {
                 const input = inputInst.get({ plain: true });
                 const prevTracker = input.prevOut.tracker;
-                const prevTransaction = await getSuccessfulTransaction(
-                    prevTracker
+                const prevTransaction = await getSuccessfulByTracker(
+                    new H256(prevTracker)
                 );
                 if (!prevTransaction) {
                     throw Exception.InvalidUTXO();
@@ -625,7 +625,9 @@ export async function transferUTXO(
         const decomposeAsset = (await txInst.getDecomposeAsset())!;
         const input = (await decomposeAsset.getInput())!.get({ plain: true });
         const prevTracker = input.prevOut.tracker;
-        const prevTransaction = await getSuccessfulTransaction(prevTracker);
+        const prevTransaction = await getSuccessfulByTracker(
+            new H256(prevTracker)
+        );
         if (!prevTransaction) {
             throw Exception.InvalidUTXO();
         }
@@ -734,7 +736,9 @@ export async function transferUTXO(
             "prevOut"
         );
         const prevTracker = prevOut.tracker;
-        const prevTransaction = await getSuccessfulTransaction(prevTracker);
+        const prevTransaction = await getSuccessfulByTracker(
+            new H256(prevTracker)
+        );
 
         if (!prevTransaction) {
             throw Exception.InvalidUTXO();
