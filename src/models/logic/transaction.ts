@@ -565,13 +565,13 @@ export async function deleteByHash(hash: H256) {
     }
 }
 
-export async function getSuccessfulTransaction(
-    tracker: string
+export async function getSuccessfulByTracker(
+    tracker: H256
 ): Promise<TransactionInstance | null> {
     try {
         return await models.Transaction.findOne({
             where: {
-                tracker: strip0xPrefix(tracker),
+                tracker: strip0xPrefix(tracker.toString()),
                 success: true
             }
         });
