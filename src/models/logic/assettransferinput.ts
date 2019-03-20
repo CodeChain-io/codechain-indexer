@@ -1,46 +1,31 @@
-import { AssetTransferInput, H160 } from "codechain-sdk/lib/core/classes";
+import { AssetTransferInput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
 import { AssetTransferInputInstance } from "../assettransferinput";
 import models from "../index";
+import { getByTracker } from "./transaction";
 import * as AddressUtil from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
-import { getByTxTrackerIndex } from "./utxo";
 
 // FIXME: This is duplicated with asset transfer-burn, decompose input
 export async function createAssetTransferInput(
     transactionHash: string,
     input: AssetTransferInput,
-    index: number,
-    options: {
-        networkId: string;
-    }
+    index: number
 ): Promise<AssetTransferInputInstance> {
     let assetTransferInputInstance: AssetTransferInputInstance;
     try {
-        const {
-            lockScriptHash,
-            parameters,
-            transactionHash: prevHash
-        } = await getByTxTrackerIndex(
-            input.prevOut.tracker,
-            input.prevOut.index
-        ).then(utxo =>
-            utxo === null
-                ? ({} as {
-                      lockScriptHash: undefined;
-                      parameters: undefined;
-                      transactionHash: undefined;
-                  })
-                : utxo.get({ plain: true })
+        const prevTxs = await getByTracker(input.prevOut.tracker).then(txs =>
+            txs.map(tx => tx.get({ plain: true }))
         );
-        const owner =
-            lockScriptHash &&
-            parameters &&
-            AddressUtil.getOwner(
-                H160.ensure(lockScriptHash),
-                parameters,
-                options.networkId
-            );
+        const { lockScriptHash, parameters, owner } =
+            prevTxs.length === 0
+                ? { lockScriptHash: null, parameters: null, owner: null }
+                : AddressUtil.getOwnerFromTransaction(
+                      prevTxs[0],
+                      input.prevOut.index
+                  );
+        const successfulTx = prevTxs.find(tx => tx.success === true);
+        const prevHash = successfulTx && successfulTx.hash;
         assetTransferInputInstance = await models.AssetTransferInput.create({
             transactionHash: strip0xPrefix(transactionHash),
             index,

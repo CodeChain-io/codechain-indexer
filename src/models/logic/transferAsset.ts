@@ -36,17 +36,13 @@ export async function createTransferAsset(
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
             const input = transfer.input(index)!;
-            await createAssetTransferInput(transactionHash, input, index, {
-                networkId
-            });
+            await createAssetTransferInput(transactionHash, input, index);
         })
     );
     await Promise.all(
         burns.map(async (_: any, index: number) => {
             const input = transfer.burn(index)!;
-            await createAssetTransferBurn(transactionHash, input, index, {
-                networkId
-            });
+            await createAssetTransferBurn(transactionHash, input, index);
         })
     );
     await Promise.all(

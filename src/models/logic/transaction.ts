@@ -304,6 +304,27 @@ export async function getByHash(
     }
 }
 
+export async function getByTracker(
+    tracker: H256
+): Promise<TransactionInstance[]> {
+    try {
+        return models.Transaction.findAll({
+            where: {
+                tracker: strip0xPrefix(tracker.toString())
+            },
+            order: [
+                ["blockNumber", "DESC"],
+                ["transactionIndex", "DESC"],
+                ...transactionInOutIndexOrder
+            ],
+            include: fullIncludeArray
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 export async function checkIfHashExists(hash: H256): Promise<boolean> {
     try {
         return models.Transaction.findOne({
