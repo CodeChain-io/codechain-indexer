@@ -355,6 +355,40 @@ export async function removePendings(hashes: H256[]): Promise<void> {
     }
 }
 
+export async function removeOutdatedPendings(
+    updatedTransactions: SignedTransaction[]
+): Promise<void> {
+    try {
+        await models.Transaction.destroy({
+            where: {
+                [Sequelize.Op.and]: [
+                    { isPending: true },
+                    {
+                        [Sequelize.Op.or]: updatedTransactions.map(i => ({
+                            [Sequelize.Op.and]: [
+                                {
+                                    seq: i.toJSON().seq,
+                                    signer: i.getSignerAddress({
+                                        networkId: i.toJSON().networkId
+                                    }).value
+                                },
+                                {
+                                    [Sequelize.Op.not]: {
+                                        hash: strip0xPrefix(i.hash().value)
+                                    }
+                                }
+                            ]
+                        }))
+                    }
+                ]
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 function addAddressQuery(query: any[], address: string) {
     query.push({
         [Sequelize.Op.or]: [
