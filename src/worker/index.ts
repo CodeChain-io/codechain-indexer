@@ -1,6 +1,6 @@
 import * as AsyncLock from "async-lock";
 import { SDK } from "codechain-sdk";
-import { Block, H256 } from "codechain-sdk/lib/core/classes";
+import { Block } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import { Job, scheduleJob } from "node-schedule";
 import { InvalidBlockNumber } from "../exception";
@@ -207,12 +207,8 @@ export default class Worker {
         );
 
         // Remove dropped pending transactions
-        const pendingHashes = transactions.map(p => p.hash().value);
-        const droppedPendingHashes = indexedHashes
-            .filter(indexedHash => !pendingHashes.includes(indexedHash))
-            .map(indexedHash => new H256(indexedHash));
-        if (droppedPendingHashes.length > 0) {
-            await TxModel.removePendings(droppedPendingHashes);
+        if (transactions.length > 0) {
+            await TxModel.removeOutdatedPendings(transactions);
         }
 
         // Index new pending transactions
