@@ -1,4 +1,4 @@
-import { SignedTransaction } from "codechain-sdk/lib/core/classes";
+import { SignedTransaction, U64 } from "codechain-sdk/lib/core/classes";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import {
     TransferAsset,
@@ -31,7 +31,7 @@ export async function createTransferAsset(
         networkId,
         metadata,
         approvals,
-        expiration: expiration == null ? null : String(expiration)
+        expiration: expiration == null ? null : new U64(expiration).toString()
     });
     await Promise.all(
         inputs.map(async (_: any, index: number) => {
