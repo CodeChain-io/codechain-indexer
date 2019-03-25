@@ -47,7 +47,7 @@ test(
     1000 * 30
 );
 
-test(
+test.skip(
     "Sync account test",
     async done => {
         const genesisAccounts: string[] = await Helper.sdk.rpc.sendRpcRequest(
