@@ -58,102 +58,26 @@ export async function createBlock(
     return blockInstance;
 }
 
-const includeArray = [
-    {
-        as: "transactions",
-        model: models.Transaction,
+const includeTransactionsCount = {
+    attributes: {
         include: [
-            {
-                as: "mintAsset",
-                model: models.MintAsset
-            },
-            {
-                as: "transferAsset",
-                model: models.TransferAsset,
-                include: [
-                    {
-                        as: "outputs",
-                        model: models.AssetTransferOutput
-                    },
-                    {
-                        as: "inputs",
-                        model: models.AssetTransferInput
-                    },
-                    {
-                        as: "burns",
-                        model: models.AssetTransferBurn
-                    },
-                    {
-                        as: "orders",
-                        model: models.OrderOnTransfer
-                    }
-                ]
-            },
-            {
-                as: "composeAsset",
-                model: models.ComposeAsset,
-                include: [
-                    {
-                        as: "inputs",
-                        model: models.AssetTransferInput
-                    }
-                ]
-            },
-            {
-                as: "decomposeAsset",
-                model: models.DecomposeAsset,
-                include: [
-                    {
-                        as: "outputs",
-                        model: models.AssetTransferOutput
-                    }
-                ]
-            },
-            {
-                as: "increaseAssetSupply",
-                model: models.IncreaseAssetSupply
-            },
-            {
-                as: "wrapCCC",
-                model: models.WrapCCC
-            },
-            {
-                as: "unwrapCCC",
-                model: models.UnwrapCCC,
-                include: [
-                    {
-                        as: "burn",
-                        model: models.AssetTransferBurn
-                    }
-                ]
-            },
-            {
-                as: "pay",
-                model: models.Pay
-            },
-            {
-                as: "setRegularKey",
-                model: models.SetRegularKey
-            },
-            {
-                as: "createShard",
-                model: models.CreateShard
-            },
-            {
-                as: "store",
-                model: models.Store
-            },
-            {
-                as: "remove",
-                model: models.Remove
-            },
-            {
-                as: "custom",
-                model: models.Custom
-            }
+            [
+                Sequelize.fn("COUNT", Sequelize.col("transactions.hash")),
+                "transactionsCount"
+                // NOTE: Its type conversion is necessary, but I have no idea why it is.
+            ] as any
         ]
-    }
-];
+    },
+    include: [
+        {
+            as: "transactions",
+            model: models.Transaction,
+            attributes: []
+        }
+    ],
+    group: ["Block.hash"],
+    subQuery: false
+};
 
 export async function getByHash(hash: H256): Promise<BlockInstance | null> {
     try {
@@ -161,8 +85,7 @@ export async function getByHash(hash: H256): Promise<BlockInstance | null> {
             where: {
                 hash: strip0xPrefix(hash.value)
             },
-            order: transactionOrder,
-            include: includeArray
+            ...includeTransactionsCount
         });
     } catch (err) {
         console.error(err);
@@ -197,11 +120,11 @@ export async function getBlocks(params: {
     }
     try {
         return await models.Block.findAll({
-            order: [["number", "DESC"], ...transactionOrder],
+            order: [["number", "DESC"]],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             where: query,
-            include: includeArray
+            ...includeTransactionsCount
         });
     } catch (err) {
         console.log(err);
@@ -230,8 +153,8 @@ export async function getNumberOfBlocks(params: { address?: string }) {
 export async function getLatestBlock(): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
-            order: [["number", "DESC"], ...transactionOrder],
-            include: includeArray
+            order: [["number", "DESC"]],
+            ...includeTransactionsCount
         });
     } catch (err) {
         console.log(err);
@@ -247,8 +170,7 @@ export async function getByNumber(
             where: {
                 number: blockNumber
             },
-            order: transactionOrder,
-            include: includeArray
+            ...includeTransactionsCount
         });
     } catch (err) {
         console.error(err);
@@ -266,13 +188,8 @@ export async function getByTime(
                     [Sequelize.Op.lte]: timestamp
                 }
             },
-            order: [
-                ["timestamp", "DESC"],
-                ["number", "DESC"],
-                ...transactionOrder
-            ],
-            // FIXME: Included transactions are not used anywhere. But query it for consistency with other functions.
-            include: includeArray
+            order: [["timestamp", "DESC"], ["number", "DESC"]],
+            ...includeTransactionsCount
         });
 
         if (block == null) {
@@ -291,53 +208,3 @@ export async function getByTime(
         throw Exception.DBError();
     }
 }
-
-const transactionOrder = [
-    [
-        { model: models.Transaction, as: "transactions" },
-        "transactionIndex",
-        "ASC"
-    ],
-    [
-        { model: models.Transaction, as: "transactions" },
-        { as: "transferAsset", model: models.TransferAsset },
-        { as: "inputs", model: models.AssetTransferInput },
-        "index",
-        "ASC"
-    ],
-    [
-        { model: models.Transaction, as: "transactions" },
-        { as: "transferAsset", model: models.TransferAsset },
-        { as: "outputs", model: models.AssetTransferOutput },
-        "index",
-        "ASC"
-    ],
-    [
-        { model: models.Transaction, as: "transactions" },
-        { as: "transferAsset", model: models.TransferAsset },
-        { as: "burns", model: models.AssetTransferBurn },
-        "index",
-        "ASC"
-    ],
-    [
-        { model: models.Transaction, as: "transactions" },
-        { as: "transferAsset", model: models.TransferAsset },
-        { as: "orders", model: models.OrderOnTransfer },
-        "index",
-        "ASC"
-    ],
-    [
-        { model: models.Transaction, as: "transactions" },
-        { as: "composeAsset", model: models.ComposeAsset },
-        { as: "inputs", model: models.AssetTransferInput },
-        "index",
-        "ASC"
-    ],
-    [
-        { model: models.Transaction, as: "transactions" },
-        { as: "decomposeAsset", model: models.DecomposeAsset },
-        { as: "outputs", model: models.AssetTransferOutput },
-        "index",
-        "ASC"
-    ]
-];
