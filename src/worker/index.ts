@@ -24,11 +24,13 @@ export default class Worker {
     private watchJob!: Job;
     private config: WorkerConfig;
     private lock: AsyncLock;
+    private lastTimeStamp: number;
 
     constructor(context: WorkerContext, config: WorkerConfig) {
         this.context = context;
         this.config = config;
         this.lock = new AsyncLock({ timeout: 30000, maxPending: 100 });
+        this.lastTimeStamp = 0;
     }
 
     public destroy() {
@@ -198,9 +200,16 @@ export default class Worker {
     private indexPendingTransaction = async () => {
         console.log("======== indexing pending transactions =======");
         const {
-            transactions
-        } = await this.context.sdk.rpc.chain.getPendingTransactions();
+            transactions,
+            lastTimestamp
+        } = await this.context.sdk.rpc.chain.getPendingTransactions(
+            this.lastTimeStamp
+        );
         const indexedHashes = await TxModel.getAllPendingTransactionHashes();
+
+        if (lastTimestamp != null) {
+            this.lastTimeStamp = lastTimestamp;
+        }
 
         console.log(
             `Indexed: ${indexedHashes.length} / RPC: ${transactions.length}`
@@ -212,10 +221,6 @@ export default class Worker {
         }
 
         // Index new pending transactions
-        const newPendingTransactions = _.filter(
-            transactions,
-            pending => !_.includes(indexedHashes, pending.hash().value)
-        );
-        await TxModel.createTransactions(newPendingTransactions, true);
+        await TxModel.createTransactions(transactions, true);
     };
 }
