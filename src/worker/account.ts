@@ -21,22 +21,6 @@ export async function updateAccount(
         affectedAddresses.push(block.author);
     } else {
         affectedAddresses.push(block.author);
-        const transactions = block.transactions!;
-        for (const tx of transactions) {
-            affectedAddresses.push(tx.signer);
-        }
-        const payments = transactions.filter(tx => tx.type === "pay");
-        payments.map(tx => {
-            if (tx.type === "pay" && tx.success) {
-                affectedAddresses.push(tx.pay!.receiver);
-            }
-        });
-        const unwrapCCCs = transactions.filter(
-            tx => tx.type === "unwrapCCC" && tx.success
-        );
-        unwrapCCCs.forEach(tx => {
-            affectedAddresses.push(tx.unwrapCCC!.receiver);
-        });
     }
 
     return Promise.all(

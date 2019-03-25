@@ -87,7 +87,7 @@ test("Check log transaction count", async done => {
         .format("YYYY-MM-DD");
     const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
     expect(nextLogInst).toBeTruthy();
-    expect(nextLogInst!.get().count).toEqual(txLogCount + 4);
+    expect(nextLogInst!.get().count).toEqual(txLogCount + 2);
 
     done();
 });
