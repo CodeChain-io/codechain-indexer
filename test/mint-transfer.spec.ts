@@ -137,36 +137,36 @@ test("Check utxo", async done => {
 test("Get block document containing action, transaction, input", async done => {
     const mintBlockInst = (await BlockModel.getByNumber(bestBlockNumber - 1))!;
     expect(mintBlockInst).toBeTruthy();
-    const mintBlockDoc = mintBlockInst.get({ plain: true });
-    expect(mintBlockDoc.hash).toEqual(mintBlock.hash.value);
-    expect(mintBlockDoc.transactions![0].hash).toEqual(
+    expect(mintBlockInst.get({ plain: true }).hash).toEqual(
+        mintBlock.hash.value
+    );
+    const mintBlockTransactions = await TransactionModel.getTransactions({
+        blockNumber: bestBlockNumber - 1
+    }).then(txs => txs.map(tx => tx.get({ plain: true })));
+    expect(mintBlockTransactions[0].hash).toEqual(
         mintBlock.transactions[0].hash().value
     );
-    expect(mintBlockDoc.transactions![0].type).toEqual("mintAsset");
+    expect(mintBlockTransactions[0].type).toEqual("mintAsset");
 
     const transferBlockInst = (await BlockModel.getByNumber(bestBlockNumber))!;
     expect(transferBlockInst).toBeTruthy();
-    const transferBlockDoc = transferBlockInst.get({ plain: true });
-    expect(transferBlockDoc.hash).toEqual(transferBlock.hash.value);
-    expect(transferBlockDoc.transactions![0].hash).toEqual(
+    expect(transferBlockInst.get({ plain: true }).hash).toEqual(
+        transferBlock.hash.value
+    );
+    const transferBlockTransactions = await TransactionModel.getTransactions({
+        blockNumber: bestBlockNumber
+    }).then(txs => txs.map(tx => tx.get({ plain: true })));
+    expect(transferBlockTransactions[0].hash).toEqual(
         transferBlock.transactions[0].hash().value
     );
-    expect(transferBlockDoc.transactions![0].type).toEqual("transferAsset");
-    expect(
-        transferBlockDoc.transactions![0].transferAsset!.inputs
-    ).toBeTruthy();
-    expect(
-        transferBlockDoc.transactions![0].transferAsset!.outputs
-    ).toBeTruthy();
-    expect(
-        transferBlockDoc.transactions![0].transferAsset!.inputs!.length
-    ).toEqual(
+    expect(transferBlockTransactions[0].type).toEqual("transferAsset");
+    expect(transferBlockTransactions[0].transferAsset!.inputs).toBeTruthy();
+    expect(transferBlockTransactions[0].transferAsset!.outputs).toBeTruthy();
+    expect(transferBlockTransactions[0].transferAsset!.inputs!.length).toEqual(
         (transferBlock.transactions[0].unsigned.toJSON()
             .action as TransferAssetActionJSON).inputs.length
     );
-    expect(
-        transferBlockDoc.transactions![0].transferAsset!.outputs!.length
-    ).toEqual(
+    expect(transferBlockTransactions[0].transferAsset!.outputs!.length).toEqual(
         (transferBlock.transactions[0].unsigned.toJSON()
             .action as TransferAssetActionJSON).outputs.length
     );
