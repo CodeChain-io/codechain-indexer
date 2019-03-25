@@ -1,5 +1,4 @@
 import * as Sequelize from "sequelize";
-import { TransactionAttribute } from "./transaction";
 
 export interface BlockAttribute {
     hash: string;
@@ -16,7 +15,10 @@ export interface BlockAttribute {
     miningReward: string;
     createdAt?: string;
     updatedAt?: string;
-    transactions?: TransactionAttribute[];
+    // NOTE: Aggregates from postgres are returned as int8 which the
+    // node-postgres library does not convert in fear of data loss.
+    // https://github.com/sequelize/sequelize/issues/4550
+    transactionsCount?: string;
 }
 
 export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
