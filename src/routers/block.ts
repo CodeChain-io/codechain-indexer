@@ -2,6 +2,7 @@ import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
+import * as TransactionModel from "../models/logic/transaction";
 import { syncIfNeeded } from "../models/logic/utils/middleware";
 import {
     blockSchema,
@@ -174,6 +175,73 @@ export function handle(context: IndexerContext, router: Router) {
                         ? latestBlockInst.get({ plain: true })
                         : null
                 );
+            } catch (e) {
+                next(e);
+            }
+        }
+    );
+
+    /**
+     * @swagger
+     * /block/{hashOrNumber}/tx:
+     *   get:
+     *     summary: Returns the transactions of the specific block
+     *     tags: [Block]
+     *     parameters:
+     *       - name: hashOrNumber
+     *         description: Block hash or Block number
+     *         required: true
+     *         in: path
+     *         type: string
+     *       - name: page
+     *         description: page for the pagination
+     *         in: query
+     *         required: false
+     *         type: number
+     *       - name: itemsPerPage
+     *         description: items per page for the pagination
+     *         in: query
+     *         required: false
+     *         type: number
+     *     responses:
+     *       200:
+     *         description: Transactions
+     *         schema:
+     *           type: array
+     *           items:
+     *             $ref: '#/definitions/Transaction'
+     */
+    router.get(
+        "/block/:hashOrNumber/tx",
+        validate({
+            query: {
+                ...paginationSchema
+            }
+        }),
+        async (req, res, next) => {
+            const hashOrNumber = req.params.hashOrNumber;
+            const page = req.query.page && parseInt(req.query.page, 10);
+            const itemsPerPage =
+                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+            let hashValue;
+            let numberValue;
+            // FIXME: Throw an error if hashOrNumber is not hash or number
+            try {
+                hashValue = new H256(hashOrNumber);
+            } catch (e) {
+                if (!isNaN(hashOrNumber)) {
+                    numberValue = parseInt(hashOrNumber, 10);
+                }
+            }
+            try {
+                const txs = await TransactionModel.getTransactions({
+                    page,
+                    itemsPerPage,
+                    ...(hashValue
+                        ? { blockHash: hashValue }
+                        : { blockNumber: numberValue })
+                });
+                res.json(txs.map(tx => tx.get({ plain: true })));
             } catch (e) {
                 next(e);
             }
