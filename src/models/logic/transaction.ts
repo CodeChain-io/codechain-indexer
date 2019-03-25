@@ -441,6 +441,8 @@ async function getTransactionsQuery(params: {
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
     includePending?: boolean | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
@@ -451,6 +453,8 @@ async function getTransactionsQuery(params: {
         assetType,
         type,
         tracker,
+        blockNumber,
+        blockHash,
         includePending,
         onlyConfirmed,
         onlySuccessful,
@@ -472,6 +476,12 @@ async function getTransactionsQuery(params: {
     }
     if (tracker) {
         query.push({ tracker: tracker.value });
+    }
+    if (blockNumber != null) {
+        query.push({ blockNumber });
+    }
+    if (blockHash) {
+        query.push({ blockHash: blockHash.value });
     }
     if (onlyConfirmed) {
         const latestBlockInst = await BlockModel.getLatestBlock();
@@ -502,6 +512,8 @@ export async function getTransactions(params: {
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
     page?: number | null;
     itemsPerPage?: number | null;
     includePending?: boolean | null;
@@ -514,6 +526,8 @@ export async function getTransactions(params: {
         assetType,
         type,
         tracker,
+        blockNumber,
+        blockHash,
         page = 1,
         itemsPerPage = 15,
         includePending = false,
@@ -526,6 +540,8 @@ export async function getTransactions(params: {
         assetType,
         type,
         tracker,
+        blockNumber,
+        blockHash,
         includePending,
         onlyConfirmed,
         onlySuccessful,
@@ -568,6 +584,8 @@ export async function getNumberOfTransactions(params: {
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
     includePending?: boolean | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
@@ -578,6 +596,8 @@ export async function getNumberOfTransactions(params: {
         assetType,
         type,
         tracker,
+        blockNumber,
+        blockHash,
         includePending,
         onlyConfirmed = false,
         onlySuccessful = false,
@@ -588,6 +608,8 @@ export async function getNumberOfTransactions(params: {
         assetType,
         type,
         tracker,
+        blockNumber,
+        blockHash,
         includePending,
         onlyConfirmed,
         onlySuccessful,
