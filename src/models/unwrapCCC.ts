@@ -1,17 +1,13 @@
 import * as Sequelize from "sequelize";
-import { AssetTransferBurnInstance } from "./assettransferburn";
-import { AssetTransferInputAttribute } from "./assettransferinput";
+import { AssetTransferInput } from "./transferAsset";
 
 export interface UnwrapCCCAttribute {
     transactionHash: string;
     receiver: string;
-    burn?: AssetTransferInputAttribute;
+    burn: AssetTransferInput;
 }
 
-export interface UnwrapCCCInstance
-    extends Sequelize.Instance<UnwrapCCCAttribute> {
-    getBurn: Sequelize.HasOneGetAssociationMixin<AssetTransferBurnInstance>;
-}
+export type UnwrapCCCInstance = Sequelize.Instance<UnwrapCCCAttribute>;
 
 export default (
     sequelize: Sequelize.Sequelize,
@@ -37,6 +33,10 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            burn: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,
@@ -49,12 +49,8 @@ export default (
         },
         {}
     );
-    Action.associate = models => {
-        Action.hasOne(models.AssetTransferBurn, {
-            foreignKey: "transactionHash",
-            as: "burn",
-            onDelete: "CASCADE"
-        });
+    Action.associate = () => {
+        // associations can be defined here
     };
     return Action;
 };

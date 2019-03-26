@@ -58,13 +58,17 @@ module.exports = {
             assetName: {
                 type: DataTypes.STRING
             },
+            assetType: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
             recipient: {
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            assetType: {
+            inputs: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.JSONB
             },
 
             createdAt: {

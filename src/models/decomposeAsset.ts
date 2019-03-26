@@ -1,28 +1,17 @@
 import * as Sequelize from "sequelize";
-import {
-    AssetTransferInputAttribute,
-    AssetTransferInputInstance
-} from "./assettransferinput";
-import {
-    AssetTransferOutputAttribute,
-    AssetTransferOutputInstance
-} from "./assettransferoutput";
+import { AssetTransferInput, AssetTransferOutput } from "./transferAsset";
 
 export interface DecomposeAssetAttribute {
     transactionHash: string;
     networkId: string;
     approvals: string[];
-    input?: AssetTransferInputAttribute;
-    outputs?: AssetTransferOutputAttribute[];
+    input: AssetTransferInput;
+    outputs: AssetTransferOutput[];
 }
 
-export interface DecomposeAssetInstance
-    extends Sequelize.Instance<DecomposeAssetAttribute> {
-    getInput: Sequelize.HasOneGetAssociationMixin<AssetTransferInputInstance>;
-    getOutputs: Sequelize.HasManyGetAssociationsMixin<
-        AssetTransferOutputInstance
-    >;
-}
+export type DecomposeAssetInstance = Sequelize.Instance<
+    DecomposeAssetAttribute
+>;
 
 export default (
     sequelize: Sequelize.Sequelize,
@@ -53,6 +42,14 @@ export default (
                 allowNull: false,
                 type: DataTypes.JSONB
             },
+            input: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            outputs: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,
@@ -65,17 +62,8 @@ export default (
         },
         {}
     );
-    Action.associate = models => {
-        Action.hasMany(models.AssetTransferOutput, {
-            foreignKey: "transactionHash",
-            as: "outputs",
-            onDelete: "CASCADE"
-        });
-        Action.hasOne(models.AssetTransferInput, {
-            foreignKey: "transactionHash",
-            as: "input",
-            onDelete: "CASCADE"
-        });
+    Action.associate = () => {
+        // associations can be defined here
     };
     return Action;
 };
