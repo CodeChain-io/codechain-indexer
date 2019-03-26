@@ -3,8 +3,8 @@ import * as Sequelize from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
-import { AssetTransferOutputAttribute } from "../assettransferoutput";
 import { TransactionInstance } from "../transaction";
+import { AssetTransferOutput } from "../transferAsset";
 import { UTXOAttribute, UTXOInstance } from "../utxo";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
@@ -470,11 +470,9 @@ export async function transferUTXO(
     }
     if (txType === "transferAsset") {
         const transferAsset = (await txInst.getTransferAsset())!;
-        const outputs = (await transferAsset.getOutputs())!.map(output =>
-            output.get({ plain: true })
-        );
+        const { outputs, orders } = transferAsset.get({ plain: true });
         await Promise.all(
-            outputs!.map(async (output: AssetTransferOutputAttribute) => {
+            outputs!.map(async (output: AssetTransferOutput) => {
                 const recipient = getOwner(
                     new H160(output.lockScriptHash),
                     output.parameters,
@@ -485,15 +483,11 @@ export async function transferUTXO(
                 const lockScriptHash = new H160(output.lockScriptHash);
                 const parameters = output.parameters;
                 const quantity = new U64(output.quantity);
-                const orderOnTransfer = (await transferAsset.getOrders()).find(
-                    o =>
-                        o
-                            .get({ plain: true })
-                            .outputIndices.includes(output.index)
+                const orderOnTransfer = orders.find(o =>
+                    o.outputIndices.includes(output.index)
                 );
-                const order =
-                    orderOnTransfer && (await orderOnTransfer.getOrder());
-                const orderHash = order && new H256(order.get().orderHash);
+                const order = orderOnTransfer && orderOnTransfer.order;
+                const orderHash = order && new H256(order.orderHash);
                 return createUTXO(
                     recipient,
                     {
@@ -511,11 +505,10 @@ export async function transferUTXO(
                 );
             })
         );
-        const inputs = await transferAsset.getInputs();
+        const { inputs } = await transferAsset.get({ plain: true });
         if (inputs) {
             await Promise.all(
-                inputs.map(async inputInst => {
-                    const input = inputInst.get({ plain: true })!;
+                inputs.map(async input => {
                     const prevTracker = input.prevOut.tracker;
                     const prevTransaction = await getSuccessfulByTracker(
                         new H256(prevTracker)
@@ -538,11 +531,10 @@ export async function transferUTXO(
                 })
             );
         }
-        const burns = await transferAsset.getBurns();
+        const { burns } = await transferAsset.get({ plain: true });
         if (burns) {
             await Promise.all(
-                burns.map(async burnInst => {
-                    const burn = burnInst.get({ plain: true })!;
+                burns.map(async burn => {
                     const prevTracker = burn.prevOut.tracker;
                     const prevTransaction = await getSuccessfulByTracker(
                         new H256(prevTracker)
@@ -569,10 +561,9 @@ export async function transferUTXO(
     }
     if (txType === "composeAsset") {
         const composeAsset = (await txInst.getComposeAsset())!;
-        const inputs = (await composeAsset.getInputs())!;
+        const { inputs } = await composeAsset.get({ plain: true });
         await Promise.all(
-            inputs!.map(async inputInst => {
-                const input = inputInst.get({ plain: true });
+            inputs!.map(async input => {
                 const prevTracker = input.prevOut.tracker;
                 const prevTransaction = await getSuccessfulByTracker(
                     new H256(prevTracker)
@@ -623,7 +614,7 @@ export async function transferUTXO(
     }
     if (txType === "decomposeAsset") {
         const decomposeAsset = (await txInst.getDecomposeAsset())!;
-        const input = (await decomposeAsset.getInput())!.get({ plain: true });
+        const { input } = await decomposeAsset.get({ plain: true });
         const prevTracker = input.prevOut.tracker;
         const prevTransaction = await getSuccessfulByTracker(
             new H256(prevTracker)
@@ -640,10 +631,9 @@ export async function transferUTXO(
         }
         await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
 
-        const outputs = (await decomposeAsset.getOutputs())!;
+        const { outputs } = (await decomposeAsset.get({ plain: true }))!;
         return await Promise.all(
-            outputs!.map(outputInst => {
-                const output = outputInst.get({ plain: true });
+            outputs!.map(output => {
                 const recipient = getOwner(
                     new H160(output.lockScriptHash),
                     output.parameters,
@@ -664,7 +654,7 @@ export async function transferUTXO(
                         quantity,
                         transactionHash,
                         transactionTracker,
-                        transactionOutputIndex: outputInst.get().index
+                        transactionOutputIndex: output.index
                     },
                     blockNumber
                 );
@@ -732,9 +722,9 @@ export async function transferUTXO(
         );
     }
     if (txType === "unwrapCCC") {
-        const prevOut = (await (await txInst.getUnwrapCCC())!.getBurn())!.get(
-            "prevOut"
-        );
+        const {
+            burn: { prevOut }
+        } = await (await txInst.getUnwrapCCC())!.get({ plain: true });
         const prevTracker = prevOut.tracker;
         const prevTransaction = await getSuccessfulByTracker(
             new H256(prevTracker)

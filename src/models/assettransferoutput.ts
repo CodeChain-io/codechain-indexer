@@ -3,6 +3,7 @@ import * as Sequelize from "sequelize";
 export interface AssetTransferOutputAttribute {
     id?: string;
     transactionHash: string;
+    transactionTracker: string;
     lockScriptHash: string;
     parameters: string[];
     assetType: string;
@@ -39,6 +40,10 @@ export default (
                     model: "Transactions",
                     key: "hash"
                 }
+            },
+            transactionTracker: {
+                allowNull: false,
+                type: DataTypes.STRING
             },
             lockScriptHash: {
                 allowNull: false,

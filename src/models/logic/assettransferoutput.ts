@@ -7,6 +7,7 @@ import { strip0xPrefix } from "./utils/format";
 
 export async function createAssetTransferOutput(
     transactionHash: string,
+    transactionTracker: string,
     output: AssetTransferOutput,
     index: number,
     params: {
@@ -23,6 +24,7 @@ export async function createAssetTransferOutput(
         );
         assetTransferOuputInstance = await models.AssetTransferOutput.create({
             transactionHash: strip0xPrefix(transactionHash),
+            transactionTracker: strip0xPrefix(transactionTracker),
             lockScriptHash: strip0xPrefix(output.lockScriptHash.value),
             parameters: parameters.map(p => strip0xPrefix(p)),
             assetType: strip0xPrefix(output.assetType.value),
@@ -36,6 +38,35 @@ export async function createAssetTransferOutput(
         throw Exception.DBError();
     }
     return assetTransferOuputInstance;
+}
+
+export async function getOutputOwner(
+    tracker: string,
+    index: number
+): Promise<{
+    owner?: string | null;
+    lockScriptHash?: string;
+    parameters?: string[];
+}> {
+    try {
+        return models.AssetTransferOutput.findOne({
+            where: {
+                transactionTracker: strip0xPrefix(tracker),
+                index
+            }
+        }).then(instance => {
+            if (instance) {
+                const { owner, lockScriptHash, parameters } = instance.get({
+                    plain: true
+                });
+                return { owner, lockScriptHash, parameters };
+            }
+            return {};
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
 }
 
 // This is for the cascade test
