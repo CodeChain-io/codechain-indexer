@@ -4,6 +4,7 @@ import * as path from "path";
 import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
+import { AddressLogAttribute, AddressLogInstance } from "./addressLog";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import { AssetTransferBurnInstance } from "./assettransferburn";
@@ -15,6 +16,7 @@ import {
     AssetTransferOutputAttribute,
     AssetTransferOutputInstance
 } from "./assettransferoutput";
+import { AssetTypeLogAttribute, AssetTypeLogInstance } from "./assetTypeLog";
 import { BlockAttribute, BlockInstance } from "./block";
 import {
     ChangeAssetSchemeAttribute,
@@ -153,6 +155,8 @@ interface DB {
     >;
     AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
     Log: Sequelize.Model<LogInstance, LogAttribute>;
+    AddressLog: Sequelize.Model<AddressLogInstance, AddressLogAttribute>;
+    AssetTypeLog: Sequelize.Model<AssetTypeLogInstance, AssetTypeLogAttribute>;
 }
 
 export default models as DB;
