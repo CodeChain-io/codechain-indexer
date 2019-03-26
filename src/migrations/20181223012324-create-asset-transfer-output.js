@@ -17,6 +17,10 @@ module.exports = {
                     key: "hash"
                 }
             },
+            transactionTracker: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
             lockScriptHash: {
                 allowNull: false,
                 type: Sequelize.STRING

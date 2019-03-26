@@ -9,79 +9,17 @@ export const includeArray = [
     {
         attributes: [],
         as: "transferAsset",
-        model: models.TransferAsset,
-        include: [
-            {
-                attributes: [],
-                as: "outputs",
-                model: models.AssetTransferOutput,
-                include: [
-                    {
-                        attributes: [],
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                attributes: [],
-                as: "inputs",
-                model: models.AssetTransferInput,
-                include: [
-                    {
-                        attributes: [],
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                attributes: [],
-                as: "burns",
-                model: models.AssetTransferBurn,
-                include: [
-                    {
-                        attributes: [],
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                attributes: [],
-                as: "orders",
-                model: models.OrderOnTransfer
-            }
-        ]
+        model: models.TransferAsset
     },
     {
         attributes: [],
         as: "composeAsset",
-        model: models.ComposeAsset,
-        include: [
-            {
-                attributes: [],
-                as: "inputs",
-                model: models.AssetTransferInput
-            }
-        ]
+        model: models.ComposeAsset
     },
     {
         attributes: [],
         as: "decomposeAsset",
-        model: models.DecomposeAsset,
-        include: [
-            {
-                attributes: [],
-                as: "input",
-                model: models.AssetTransferInput
-            },
-            {
-                attributes: [],
-                as: "outputs",
-                model: models.AssetTransferOutput
-            }
-        ]
+        model: models.DecomposeAsset
     },
     {
         attributes: [],
@@ -101,14 +39,7 @@ export const includeArray = [
     {
         attributes: [],
         as: "unwrapCCC",
-        model: models.UnwrapCCC,
-        include: [
-            {
-                attributes: [],
-                as: "burn",
-                model: models.AssetTransferBurn
-            }
-        ]
+        model: models.UnwrapCCC
     },
     {
         attributes: [],
@@ -159,67 +90,15 @@ export const fullIncludeArray = [
     },
     {
         as: "transferAsset",
-        model: models.TransferAsset,
-        include: [
-            {
-                as: "outputs",
-                model: models.AssetTransferOutput,
-                include: [
-                    {
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                as: "inputs",
-                model: models.AssetTransferInput,
-                include: [
-                    {
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                as: "burns",
-                model: models.AssetTransferBurn,
-                include: [
-                    {
-                        as: "assetScheme",
-                        model: models.AssetScheme
-                    }
-                ]
-            },
-            {
-                as: "orders",
-                model: models.OrderOnTransfer
-            }
-        ]
+        model: models.TransferAsset
     },
     {
         as: "composeAsset",
-        model: models.ComposeAsset,
-        include: [
-            {
-                as: "inputs",
-                model: models.AssetTransferInput
-            }
-        ]
+        model: models.ComposeAsset
     },
     {
         as: "decomposeAsset",
-        model: models.DecomposeAsset,
-        include: [
-            {
-                as: "input",
-                model: models.AssetTransferInput
-            },
-            {
-                as: "outputs",
-                model: models.AssetTransferOutput
-            }
-        ]
+        model: models.DecomposeAsset
     },
     {
         as: "changeAssetScheme",
@@ -235,13 +114,7 @@ export const fullIncludeArray = [
     },
     {
         as: "unwrapCCC",
-        model: models.UnwrapCCC,
-        include: [
-            {
-                as: "burn",
-                model: models.AssetTransferBurn
-            }
-        ]
+        model: models.UnwrapCCC
     },
     {
         as: "pay",

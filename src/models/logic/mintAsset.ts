@@ -1,9 +1,14 @@
-import { MintAsset, SignedTransaction } from "codechain-sdk/lib/core/classes";
+import {
+    AssetTransferOutput,
+    MintAsset,
+    SignedTransaction
+} from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import { MintAssetActionJSON } from "codechain-sdk/lib/core/transaction/MintAsset";
 import models from "../index";
 import { MintAssetInstance } from "../mintAsset";
 import { createAssetScheme } from "./assetscheme";
+import { createAssetTransferOutput } from "./assettransferoutput";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
@@ -66,6 +71,19 @@ export async function createMintAsset(
             assetSchemeWithNetworkId
         );
     }
+    await createAssetTransferOutput(
+        transactionHash,
+        mintAsset.tracker().toString(),
+        new AssetTransferOutput({
+            lockScriptHash: mintOutput.lockScriptHash,
+            parameters: mintOutput.parameters,
+            quantity: mintOutput.supply,
+            shardId,
+            assetType: mintAsset.getAssetType()
+        }),
+        0,
+        { networkId }
+    );
     return inst;
 }
 

@@ -1,4 +1,7 @@
-import { SignedTransaction } from "codechain-sdk/lib/core/classes";
+import {
+    AssetTransferOutput,
+    SignedTransaction
+} from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import {
     ComposeAsset,
@@ -7,7 +10,10 @@ import {
 import { ComposeAssetInstance } from "../composeAsset";
 import models from "../index";
 import { createAssetScheme } from "./assetscheme";
-import { createAssetTransferInput } from "./assettransferinput";
+import {
+    createAssetTransferOutput,
+    getOutputOwner
+} from "./assettransferoutput";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
@@ -57,18 +63,54 @@ export async function createComposeAsset(
         supply,
         assetName,
         assetType: strip0xPrefix(assetType),
-        recipient
+        recipient,
+        inputs: await Promise.all(
+            inputs.map(async (i, index) => {
+                const {
+                    owner,
+                    lockScriptHash: prevOutLockScriptHash,
+                    parameters: prevOutParameters
+                } = await getOutputOwner(i.prevOut.tracker, i.prevOut.index);
+                return {
+                    index,
+                    prevOut: {
+                        tracker: strip0xPrefix(i.prevOut.tracker),
+                        index: i.prevOut.index,
+                        assetType: strip0xPrefix(i.prevOut.assetType),
+                        shardId: i.prevOut.shardId,
+                        quantity: i.prevOut.quantity,
+                        owner,
+                        lockScriptHash: prevOutLockScriptHash,
+                        parameters: prevOutParameters
+                    },
+                    timelock: i.timelock,
+                    assetType: strip0xPrefix(i.prevOut.assetType),
+                    shardId: i.prevOut.shardId,
+                    lockScript: Buffer.from(i.lockScript),
+                    unlockScript: Buffer.from(i.unlockScript),
+                    owner
+                };
+            })
+        )
     });
-
-    await Promise.all(
-        inputs.map(async (_: any, index: number) => {
-            const input = compose.input(index)!;
-            await createAssetTransferInput(transactionHash, input, index);
-        })
-    );
 
     const assetScheme: any = compose.getAssetScheme();
     assetScheme.networkId = assetScheme.networkId!;
     await createAssetScheme(assetType, transactionHash, assetScheme);
+
+    await createAssetTransferOutput(
+        transactionHash,
+        compose.tracker().toString(),
+        new AssetTransferOutput({
+            lockScriptHash: asset.lockScriptHash,
+            parameters: asset.parameters,
+            quantity: asset.quantity,
+            shardId,
+            assetType: compose.getAssetType()
+        }),
+        0,
+        { networkId }
+    );
+
     return result;
 }
