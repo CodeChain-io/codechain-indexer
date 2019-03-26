@@ -1,13 +1,12 @@
 import { SDK } from "codechain-sdk";
 import { H160, H256, SignedTransaction } from "codechain-sdk/lib/core/classes";
-import { AssetTransaction } from "codechain-sdk/lib/core/Transaction";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
+import { createAddressLog } from "./addressLog";
 import { updateAssetScheme } from "./assetscheme";
-import * as BlockModel from "./block";
 import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
 import { createCreateShard, updateShardId } from "./createShard";
@@ -24,7 +23,8 @@ import { createStore } from "./store";
 import { createTransferAsset } from "./transferAsset";
 import { createUnwrapCCC } from "./unwrapCCC";
 import { strip0xPrefix } from "./utils/format";
-import { fullIncludeArray, includeArray } from "./utils/includeArray";
+import { fullIncludeArray } from "./utils/includeArray";
+import { getTracker, isAssetTransactionType } from "./utils/transaction";
 import { getSigners } from "./utils/workerpool";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
@@ -43,12 +43,7 @@ export async function createTransactions(
                 type: tx.unsigned.type(),
                 blockNumber: tx.blockNumber,
                 blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
-                tracker: isAssetTransactionType(tx.unsigned.type())
-                    ? strip0xPrefix(
-                          ((tx.unsigned as any) as AssetTransaction).tracker()
-                              .value
-                      )
-                    : null,
+                tracker: getTracker(tx),
                 transactionIndex: tx.transactionIndex,
                 seq: tx.unsigned.seq()!,
                 fee: tx.unsigned.fee()!.toString(10)!,
@@ -68,6 +63,11 @@ export async function createTransactions(
         for (const tx of txs) {
             await createTransactionAction(tx);
         }
+        await Promise.all(
+            txs.map((tx, i) =>
+                createAddressLog(tx, signers[i], "TransactionSigner")
+            )
+        );
         return txInstances;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -173,74 +173,78 @@ export async function applyTransaction(
     }
 }
 
-function isAssetTransactionType(type: string) {
-    return (
-        type === "mintAsset" ||
-        type === "transferAsset" ||
-        type === "composeAsset" ||
-        type === "decomposeAsset" ||
-        type === "increaseAssetSupply" ||
-        type === "wrapCCC" ||
-        type === "unwrapCCC"
-    );
-}
-
-function getPendingTransactionsQuery(params: {
-    address?: string | null;
-    assetType?: H160 | null;
-    type?: string[] | null;
-}) {
-    const { address, assetType, type } = params;
-    const query: any[] = [];
-    if (address) {
-        addAddressQuery(query, address);
-    }
-    if (assetType) {
-        addAssetTypeQuery(query, assetType);
-    }
-    if (type) {
-        query.push({
-            type: {
-                [Sequelize.Op.in]: type
-            }
-        });
-    }
-    query.push({
-        isPending: true
-    });
-    return query;
-}
-
 export async function getPendingTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
     type?: string[] | null;
-    page?: number | null;
-    itemsPerPage?: number | null;
+    page: number;
+    itemsPerPage: number;
 }) {
-    const { address, assetType, type, page = 1, itemsPerPage = 15 } = params;
-    const query = getPendingTransactionsQuery({ address, assetType, type });
+    const { address, assetType, type, page, itemsPerPage } = params;
+    const query = {
+        isPending: true,
+        ...(type == null
+            ? {}
+            : {
+                  [Sequelize.Op.in]: type
+              })
+    };
     try {
-        const hashes = await models.Transaction.findAll({
-            attributes: ["hash"],
-            where: {
-                [Sequelize.Op.and]: query
-            },
-            group: ["hash"],
-            order: [["pendingTimestamp", "DESC"]],
-            include: includeArray
-        }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
-        return await models.Transaction.findAll({
-            where: {
-                hash: {
-                    [Sequelize.Op.in]: hashes
-                }
-            },
-            order: [["pendingTimestamp", "DESC"]],
-            limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
-            include: fullIncludeArray
-        });
+        if (address) {
+            return models.AddressLog.findAll({
+                attributes: ["transactionHash"],
+                where: {
+                    ...query,
+                    address
+                },
+                group: ["transactionHash", "blockNumber", "transactionIndex"],
+                limit: itemsPerPage,
+                offset: (page - 1) * itemsPerPage
+            })
+                .then(instances => instances.map(i => i.get().transactionHash))
+                .then(hashes =>
+                    models.Transaction.findAll({
+                        where: {
+                            hash: {
+                                [Sequelize.Op.in]: hashes
+                            }
+                        },
+                        include: fullIncludeArray
+                    })
+                );
+        } else if (assetType) {
+            return models.AssetTypeLog.findAll({
+                attributes: ["transactionHash"],
+                where: {
+                    ...query,
+                    assetType: assetType.toString()
+                },
+                group: ["transactionHash", "blockNumber", "transactionIndex"],
+                limit: itemsPerPage,
+                offset: (page - 1) * itemsPerPage
+            })
+                .then(instances => instances.map(i => i.get().transactionHash))
+                .then(hashes =>
+                    models.Transaction.findAll({
+                        where: {
+                            hash: {
+                                [Sequelize.Op.in]: hashes
+                            }
+                        },
+                        include: fullIncludeArray
+                    })
+                );
+        } else {
+            return models.Transaction.findAll({
+                where: {
+                    ...query
+                },
+                order: [["pendingTimestamp", "DESC"]],
+                limit: itemsPerPage,
+                offset: (page - 1) * itemsPerPage,
+                include: fullIncludeArray
+            });
+        }
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -268,16 +272,38 @@ export async function getNumberOfPendingTransactions(params: {
     type?: string[] | null;
 }) {
     const { address, assetType, type } = params;
-    const query = getPendingTransactionsQuery({ address, assetType, type });
+    const query = {
+        isPending: true,
+        ...(type == null
+            ? {}
+            : {
+                  [Sequelize.Op.in]: type
+              })
+    };
     try {
-        return models.Transaction.count({
-            where: {
-                [Sequelize.Op.and]: query
-            },
-            distinct: true,
-            col: "hash",
-            include: includeArray
-        });
+        if (address) {
+            return models.AddressLog.count({
+                where: {
+                    ...query,
+                    address
+                },
+                distinct: true,
+                col: "transactionHash"
+            });
+        } else if (assetType) {
+            return models.AssetTypeLog.count({
+                where: {
+                    ...query,
+                    assetType: assetType.value
+                },
+                distinct: true,
+                col: "transactionHash"
+            });
+        } else {
+            return models.Transaction.count({
+                where: query
+            });
+        }
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -381,124 +407,6 @@ export async function removeOutdatedPendings(
     }
 }
 
-function addAddressQuery(query: any[], address: string) {
-    query.push({
-        [Sequelize.Op.or]: [
-            { signer: address },
-            { "$mintAsset.approver$": address },
-            { "$mintAsset.registrar$": address },
-            { "$mintAsset.recipient$": address },
-
-            { "$transferAsset.inputs.owner$": address },
-            { "$transferAsset.outputs.owner$": address },
-            { "$transferAsset.burns.owner$": address },
-
-            { "$composeAsset.approver$": address },
-            { "$composeAsset.registrar$": address },
-            { "$composeAsset.recipient$": address },
-            { "$composeAsset.inputs.owner$": address },
-
-            { "$decomposeAsset.input.owner$": address },
-            { "$decomposeAsset.outputs.owner$": address },
-
-            { "$wrapCCC.recipient$": address },
-            { "$unwrapCCC.burn.owner$": address },
-
-            { "$increaseAssetSupply.recipient$": address },
-
-            { "$pay.receiver$": address }
-        ]
-    });
-}
-
-function addAssetTypeQuery(query: any[], assetType: H160) {
-    query.push({
-        [Sequelize.Op.or]: [
-            { "$mintAsset.assetType$": assetType.value },
-            { "$transferAsset.inputs.assetType$": assetType.value },
-            { "$transferAsset.outputs.assetType$": assetType.value },
-            { "$transferAsset.burns.assetType$": assetType.value },
-            { "$composeAsset.inputs.assetType$": assetType.value },
-            { "$decomposeAsset.input.assetType$": assetType.value },
-            { "$decomposeAsset.outputs.assetType$": assetType.value },
-            { "$unwrapCCC.burn.assetType$": assetType.value },
-            { "$changeAssetScheme.assetType$": assetType.value },
-            { "$increaseAssetSupply.assetType$": assetType.value }
-        ]
-    });
-}
-
-async function getTransactionsQuery(params: {
-    address?: string | null;
-    assetType?: H160 | null;
-    type?: string[] | null;
-    tracker?: H256 | null;
-    blockNumber?: number | null;
-    blockHash?: H256 | null;
-    includePending?: boolean | null;
-    onlyConfirmed?: boolean | null;
-    onlySuccessful?: boolean | null;
-    confirmThreshold?: number | null;
-}) {
-    const {
-        address,
-        assetType,
-        type,
-        tracker,
-        blockNumber,
-        blockHash,
-        includePending,
-        onlyConfirmed,
-        onlySuccessful,
-        confirmThreshold
-    } = params;
-    const query: any[] = [];
-    if (address) {
-        addAddressQuery(query, address);
-    }
-    if (assetType) {
-        addAssetTypeQuery(query, assetType);
-    }
-    if (type) {
-        query.push({
-            type: {
-                [Sequelize.Op.in]: type
-            }
-        });
-    }
-    if (tracker) {
-        query.push({ tracker: tracker.value });
-    }
-    if (blockNumber != null) {
-        query.push({ blockNumber });
-    }
-    if (blockHash) {
-        query.push({ blockHash: blockHash.value });
-    }
-    if (onlyConfirmed) {
-        const latestBlockInst = await BlockModel.getLatestBlock();
-        const latestBlockNumber = latestBlockInst
-            ? latestBlockInst.get().number
-            : 0;
-        query.push({
-            blockNumber: {
-                [Sequelize.Op.lte]: latestBlockNumber - confirmThreshold!
-            }
-        });
-    }
-    if (onlySuccessful) {
-        query.push({
-            success: true
-        });
-    }
-    if (includePending !== true) {
-        query.push({
-            isPending: false
-        });
-    }
-    return query;
-}
-
 export async function getTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
@@ -506,61 +414,123 @@ export async function getTransactions(params: {
     tracker?: H256 | null;
     blockNumber?: number | null;
     blockHash?: H256 | null;
-    page?: number | null;
-    itemsPerPage?: number | null;
+    page: number;
+    itemsPerPage: number;
     includePending?: boolean | null;
     onlyConfirmed?: boolean | null;
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const {
-        address,
-        assetType,
-        type,
-        tracker,
-        blockNumber,
-        blockHash,
-        page = 1,
-        itemsPerPage = 15,
-        includePending = false,
-        onlyConfirmed = false,
-        onlySuccessful = false,
-        confirmThreshold = 0
-    } = params;
-    const query = await getTransactionsQuery({
-        address,
-        assetType,
-        type,
-        tracker,
-        blockNumber,
-        blockHash,
-        includePending,
-        onlyConfirmed,
-        onlySuccessful,
-        confirmThreshold
-    });
+    const { address, assetType, page, itemsPerPage } = params;
     try {
-        const hashes = await models.Transaction.findAll({
-            attributes: ["hash"],
+        if (address) {
+            return getTransactionsByAddress({ ...params, address });
+        } else if (assetType) {
+            return getTransactionsByAssetType({ ...params, assetType });
+        }
+        return models.Transaction.findAll({
             where: {
-                [Sequelize.Op.and]: query
-            },
-            group: ["hash"],
-            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
-            limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
-            subQuery: false,
-            include: includeArray
-        }).then(instances => instances.map(i => strip0xPrefix(i.get().hash)));
-        return await models.Transaction.findAll({
-            where: {
-                hash: {
-                    [Sequelize.Op.in]: hashes
-                }
+                ...buildQueryForTransactions(params)
             },
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage,
             include: fullIncludeArray
         });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+export async function getTransactionsByAddress(params: {
+    address: string;
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
+    confirmThreshold?: number | null;
+    page: number;
+    itemsPerPage: number;
+}) {
+    try {
+        const { address, page, itemsPerPage } = params;
+        return models.AddressLog.findAll({
+            attributes: ["transactionHash"],
+            where: {
+                ...buildQueryForLogs(params),
+                address
+            },
+            group: ["transactionHash", "blockNumber", "transactionIndex"],
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage
+        })
+            .then(instances => instances.map(i => i.get().transactionHash))
+            .then(hashes =>
+                models.Transaction.findAll({
+                    where: {
+                        hash: {
+                            [Sequelize.Op.in]: hashes
+                        }
+                    },
+                    order: [
+                        ["blockNumber", "DESC"],
+                        ["transactionIndex", "DESC"]
+                    ],
+                    include: fullIncludeArray
+                })
+            );
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+export async function getTransactionsByAssetType(params: {
+    assetType: H160;
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
+    confirmThreshold?: number | null;
+    page: number;
+    itemsPerPage: number;
+}) {
+    try {
+        const { assetType, page, itemsPerPage } = params;
+        return models.AssetTypeLog.findAll({
+            attributes: ["transactionHash"],
+            where: {
+                ...buildQueryForLogs(params),
+                assetType: assetType.value
+            },
+            group: ["transactionHash", "blockNumber", "transactionIndex"],
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage
+        })
+            .then(instances => instances.map(i => i.get().transactionHash))
+            .then(hashes =>
+                models.Transaction.findAll({
+                    where: {
+                        hash: {
+                            [Sequelize.Op.in]: hashes
+                        }
+                    },
+                    order: [
+                        ["blockNumber", "DESC"],
+                        ["transactionIndex", "DESC"]
+                    ],
+                    include: fullIncludeArray
+                })
+            );
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -579,38 +549,23 @@ export async function getNumberOfTransactions(params: {
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const {
-        address,
-        assetType,
-        type,
-        tracker,
-        blockNumber,
-        blockHash,
-        includePending,
-        onlyConfirmed = false,
-        onlySuccessful = false,
-        confirmThreshold = 0
-    } = params;
-    const query = await getTransactionsQuery({
-        address,
-        assetType,
-        type,
-        tracker,
-        blockNumber,
-        blockHash,
-        includePending,
-        onlyConfirmed,
-        onlySuccessful,
-        confirmThreshold
-    });
+    if (params.address != null) {
+        return getNumberOfTransactionsByAddress({
+            ...params,
+            address: params.address
+        });
+    }
+    if (params.assetType != null) {
+        return getNumberOfTransactionsByAssetType({
+            ...params,
+            assetType: params.assetType
+        });
+    }
     try {
         return models.Transaction.count({
             where: {
-                [Sequelize.Op.and]: query
-            },
-            distinct: true,
-            col: "hash",
-            include: includeArray
+                ...buildQueryForTransactions(params)
+            }
         });
     } catch (err) {
         console.error(err);
@@ -618,6 +573,95 @@ export async function getNumberOfTransactions(params: {
     }
 }
 
+function buildQueryForTransactions(params: {
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlySuccessful?: boolean | null;
+}) {
+    return {
+        ...(params.type ? { type: { [Sequelize.Op.in]: params.type } } : {}),
+        ...(params.tracker ? { tracker: params.tracker.value } : {}),
+        ...(params.blockNumber ? { blockNumber: params.blockNumber } : {}),
+        ...(params.blockHash
+            ? {
+                  blockHash: params.blockHash.value
+              }
+            : {}),
+        ...(params.onlySuccessful ? { success: true } : {}),
+        ...(params.includePending !== true ? { isPending: false } : {})
+        /* FIXME: onlyConfirmed, confirmThreshold */
+    };
+}
+
+function buildQueryForLogs(params: {
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlySuccessful?: boolean | null;
+}) {
+    return {
+        ...(params.type
+            ? { transactionType: { [Sequelize.Op.in]: params.type } }
+            : {}),
+        ...(params.tracker ? { transactionTracker: params.tracker.value } : {}),
+        ...(params.blockNumber ? { blockNumber: params.blockNumber } : {}),
+        ...(params.blockHash
+            ? {
+                  /* FIXME */
+              }
+            : {}),
+        ...(params.onlySuccessful ? { success: true } : {}),
+        ...(params.includePending !== true ? { isPending: false } : {})
+        /* FIXME: onlyConfirmed, confirmThreshold */
+    };
+}
+
+export async function getNumberOfTransactionsByAddress(params: {
+    address: string;
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    return models.AddressLog.count({
+        where: {
+            ...buildQueryForLogs(params),
+            address: params.address!
+        },
+        distinct: true,
+        col: "transactionHash"
+    });
+}
+
+export async function getNumberOfTransactionsByAssetType(params: {
+    assetType: H160;
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlyConfirmed?: boolean | null;
+    onlySuccessful?: boolean | null;
+    confirmThreshold?: number | null;
+}) {
+    return models.AssetTypeLog.count({
+        where: {
+            ...buildQueryForLogs(params),
+            assetType: params.assetType!.value
+        },
+        distinct: true,
+        col: "transactionHash"
+    });
+}
 // @ts-ignore
 export async function deleteByHash(hash: H256) {
     try {

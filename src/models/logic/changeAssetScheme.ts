@@ -6,6 +6,7 @@ import { ChangeAssetSchemeActionJSON } from "codechain-sdk/lib/core/transaction/
 import models from "..";
 import { ChangeAssetSchemeInstance } from "../changeAssetScheme";
 import * as AssetImageModel from "./assetimage";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createChangeAssetScheme(
@@ -49,5 +50,6 @@ export async function createChangeAssetScheme(
             metadataObj.icon_url
         );
     }
+    await createAssetTypeLog(transaction, assetType);
     return inst;
 }

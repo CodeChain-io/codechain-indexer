@@ -114,9 +114,11 @@ export function handle(context: IndexerContext, router: Router) {
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
             const trackerString = req.query.tracker;
-            const page = req.query.page && parseInt(req.query.page, 10);
+            const page = (req.query.page && parseInt(req.query.page, 10)) || 1;
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             const includePending = req.query.includePending;
             const onlyConfirmed = req.query.onlyConfirmed;
             const onlySuccessful = req.query.onlySuccessful;
@@ -358,8 +360,8 @@ export function handle(context: IndexerContext, router: Router) {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
-            const page = req.query.page;
-            const itemsPerPage = req.query.itemsPerPage;
+            const page = req.query.page || 1;
+            const itemsPerPage = req.query.itemsPerPage || 15;
             try {
                 let assetType;
                 if (assetTypeString) {

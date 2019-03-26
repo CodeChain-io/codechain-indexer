@@ -210,7 +210,7 @@ test("api /pending-tx", done => {
         .expect(200, done);
 });
 
-test("api /pending-tx with args", done => {
+test.skip("api /pending-tx with args", done => {
     const address = aliceAddress.value;
     const assetType = mintEmeraldTx.getMintedAsset().assetType;
     request(app)
@@ -228,7 +228,7 @@ test("api /pending-tx/count", done => {
         .end(done);
 });
 
-test("api /pending-tx/count with args", done => {
+test.skip("api /pending-tx/count with args", done => {
     const address = aliceAddress.value;
     const assetType = mintEmeraldTx.getMintedAsset().assetType;
     request(app)

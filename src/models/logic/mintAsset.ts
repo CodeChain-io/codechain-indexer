@@ -7,8 +7,10 @@ import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOut
 import { MintAssetActionJSON } from "codechain-sdk/lib/core/transaction/MintAsset";
 import models from "../index";
 import { MintAssetInstance } from "../mintAsset";
+import { createAddressLog } from "./addressLog";
 import { createAssetScheme } from "./assetscheme";
 import { createAssetTransferOutput } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
@@ -84,6 +86,18 @@ export async function createMintAsset(
         0,
         { networkId }
     );
+    await Promise.all([
+        approver != null
+            ? createAddressLog(transaction, approver, "Approver")
+            : Promise.resolve(null),
+        registrar != null
+            ? createAddressLog(transaction, registrar, "Registrar")
+            : Promise.resolve(null),
+        recipient != null
+            ? createAddressLog(transaction, recipient, "AssetOwner")
+            : Promise.resolve(null),
+        createAssetTypeLog(transaction, assetType)
+    ]);
     return inst;
 }
 

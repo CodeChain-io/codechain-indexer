@@ -4,12 +4,15 @@ import {
     DecomposeAsset,
     DecomposeAssetActionJSON
 } from "codechain-sdk/lib/core/transaction/DecomposeAsset";
+import * as _ from "lodash";
 import { DecomposeAssetInstance } from "../decomposeAsset";
 import models from "../index";
+import { createAddressLog } from "./addressLog";
 import {
     createAssetTransferOutput,
     getOutputOwner
 } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
@@ -77,6 +80,23 @@ export async function createDecomposeAsset(
                 }
             );
         })
+    );
+    const { input: resultInput, outputs: resultOutputs } = result.get({
+        plain: true
+    });
+    await Promise.all(
+        _.uniq(
+            [
+                resultInput.owner,
+                ...resultOutputs.map(output => output.owner)
+            ].filter(address => address != null)
+        ).map(address => createAddressLog(transaction, address!, "AssetOwner"))
+    );
+    await Promise.all(
+        [
+            resultInput.assetType,
+            ..._.uniq(resultOutputs.map(output => output.assetType))
+        ].map(assetType => createAssetTypeLog(transaction, assetType))
     );
     return result;
 }

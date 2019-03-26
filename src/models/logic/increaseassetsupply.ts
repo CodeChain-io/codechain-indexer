@@ -10,7 +10,9 @@ import {
 } from "codechain-sdk/lib/core/transaction/IncreaseAssetSupply";
 import { IncreaseAssetSupplyInstance } from "../increaseAssetSupply";
 import models from "../index";
+import { createAddressLog } from "./addressLog";
 import { createAssetTransferOutput } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
@@ -55,5 +57,9 @@ export async function createIncreaseAssetSupply(
         0,
         { networkId }
     );
+    if (recipient) {
+        await createAddressLog(transaction, recipient, "AssetOwner");
+    }
+    await createAssetTypeLog(transaction, assetType);
     return inst;
 }

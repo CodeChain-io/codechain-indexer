@@ -24,7 +24,10 @@ test("Check pending transactions", async done => {
     await waitForSecond(2);
     await Helper.worker.sync();
 
-    const pendingTransactionsInst = await TxModel.getPendingTransactions({});
+    const pendingTransactionsInst = await TxModel.getPendingTransactions({
+        page: 1,
+        itemsPerPage: 15
+    });
     expect(pendingTransactionsInst.length).toEqual(1);
 
     const pendingTx = await pendingTransactionsInst![0]!.get();
@@ -40,7 +43,10 @@ test("Check pending transactions", async done => {
     }
     await Helper.worker.sync();
 
-    const newPendingTransactions = await TxModel.getPendingTransactions({});
+    const newPendingTransactions = await TxModel.getPendingTransactions({
+        page: 1,
+        itemsPerPage: 15
+    });
     expect(newPendingTransactions.length).toEqual(0);
 
     const indexedTransactionInst = await TxModel.getByHash(
