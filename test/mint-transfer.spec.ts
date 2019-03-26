@@ -2,7 +2,6 @@ import { Block, MintAsset, U64 } from "codechain-sdk/lib/core/classes";
 import { TransferAssetActionJSON } from "codechain-sdk/lib/core/transaction/TransferAsset";
 import models from "../src/models";
 import * as AssetSchemeModel from "../src/models/logic/assetscheme";
-import * as AssetTransferInputModel from "../src/models/logic/assettransferinput";
 import * as AssetTransferOutputModel from "../src/models/logic/assettransferoutput";
 import * as BlockModel from "../src/models/logic/block";
 import * as TransactionModel from "../src/models/logic/transaction";
@@ -92,19 +91,13 @@ test("Check assetScheme", async done => {
     done();
 });
 
-test("Check assetTransfer input output", async done => {
+test("Check assetTransfer output", async done => {
     const signed = transferBlock.transactions[0];
     const transferOutputInst = await AssetTransferOutputModel.getByTransactionHash(
         signed.hash().value
     );
-    const { inputs, outputs } = signed.toJSON()
-        .action as TransferAssetActionJSON;
+    const { outputs } = signed.toJSON().action as TransferAssetActionJSON;
     expect(transferOutputInst.length).toEqual(outputs.length);
-
-    const tranferInputInst = await AssetTransferInputModel.getByTransactionHash(
-        signed.hash().value
-    );
-    expect(tranferInputInst.length).toEqual(inputs.length);
 
     done();
 });
@@ -141,7 +134,9 @@ test("Get block document containing action, transaction, input", async done => {
         mintBlock.hash.value
     );
     const mintBlockTransactions = await TransactionModel.getTransactions({
-        blockNumber: bestBlockNumber - 1
+        blockNumber: bestBlockNumber - 1,
+        page: 1,
+        itemsPerPage: 15
     }).then(txs => txs.map(tx => tx.get({ plain: true })));
     expect(mintBlockTransactions[0].hash).toEqual(
         mintBlock.transactions[0].hash().value
@@ -154,7 +149,9 @@ test("Get block document containing action, transaction, input", async done => {
         transferBlock.hash.value
     );
     const transferBlockTransactions = await TransactionModel.getTransactions({
-        blockNumber: bestBlockNumber
+        blockNumber: bestBlockNumber,
+        page: 1,
+        itemsPerPage: 15
     }).then(txs => txs.map(tx => tx.get({ plain: true })));
     expect(transferBlockTransactions[0].hash).toEqual(
         transferBlock.transactions[0].hash().value
@@ -162,11 +159,11 @@ test("Get block document containing action, transaction, input", async done => {
     expect(transferBlockTransactions[0].type).toEqual("transferAsset");
     expect(transferBlockTransactions[0].transferAsset!.inputs).toBeTruthy();
     expect(transferBlockTransactions[0].transferAsset!.outputs).toBeTruthy();
-    expect(transferBlockTransactions[0].transferAsset!.inputs!.length).toEqual(
+    expect(transferBlockTransactions[0].transferAsset!.inputs.length).toEqual(
         (transferBlock.transactions[0].unsigned.toJSON()
             .action as TransferAssetActionJSON).inputs.length
     );
-    expect(transferBlockTransactions[0].transferAsset!.outputs!.length).toEqual(
+    expect(transferBlockTransactions[0].transferAsset!.outputs.length).toEqual(
         (transferBlock.transactions[0].unsigned.toJSON()
             .action as TransferAssetActionJSON).outputs.length
     );

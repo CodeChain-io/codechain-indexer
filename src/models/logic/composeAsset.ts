@@ -7,13 +7,16 @@ import {
     ComposeAsset,
     ComposeAssetActionJSON
 } from "codechain-sdk/lib/core/transaction/ComposeAsset";
+import * as _ from "lodash";
 import { ComposeAssetInstance } from "../composeAsset";
 import models from "../index";
+import { createAddressLog } from "./addressLog";
 import { createAssetScheme } from "./assetscheme";
 import {
     createAssetTransferOutput,
     getOutputOwner
 } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
@@ -110,6 +113,28 @@ export async function createComposeAsset(
         }),
         0,
         { networkId }
+    );
+
+    const { inputs: resultInputs } = result.get({ plain: true });
+    await Promise.all([
+        approver != null
+            ? createAddressLog(transaction, approver, "Approver")
+            : Promise.resolve(null),
+        registrar != null
+            ? createAddressLog(transaction, registrar, "Registrar")
+            : Promise.resolve(null),
+        ..._.uniq(
+            [
+                recipient,
+                ...resultInputs.map(input => input.prevOut.owner)
+            ].filter(address => address != null)
+        ).map(address => createAddressLog(transaction, address!, "AssetOwner"))
+    ]);
+    await Promise.all(
+        [
+            compose.getAssetType().toString(),
+            ..._.uniq(resultInputs.map(input => input.assetType))
+        ].map(type => createAssetTypeLog(transaction, type))
     );
 
     return result;

@@ -9,12 +9,15 @@ import {
     TransferAsset,
     TransferAssetActionJSON
 } from "codechain-sdk/lib/core/transaction/TransferAsset";
+import * as _ from "lodash";
 import models from "../index";
 import { TransferAssetInstance } from "../transferAsset";
+import { createAddressLog } from "./addressLog";
 import {
     createAssetTransferOutput,
     getOutputOwner
 } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
@@ -186,6 +189,34 @@ export async function createTransferAsset(
                 }
             );
         })
+    );
+    const {
+        inputs: resultInputs,
+        burns: resultBurns,
+        outputs: resultOutputs
+    } = result.get({ plain: true });
+    const addresses: string[] = _.uniq([
+        ..._.uniq(
+            resultInputs.filter(i => i.prevOut.owner).map(i => i.prevOut.owner!)
+        ),
+        ..._.uniq(
+            resultBurns.filter(b => b.prevOut.owner).map(b => b.prevOut.owner!)
+        ),
+        ..._.uniq(resultOutputs.filter(o => o.owner).map(o => o.owner!))
+    ]);
+    await Promise.all(
+        addresses.map(address =>
+            createAddressLog(transaction, address, "AssetOwner")
+        )
+    );
+    // FIXME: Log the addresses in orders.
+    const assetTypes: string[] = _.uniq([
+        ..._.uniq(resultInputs.map(i => i.assetType)),
+        ..._.uniq(resultBurns.map(b => b.assetType)),
+        ..._.uniq(resultOutputs.map(o => o.assetType))
+    ]);
+    await Promise.all(
+        assetTypes.map(assetType => createAssetTypeLog(transaction, assetType))
     );
     return result;
 }

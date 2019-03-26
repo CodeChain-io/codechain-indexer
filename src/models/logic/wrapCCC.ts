@@ -10,8 +10,10 @@ import {
 } from "codechain-sdk/lib/core/transaction/WrapCCC";
 import models from "../index";
 import { WrapCCCInstance } from "../wrapCCC";
+import { createAddressLog } from "./addressLog";
 import { createAssetSchemeOfWCCC } from "./assetscheme";
 import { createAssetTransferOutput } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
@@ -24,7 +26,8 @@ export async function createWrapCCC(
         shardId,
         lockScriptHash,
         parameters,
-        quantity
+        quantity,
+        payer
     } = transaction.toJSON().action as WrapCCCActionJSON;
     const networkId = transaction.unsigned.networkId();
 
@@ -54,6 +57,14 @@ export async function createWrapCCC(
         }),
         0,
         { networkId }
+    );
+    await createAddressLog(transaction, payer, "AssetOwner");
+    if (recipient) {
+        await createAddressLog(transaction, recipient, "AssetOwner");
+    }
+    await createAssetTypeLog(
+        transaction,
+        "0000000000000000000000000000000000000000"
     );
     return result;
 }

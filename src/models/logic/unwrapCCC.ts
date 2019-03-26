@@ -5,7 +5,9 @@ import {
 } from "codechain-sdk/lib/core/transaction/UnwrapCCC";
 import models from "../index";
 import { UnwrapCCCInstance } from "../unwrapCCC";
+import { createAddressLog } from "./addressLog";
 import { getOutputOwner } from "./assettransferoutput";
+import { createAssetTypeLog } from "./assetTypeLog";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createUnwrapCCC(
@@ -18,7 +20,7 @@ export async function createUnwrapCCC(
         burn.prevOut.tracker,
         burn.prevOut.index
     );
-    return models.UnwrapCCC.create({
+    const instance = models.UnwrapCCC.create({
         transactionHash: strip0xPrefix(transactionHash),
         receiver,
         burn: {
@@ -41,4 +43,13 @@ export async function createUnwrapCCC(
             owner
         }
     });
+    if (owner) {
+        await createAddressLog(transaction, owner, "AssetOwner");
+    }
+    await createAddressLog(transaction, receiver, "AssetOwner");
+    await createAssetTypeLog(
+        transaction,
+        "0000000000000000000000000000000000000000"
+    );
+    return instance;
 }
