@@ -1,8 +1,5 @@
 import * as Sequelize from "sequelize";
-import {
-    AssetTransferInputAttribute,
-    AssetTransferInputInstance
-} from "./assettransferinput";
+import { AssetTransferInput } from "./transferAsset";
 
 export interface ComposeAssetAttribute {
     transactionHash: string;
@@ -23,15 +20,10 @@ export interface ComposeAssetAttribute {
     assetType: string;
     recipient: string;
 
-    inputs?: AssetTransferInputAttribute[];
+    inputs: AssetTransferInput[];
 }
 
-export interface ComposeAssetInstance
-    extends Sequelize.Instance<ComposeAssetAttribute> {
-    getInputs: Sequelize.HasManyGetAssociationsMixin<
-        AssetTransferInputInstance
-    >;
-}
+export type ComposeAssetInstance = Sequelize.Instance<ComposeAssetAttribute>;
 
 export default (
     sequelize: Sequelize.Sequelize,
@@ -111,6 +103,10 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            inputs: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,
@@ -123,12 +119,8 @@ export default (
         },
         {}
     );
-    Action.associate = models => {
-        Action.hasMany(models.AssetTransferInput, {
-            foreignKey: "transactionHash",
-            as: "inputs",
-            onDelete: "CASCADE"
-        });
+    Action.associate = () => {
+        // associations can be defined here
     };
     return Action;
 };

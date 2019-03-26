@@ -30,6 +30,22 @@ module.exports = {
                 allowNull: true,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
+            inputs: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            burns: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            outputs: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            orders: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,

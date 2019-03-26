@@ -22,6 +22,14 @@ module.exports = {
                 allowNull: false,
                 type: DataTypes.JSONB
             },
+            input: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
+            outputs: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,

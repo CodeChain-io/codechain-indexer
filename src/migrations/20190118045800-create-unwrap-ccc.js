@@ -17,6 +17,10 @@ module.exports = {
                 allowNull: false,
                 type: DataTypes.STRING
             },
+            burn: {
+                allowNull: false,
+                type: DataTypes.JSONB
+            },
 
             createdAt: {
                 allowNull: false,
