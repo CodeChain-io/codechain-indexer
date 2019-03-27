@@ -1,4 +1,4 @@
-import { SignedTransaction } from "codechain-sdk/lib/core/classes";
+import { SignedTransaction, U64 } from "codechain-sdk/lib/core/classes";
 import {
     UnwrapCCC,
     UnwrapCCCActionJSON
@@ -30,7 +30,7 @@ export async function createUnwrapCCC(
                 index: burn.prevOut.index,
                 assetType: strip0xPrefix(burn.prevOut.assetType),
                 shardId: burn.prevOut.shardId,
-                quantity: burn.prevOut.quantity,
+                quantity: new U64(burn.prevOut.quantity).toString(),
                 owner,
                 lockScriptHash,
                 parameters

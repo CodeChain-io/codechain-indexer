@@ -56,7 +56,7 @@ export async function createTransferAsset(
                         index: i.prevOut.index,
                         assetType: strip0xPrefix(i.prevOut.assetType),
                         shardId: i.prevOut.shardId,
-                        quantity: i.prevOut.quantity,
+                        quantity: new U64(i.prevOut.quantity).toString(),
                         owner,
                         lockScriptHash,
                         parameters
@@ -84,7 +84,7 @@ export async function createTransferAsset(
                         index: b.prevOut.index,
                         assetType: strip0xPrefix(b.prevOut.assetType),
                         shardId: b.prevOut.shardId,
-                        quantity: b.prevOut.quantity,
+                        quantity: new U64(b.prevOut.quantity).toString(),
                         owner,
                         lockScriptHash,
                         parameters
@@ -105,7 +105,7 @@ export async function createTransferAsset(
                 parameters: o.parameters.map(p => strip0xPrefix(p)),
                 assetType: strip0xPrefix(o.assetType),
                 shardId: o.shardId,
-                quantity: o.quantity,
+                quantity: new U64(o.quantity).toString(),
                 owner: getOwner(
                     new H160(o.lockScriptHash),
                     o.parameters,
@@ -117,7 +117,7 @@ export async function createTransferAsset(
             orders.map(async (o, index) => {
                 return {
                     index,
-                    spentQuantity: o.spentQuantity,
+                    spentQuantity: new U64(o.spentQuantity).toString(),
                     order: {
                         orderHash: strip0xPrefix(
                             Order.fromJSON(o.order).hash().value
@@ -128,9 +128,15 @@ export async function createTransferAsset(
                         shardIdFrom: o.order.shardIdFrom,
                         shardIdTo: o.order.shardIdTo,
                         shardIdFee: o.order.shardIdFee,
-                        assetQuantityFrom: o.order.assetQuantityFrom,
-                        assetQuantityTo: o.order.assetQuantityTo,
-                        assetQuantityFee: o.order.assetQuantityFee,
+                        assetQuantityFrom: new U64(
+                            o.order.assetQuantityFrom
+                        ).toString(),
+                        assetQuantityTo: new U64(
+                            o.order.assetQuantityTo
+                        ).toString(),
+                        assetQuantityFee: new U64(
+                            o.order.assetQuantityFee
+                        ).toString(),
                         originOutputs: await Promise.all(
                             o.order.originOutputs.map(async originOutput => {
                                 const {
@@ -150,7 +156,9 @@ export async function createTransferAsset(
                                         originOutput.assetType
                                     ),
                                     shardId: originOutput.shardId,
-                                    quantity: originOutput.quantity,
+                                    quantity: new U64(
+                                        originOutput.quantity
+                                    ).toString(),
                                     owner,
                                     lockScriptHash,
                                     parameters
