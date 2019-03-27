@@ -7,11 +7,6 @@ import { AccountAttribtue, AccountInstance } from "./account";
 import { AddressLogAttribute, AddressLogInstance } from "./addressLog";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
-import { AssetTransferBurnInstance } from "./assettransferburn";
-import {
-    AssetTransferInputAttribute,
-    AssetTransferInputInstance
-} from "./assettransferinput";
 import {
     AssetTransferOutputAttribute,
     AssetTransferOutputInstance
@@ -35,11 +30,6 @@ import {
 } from "./increaseAssetSupply";
 import { LogAttribute, LogInstance } from "./log";
 import { MintAssetAttribute, MintAssetInstance } from "./mintAsset";
-import { OrderAttribute, OrderInstance } from "./order";
-import {
-    OrderOnTransferAttribute,
-    OrderOnTransferInstance
-} from "./orderontransfer";
 import { PayAttribute, PayInstance } from "./pay";
 import { RemoveAttribute, RemoveInstance } from "./remove";
 import { SetRegularKeyAttribute, SetRegularKeyInstance } from "./setRegularKey";
@@ -135,23 +125,10 @@ interface DB {
     Custom: Sequelize.Model<CustomInstance, CustomAttribute>;
     AssetScheme: Sequelize.Model<AssetSchemeInstance, AssetSchemeAttribute>;
     Account: Sequelize.Model<AccountInstance, AccountAttribtue>;
-    Order: Sequelize.Model<OrderInstance, OrderAttribute>;
-    OrderOnTransfer: Sequelize.Model<
-        OrderOnTransferInstance,
-        OrderOnTransferAttribute
-    >;
     UTXO: Sequelize.Model<UTXOInstance, UTXOAttribute>;
-    AssetTransferInput: Sequelize.Model<
-        AssetTransferInputInstance,
-        AssetTransferInputAttribute
-    >;
     AssetTransferOutput: Sequelize.Model<
         AssetTransferOutputInstance,
         AssetTransferOutputAttribute
-    >;
-    AssetTransferBurn: Sequelize.Model<
-        AssetTransferBurnInstance,
-        AssetTransferInputAttribute
     >;
     AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
     Log: Sequelize.Model<LogInstance, LogAttribute>;
