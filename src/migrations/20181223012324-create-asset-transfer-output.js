@@ -62,6 +62,12 @@ module.exports = {
                 queryInterface.addIndex("AssetTransferOutputs", [
                     "transactionHash"
                 ])
+            )
+            .then(() =>
+                queryInterface.addIndex("AssetTransferOutputs", [
+                    "transactionTracker",
+                    "index"
+                ])
             );
     },
     down: (queryInterface, Sequelize) => {
