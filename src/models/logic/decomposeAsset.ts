@@ -1,4 +1,4 @@
-import { H160, SignedTransaction } from "codechain-sdk/lib/core/classes";
+import { H160, SignedTransaction, U64 } from "codechain-sdk/lib/core/classes";
 import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import {
     DecomposeAsset,
@@ -39,7 +39,7 @@ export async function createDecomposeAsset(
                 index: input.prevOut.index,
                 assetType: strip0xPrefix(input.prevOut.assetType),
                 shardId: input.prevOut.shardId,
-                quantity: input.prevOut.quantity,
+                quantity: new U64(input.prevOut.quantity).toString(),
                 owner,
                 lockScriptHash,
                 parameters
@@ -58,7 +58,7 @@ export async function createDecomposeAsset(
                 parameters: o.parameters.map(p => strip0xPrefix(p)),
                 assetType: strip0xPrefix(o.assetType),
                 shardId: o.shardId,
-                quantity: o.quantity,
+                quantity: new U64(o.quantity).toString(),
                 owner: getOwner(
                     new H160(o.lockScriptHash),
                     o.parameters,
