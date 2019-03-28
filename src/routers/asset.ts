@@ -74,6 +74,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: shardId
+     *         description: filter by shardId
+     *         in: query
+     *         required: false
+     *         type: number
      *       - name: page
      *         description: page for the pagination (default 1)
      *         in: query
@@ -119,6 +124,8 @@ export function handle(context: IndexerContext, router: Router) {
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
+            const shardId =
+                req.query.shardId && parseInt(req.query.shardId, 10);
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
                 req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
@@ -134,6 +141,7 @@ export function handle(context: IndexerContext, router: Router) {
                 const utxoInsts = await UTXOModel.getUTXO({
                     address,
                     assetType,
+                    shardId,
                     page,
                     itemsPerPage,
                     onlyConfirmed,
@@ -254,6 +262,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: shardId
+     *         description: filter by shardId
+     *         in: query
+     *         required: false
+     *         type: number
      *       - name: page
      *         description: page for the pagination (default 1)
      *         in: query
@@ -298,6 +311,8 @@ export function handle(context: IndexerContext, router: Router) {
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
+            const shardId =
+                req.query.shardId && parseInt(req.query.shardId, 10);
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
                 req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
@@ -313,6 +328,7 @@ export function handle(context: IndexerContext, router: Router) {
                 const aggsInst = await UTXOModel.getAggsUTXO({
                     address,
                     assetType,
+                    shardId,
                     page,
                     itemsPerPage,
                     onlyConfirmed,
@@ -343,6 +359,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: shardId
+     *         description: filter by shardId
+     *         in: query
+     *         required: false
+     *         type: number
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -376,6 +397,8 @@ export function handle(context: IndexerContext, router: Router) {
         async (req, res, next) => {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
+            const shardId =
+                req.query.shardId && parseInt(req.query.shardId, 10);
             const onlyConfirmed = req.query.onlyConfirmed;
             const confirmThreshold =
                 req.query.confirmThreshold &&
@@ -388,6 +411,7 @@ export function handle(context: IndexerContext, router: Router) {
                 const count = await UTXOModel.getCountOfAggsUTXO({
                     address,
                     assetType,
+                    shardId,
                     onlyConfirmed,
                     confirmThreshold
                 });
