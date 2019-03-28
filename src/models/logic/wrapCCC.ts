@@ -1,18 +1,9 @@
-import {
-    AssetTransferOutput,
-    H160,
-    SignedTransaction,
-    U64
-} from "codechain-sdk/lib/core/classes";
-import {
-    WrapCCC,
-    WrapCCCActionJSON
-} from "codechain-sdk/lib/core/transaction/WrapCCC";
+import { H160, SignedTransaction, U64 } from "codechain-sdk/lib/core/classes";
+import { WrapCCCActionJSON } from "codechain-sdk/lib/core/transaction/WrapCCC";
 import models from "../index";
 import { WrapCCCInstance } from "../wrapCCC";
 import { createAddressLog } from "./addressLog";
 import { createAssetSchemeOfWCCC } from "./assetscheme";
-import { createAssetTransferOutput } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
@@ -21,7 +12,6 @@ export async function createWrapCCC(
     transaction: SignedTransaction
 ): Promise<WrapCCCInstance> {
     const transactionHash = transaction.hash().value;
-    const wrapCCC = transaction.unsigned as WrapCCC;
     const {
         shardId,
         lockScriptHash,
@@ -45,19 +35,6 @@ export async function createWrapCCC(
     if (existing == null) {
         await createAssetSchemeOfWCCC(transactionHash, networkId, shardId);
     }
-    await createAssetTransferOutput(
-        transactionHash,
-        wrapCCC.tracker().toString(),
-        AssetTransferOutput.fromJSON({
-            lockScriptHash,
-            parameters,
-            quantity,
-            shardId,
-            assetType: H160.zero().toString()
-        }),
-        0,
-        { networkId }
-    );
     await createAddressLog(transaction, payer, "AssetOwner");
     if (recipient) {
         await createAddressLog(transaction, recipient, "AssetOwner");

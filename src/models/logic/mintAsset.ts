@@ -1,15 +1,10 @@
-import {
-    AssetTransferOutput,
-    MintAsset,
-    SignedTransaction
-} from "codechain-sdk/lib/core/classes";
+import { MintAsset, SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import { MintAssetActionJSON } from "codechain-sdk/lib/core/transaction/MintAsset";
 import models from "../index";
 import { MintAssetInstance } from "../mintAsset";
 import { createAddressLog } from "./addressLog";
 import { createAssetScheme } from "./assetscheme";
-import { createAssetTransferOutput } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
@@ -73,19 +68,6 @@ export async function createMintAsset(
             assetSchemeWithNetworkId
         );
     }
-    await createAssetTransferOutput(
-        transactionHash,
-        mintAsset.tracker().toString(),
-        new AssetTransferOutput({
-            lockScriptHash: mintOutput.lockScriptHash,
-            parameters: mintOutput.parameters,
-            quantity: mintOutput.supply,
-            shardId,
-            assetType: mintAsset.getAssetType()
-        }),
-        0,
-        { networkId }
-    );
     await Promise.all([
         approver != null
             ? createAddressLog(transaction, approver, "Approver")

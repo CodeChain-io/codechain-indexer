@@ -1,5 +1,4 @@
 import { H160, SignedTransaction, U64 } from "codechain-sdk/lib/core/classes";
-import { AssetTransferOutput } from "codechain-sdk/lib/core/transaction/AssetTransferOutput";
 import {
     DecomposeAsset,
     DecomposeAssetActionJSON
@@ -8,10 +7,7 @@ import * as _ from "lodash";
 import { DecomposeAssetInstance } from "../decomposeAsset";
 import models from "../index";
 import { createAddressLog } from "./addressLog";
-import {
-    createAssetTransferOutput,
-    getOutputOwner
-} from "./assettransferoutput";
+import { getOutputOwner } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
@@ -67,20 +63,6 @@ export async function createDecomposeAsset(
             };
         })
     });
-
-    await Promise.all(
-        outputs.map((output, index) => {
-            return createAssetTransferOutput(
-                transactionHash,
-                decompose.tracker().value,
-                AssetTransferOutput.fromJSON(output),
-                index,
-                {
-                    networkId
-                }
-            );
-        })
-    );
     const { input: resultInput, outputs: resultOutputs } = result.get({
         plain: true
     });

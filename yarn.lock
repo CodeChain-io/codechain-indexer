@@ -1097,10 +1097,9 @@ codechain-primitives@^0.3.0:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-codechain-primitives@^0.4.7:
+"codechain-primitives@https://github.com/CodeChain-io/codechain-primitives-js.git#0.4.8-dev-workaround":
   version "0.4.8"
-  resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-0.4.8.tgz#5206ebcf92c0d225924931493b05c384d48fc63e"
-  integrity sha512-yEPinaK3y0pdMgmp7EjYkru2FL0XjXZ6sjdT4KmlGchqEuLUJsZ3V+MOyGlumdW7TSR7gpHl5+szyRPxUndMrQ==
+  resolved "https://github.com/CodeChain-io/codechain-primitives-js.git#1d3e7136611b9ddf21733a895b2f68e6a70cd86b"
   dependencies:
     bignumber.js "^7.2.1"
     blakejs "^1.1.0"
@@ -1114,12 +1113,12 @@ codechain-primitives@^0.4.7:
     rlp "^2.1.0"
 
 "codechain-sdk@https://github.com/joojis/codechain-sdk-js.git#corgi":
-  version "0.5.1"
-  resolved "https://github.com/joojis/codechain-sdk-js.git#79baa14dec52450b00595de42a1bc9f64f8fce18"
+  version "0.6.0"
+  resolved "https://github.com/joojis/codechain-sdk-js.git#524129dd643d2e60b3bf4294f80568f4e7d9b0fb"
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
-    codechain-primitives "^0.4.7"
+    codechain-primitives "https://github.com/CodeChain-io/codechain-primitives-js.git#0.4.8-dev-workaround"
     jayson "^2.0.6"
     lodash "^4.17.10"
     node-fetch "^2.1.2"

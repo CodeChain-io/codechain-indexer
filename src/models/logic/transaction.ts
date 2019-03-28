@@ -7,6 +7,7 @@ import models from "../index";
 import { TransactionInstance } from "../transaction";
 import { createAddressLog } from "./addressLog";
 import { updateAssetScheme } from "./assetscheme";
+import { createAssetTransferOutputs } from "./assettransferoutput";
 import { createChangeAssetScheme } from "./changeAssetScheme";
 import { createComposeAsset } from "./composeAsset";
 import { createCreateShard, updateShardId } from "./createShard";
@@ -24,7 +25,11 @@ import { createTransferAsset } from "./transferAsset";
 import { createUnwrapCCC } from "./unwrapCCC";
 import { strip0xPrefix } from "./utils/format";
 import { fullIncludeArray } from "./utils/includeArray";
-import { getTracker, isAssetTransactionType } from "./utils/transaction";
+import {
+    getTracker,
+    getTransactionOutputs,
+    isAssetTransactionType
+} from "./utils/transaction";
 import { getSigners } from "./utils/workerpool";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
@@ -59,6 +64,13 @@ export async function createTransactions(
                 isPending,
                 pendingTimestamp: isPending ? +new Date() / 1000 : null
             }))
+        );
+
+        await createAssetTransferOutputs(
+            txs.map(getTransactionOutputs).reduce((a, b) => {
+                a.push(...b);
+                return a;
+            }, [])
         );
         for (const tx of txs) {
             await createTransactionAction(tx);

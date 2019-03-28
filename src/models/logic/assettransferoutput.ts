@@ -1,43 +1,20 @@
-import { AssetTransferOutput } from "codechain-sdk/lib/core/classes";
 import * as Exception from "../../exception";
-import { AssetTransferOutputInstance } from "../assettransferoutput";
+import {
+    AssetTransferOutputAttribute,
+    AssetTransferOutputInstance
+} from "../assettransferoutput";
 import models from "../index";
-import * as AddressUtil from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
-export async function createAssetTransferOutput(
-    transactionHash: string,
-    transactionTracker: string,
-    output: AssetTransferOutput,
-    index: number,
-    params: {
-        networkId: string;
-    }
-): Promise<AssetTransferOutputInstance> {
-    let assetTransferOuputInstance: AssetTransferOutputInstance;
+export async function createAssetTransferOutputs(
+    outputs: AssetTransferOutputAttribute[]
+): Promise<AssetTransferOutputInstance[]> {
     try {
-        const parameters = output.parameters.map(p => p.toString("hex"));
-        const owner = AddressUtil.getOwner(
-            output.lockScriptHash,
-            parameters,
-            params.networkId
-        );
-        assetTransferOuputInstance = await models.AssetTransferOutput.create({
-            transactionHash: strip0xPrefix(transactionHash),
-            transactionTracker: strip0xPrefix(transactionTracker),
-            lockScriptHash: strip0xPrefix(output.lockScriptHash.value),
-            parameters: parameters.map(p => strip0xPrefix(p)),
-            assetType: strip0xPrefix(output.assetType.value),
-            shardId: output.shardId,
-            quantity: output.quantity.value.toString(10),
-            index,
-            owner
-        });
+        return models.AssetTransferOutput.bulkCreate(outputs);
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
     }
-    return assetTransferOuputInstance;
 }
 
 export async function getOutputOwner(

@@ -1,8 +1,5 @@
 import { H160 } from "codechain-primitives/lib";
-import {
-    AssetTransferOutput,
-    SignedTransaction
-} from "codechain-sdk/lib/core/classes";
+import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import {
     IncreaseAssetSupply,
@@ -11,7 +8,6 @@ import {
 import { IncreaseAssetSupplyInstance } from "../increaseAssetSupply";
 import models from "../index";
 import { createAddressLog } from "./addressLog";
-import { createAssetTransferOutput } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
@@ -44,19 +40,6 @@ export async function createIncreaseAssetSupply(
         recipient,
         supply
     });
-    await createAssetTransferOutput(
-        transactionHash,
-        increaseAssetSupply.tracker().toString(),
-        new AssetTransferOutput({
-            lockScriptHash: incSupplyOutput.lockScriptHash,
-            parameters: incSupplyOutput.parameters,
-            quantity: incSupplyOutput.supply,
-            shardId,
-            assetType: new H160(assetType)
-        }),
-        0,
-        { networkId }
-    );
     if (recipient) {
         await createAddressLog(transaction, recipient, "AssetOwner");
     }

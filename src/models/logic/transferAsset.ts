@@ -1,5 +1,4 @@
 import {
-    AssetTransferOutput,
     H160,
     Order,
     SignedTransaction,
@@ -13,10 +12,7 @@ import * as _ from "lodash";
 import models from "../index";
 import { TransferAssetInstance } from "../transferAsset";
 import { createAddressLog } from "./addressLog";
-import {
-    createAssetTransferOutput,
-    getOutputOwner
-} from "./assettransferoutput";
+import { getOutputOwner } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
@@ -185,19 +181,6 @@ export async function createTransferAsset(
             })
         )
     });
-    await Promise.all(
-        outputs.map((output, index) => {
-            return createAssetTransferOutput(
-                transaction.hash().value,
-                transfer.tracker().value,
-                AssetTransferOutput.fromJSON(output),
-                index,
-                {
-                    networkId
-                }
-            );
-        })
-    );
     const {
         inputs: resultInputs,
         burns: resultBurns,

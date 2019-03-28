@@ -1,7 +1,4 @@
-import {
-    AssetTransferOutput,
-    SignedTransaction
-} from "codechain-sdk/lib/core/classes";
+import { SignedTransaction } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import {
     ComposeAsset,
@@ -12,10 +9,7 @@ import { ComposeAssetInstance } from "../composeAsset";
 import models from "../index";
 import { createAddressLog } from "./addressLog";
 import { createAssetScheme } from "./assetscheme";
-import {
-    createAssetTransferOutput,
-    getOutputOwner
-} from "./assettransferoutput";
+import { getOutputOwner } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
 import { getAssetName } from "./utils/asset";
@@ -100,21 +94,6 @@ export async function createComposeAsset(
     const assetScheme: any = compose.getAssetScheme();
     assetScheme.networkId = assetScheme.networkId!;
     await createAssetScheme(assetType, transactionHash, assetScheme);
-
-    await createAssetTransferOutput(
-        transactionHash,
-        compose.tracker().toString(),
-        new AssetTransferOutput({
-            lockScriptHash: asset.lockScriptHash,
-            parameters: asset.parameters,
-            quantity: asset.quantity,
-            shardId,
-            assetType: compose.getAssetType()
-        }),
-        0,
-        { networkId }
-    );
-
     const { inputs: resultInputs } = result.get({ plain: true });
     await Promise.all([
         approver != null
