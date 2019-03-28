@@ -104,7 +104,7 @@ beforeAll(async done => {
 
 afterAll(async done => {
     await Helper.sdk.rpc.devel.startSealing();
-    models.sequelize.close();
+    await models.sequelize.close();
     done();
 }, 30 * 1000);
 

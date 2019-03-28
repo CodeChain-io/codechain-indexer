@@ -73,7 +73,7 @@ beforeAll(async done => {
 }, 30 * 1000);
 
 afterAll(async done => {
-    models.sequelize.close();
+    await models.sequelize.close();
     done();
 }, 30 * 1000);
 
