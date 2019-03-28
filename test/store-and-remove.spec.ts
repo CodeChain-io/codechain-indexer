@@ -20,8 +20,7 @@ async function check(blockNumber: number, typeName: string, typeInstance: any) {
     const blockInst = await createBlock(
         blockResponse,
         Helper.sdk,
-        new U64("1000"),
-        {}
+        new U64("1000")
     );
 
     const blockDoc = blockInst.get({ plain: true });

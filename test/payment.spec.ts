@@ -26,12 +26,7 @@ test("Create payment block", async done => {
     );
 
     expect(miningRewardResponse).toBeTruthy();
-    await BlockModel.createBlock(
-        paymentBlock!,
-        Helper.sdk,
-        new U64("1000"),
-        {}
-    );
+    await BlockModel.createBlock(paymentBlock!, Helper.sdk, new U64("1000"));
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
     expect(lastBlockInstance!.get({ plain: true }).number).toEqual(
@@ -56,11 +51,14 @@ test("Pay large amount", async done => {
             seq
         })
     );
-    expect(
-        await Helper.sdk.rpc.chain.getTransactionResult(hash, {
-            timeout: 300 * 1000
-        })
-    ).toEqual(true);
+
+    for (let i = 0; i < 1000; i += 1) {
+        if (await Helper.sdk.rpc.chain.containTransaction(hash)) {
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    expect(await Helper.sdk.rpc.chain.containTransaction(hash)).toEqual(true);
 
     const paymentBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
     const paymentBlock = await Helper.sdk.rpc.chain.getBlock(
@@ -73,12 +71,7 @@ test("Pay large amount", async done => {
     );
 
     expect(miningRewardResponse).toBeTruthy();
-    await BlockModel.createBlock(
-        paymentBlock!,
-        Helper.sdk,
-        new U64("1000"),
-        {}
-    );
+    await BlockModel.createBlock(paymentBlock!, Helper.sdk, new U64("1000"));
     const lastBlockInstance = await BlockModel.getLatestBlock();
     expect(lastBlockInstance).toBeTruthy();
     expect(lastBlockInstance!.get({ plain: true }).number).toEqual(

@@ -11,8 +11,7 @@ import { strip0xPrefix } from "./utils/format";
 export async function createBlock(
     block: Block,
     sdk: SDK,
-    miningReward: U64,
-    errorHints: { [transactionIndex: number]: string }
+    miningReward: U64
 ): Promise<BlockInstance> {
     let blockInstance: BlockInstance;
     try {
@@ -24,7 +23,6 @@ export async function createBlock(
             extraData: Buffer.from(block.extraData),
             transactionsRoot: strip0xPrefix(block.transactionsRoot.value),
             stateRoot: strip0xPrefix(block.stateRoot.value),
-            resultsRoot: strip0xPrefix(block.resultsRoot.value),
             score: block.score.value.toString(10),
             seal: block.seal.map(s => Buffer.from(s)),
             hash: strip0xPrefix(block.hash.value),
@@ -36,14 +34,11 @@ export async function createBlock(
         await TxModel.createTransactions(
             block.transactions,
             false,
-            block.timestamp,
-            errorHints
+            block.timestamp
         );
 
         for (const tx of block.transactions) {
-            if (tx.result) {
-                await TxModel.applyTransaction(tx, sdk, block.number);
-            }
+            await TxModel.applyTransaction(tx, sdk, block.number);
         }
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {

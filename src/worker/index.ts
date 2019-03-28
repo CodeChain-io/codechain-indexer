@@ -155,18 +155,8 @@ export default class Worker {
         if (miningReward == null) {
             throw InvalidBlockNumber();
         }
-        const errorHints: { [transactionIndex: number]: string } = {};
-        await Promise.all(
-            block.transactions.map(async tx => {
-                if (tx.result === false) {
-                    errorHints[
-                        tx.transactionIndex!
-                    ] = (await sdk.rpc.chain.getErrorHint(tx.hash()))!;
-                }
-            })
-        );
         try {
-            await BlockModel.createBlock(block, sdk, miningReward, errorHints);
+            await BlockModel.createBlock(block, sdk, miningReward);
         } catch (err) {
             await BlockModel.deleteBlockByNumber(block.number);
             throw err;

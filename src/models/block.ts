@@ -9,7 +9,6 @@ export interface BlockAttribute {
     extraData: Buffer;
     transactionsRoot: string;
     stateRoot: string;
-    resultsRoot: string;
     score: string;
     seal: Buffer[];
     miningReward: string;
@@ -69,13 +68,6 @@ export default (
                 }
             },
             stateRoot: {
-                allowNull: false,
-                type: DataTypes.STRING,
-                validate: {
-                    is: ["^[a-f0-9]{64}$"]
-                }
-            },
-            resultsRoot: {
                 allowNull: false,
                 type: DataTypes.STRING,
                 validate: {

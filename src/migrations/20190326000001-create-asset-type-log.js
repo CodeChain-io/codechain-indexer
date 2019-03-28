@@ -32,9 +32,6 @@ module.exports = {
                 transactionIndex: {
                     type: DataTypes.INTEGER
                 },
-                success: {
-                    type: DataTypes.BOOLEAN
-                },
                 isPending: {
                     allowNull: false,
                     type: DataTypes.BOOLEAN

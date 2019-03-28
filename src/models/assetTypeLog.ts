@@ -7,7 +7,6 @@ export interface AssetTypeLogAttribute {
     transactionType: string | null;
     blockNumber?: number | null;
     transactionIndex?: number | null;
-    success?: boolean | null;
     isPending: boolean;
     assetType: string;
 }
@@ -54,9 +53,6 @@ export default (
             },
             transactionIndex: {
                 type: DataTypes.INTEGER
-            },
-            success: {
-                type: DataTypes.BOOLEAN
             },
             isPending: {
                 allowNull: false,

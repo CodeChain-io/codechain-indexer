@@ -52,9 +52,6 @@ module.exports = {
                     allowNull: false,
                     type: Sequelize.STRING
                 },
-                success: {
-                    type: Sequelize.BOOLEAN
-                },
                 errorHint: {
                     type: Sequelize.TEXT("MEDIUM")
                 },

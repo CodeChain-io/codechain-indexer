@@ -36,10 +36,6 @@ module.exports = {
                     allowNull: false,
                     type: Sequelize.STRING
                 },
-                resultsRoot: {
-                    allowNull: false,
-                    type: Sequelize.STRING
-                },
                 score: {
                     allowNull: false,
                     type: Sequelize.STRING
