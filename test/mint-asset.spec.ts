@@ -23,7 +23,7 @@ test("MintAsset", async () => {
             recipient
         })
     );
-    await BlockModel.createBlock(block, Helper.sdk, new U64(1), {});
+    await BlockModel.createBlock(block, Helper.sdk, new U64(1));
 });
 
 afterAll(async done => {

@@ -29,10 +29,10 @@ test("TransferAsset - success", async () => {
     });
     await Helper.sdk.key.signTransactionInput(transferAsset, 0);
     const { block } = await Helper.sendTransactionAndGetBlock(transferAsset);
-    await BlockModel.createBlock(block, Helper.sdk, new U64(1), {});
+    await BlockModel.createBlock(block, Helper.sdk, new U64(1));
 });
 
-test("TransferAsset - Nonexistent assetType", async () => {
+test.skip("TransferAsset - Nonexistent assetType", async () => {
     const assetType = new H160("0000000000000000000000000000000000123456");
     const asset = mintAsset.getMintedAsset();
     const transferAsset = Helper.sdk.core.createTransferAssetTransaction();
@@ -57,10 +57,10 @@ test("TransferAsset - Nonexistent assetType", async () => {
     });
     await Helper.sdk.key.signTransactionInput(transferAsset, 0);
     const { block } = await Helper.sendTransactionAndGetBlock(transferAsset);
-    await BlockModel.createBlock(block, Helper.sdk, new U64(1), {});
+    await BlockModel.createBlock(block, Helper.sdk, new U64(1));
 });
 
-test("TransferAsset - Nonexistent outPoint index", async () => {
+test.skip("TransferAsset - Nonexistent outPoint index", async () => {
     const asset = mintAsset.getMintedAsset();
     const transferAsset = Helper.sdk.core.createTransferAssetTransaction();
     const input = Helper.sdk.core.createAssetTransferInput({
@@ -84,10 +84,10 @@ test("TransferAsset - Nonexistent outPoint index", async () => {
     });
     await Helper.sdk.key.signTransactionInput(transferAsset, 0);
     const { block } = await Helper.sendTransactionAndGetBlock(transferAsset);
-    await BlockModel.createBlock(block, Helper.sdk, new U64(1), {});
+    await BlockModel.createBlock(block, Helper.sdk, new U64(1));
 });
 
-test("TransferAsset - Nonexistent outPoint index", async () => {
+test.skip("TransferAsset - Nonexistent outPoint index", async () => {
     const tracker = new H256(
         "0000000000000000000000000000000000000000000000000000000000123456"
     );
@@ -114,7 +114,7 @@ test("TransferAsset - Nonexistent outPoint index", async () => {
     });
     await Helper.sdk.key.signTransactionInput(transferAsset, 0);
     const { block } = await Helper.sendTransactionAndGetBlock(transferAsset);
-    await BlockModel.createBlock(block, Helper.sdk, new U64(1), {});
+    await BlockModel.createBlock(block, Helper.sdk, new U64(1));
 });
 
 afterAll(async done => {

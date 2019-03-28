@@ -50,7 +50,6 @@ export async function createTransactions(
                 networkId: tx.unsigned.networkId(),
                 sig: strip0xPrefix(tx.signature()),
                 signer: signers[i],
-                success: tx.result,
                 errorHint:
                     errorHints == null
                         ? undefined
@@ -590,7 +589,7 @@ function buildQueryForTransactions(params: {
                   blockHash: params.blockHash.value
               }
             : {}),
-        ...(params.onlySuccessful ? { success: true } : {}),
+        ...(params.onlySuccessful ? { errorHint: null } : {}),
         ...(params.includePending !== true ? { isPending: false } : {})
         /* FIXME: onlyConfirmed, confirmThreshold */
     };
@@ -615,7 +614,7 @@ function buildQueryForLogs(params: {
                   /* FIXME */
               }
             : {}),
-        ...(params.onlySuccessful ? { success: true } : {}),
+        ...(params.onlySuccessful ? { errorHint: null } : {}),
         ...(params.includePending !== true ? { isPending: false } : {})
         /* FIXME: onlyConfirmed, confirmThreshold */
     };
@@ -680,8 +679,7 @@ export async function getSuccessfulByTracker(
     try {
         return await models.Transaction.findOne({
             where: {
-                tracker: strip0xPrefix(tracker.toString()),
-                success: true
+                tracker: strip0xPrefix(tracker.toString())
             }
         });
     } catch (err) {

@@ -78,7 +78,7 @@ export const mintAsset = async () => {
     const { transactionHash, block } = await sendTransactionAndGetBlock(
         transaction
     );
-    await BlockModel.createBlock(block, sdk, new U64(1), {});
+    await BlockModel.createBlock(block, sdk, new U64(1));
     return { transactionHash, block, transaction };
 };
 

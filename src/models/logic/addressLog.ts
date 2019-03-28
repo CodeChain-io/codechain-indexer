@@ -14,8 +14,7 @@ export async function createAddressLog(
         transactionType: transaction.unsigned.type(),
         blockNumber: transaction.blockNumber,
         transactionIndex: transaction.transactionIndex,
-        success: transaction.result,
-        isPending: transaction.result == null,
+        isPending: transaction.blockNumber == null,
         address,
         type
     });
