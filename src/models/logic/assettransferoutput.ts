@@ -27,6 +27,7 @@ export async function getOutputOwner(
 }> {
     try {
         return models.AssetTransferOutput.findOne({
+            attributes: ["lockScriptHash", "parameters", "owner"],
             where: {
                 transactionTracker: strip0xPrefix(tracker),
                 index
