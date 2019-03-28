@@ -47,6 +47,7 @@ const tracker = Joi.string().regex(/^(0x)?[0-9a-f]{64}$/);
 const type = Joi.string().regex(
     new RegExp(`^(${TYPES.join("|")})(,(${TYPES.join("|")}))*$`)
 );
+const shardId = Joi.number();
 const onlyConfirmed = Joi.boolean();
 const onlySuccessful = Joi.boolean();
 const sync = Joi.boolean();
@@ -109,6 +110,7 @@ export const logMinersSchema = {
 export const utxoSchema = {
     address,
     assetType: assetTypeSchema,
+    shardId,
     onlyConfirmed,
     confirmThreshold,
     sync

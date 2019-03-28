@@ -119,10 +119,17 @@ export async function getByAssetType(assetType: H160) {
 async function getUTXOQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
+    shardId?: number | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, onlyConfirmed, confirmThreshold, assetType } = params;
+    const {
+        address,
+        shardId,
+        onlyConfirmed,
+        confirmThreshold,
+        assetType
+    } = params;
     const query = [];
     if (address) {
         query.push({
@@ -132,6 +139,11 @@ async function getUTXOQuery(params: {
     if (assetType) {
         query.push({
             assetType: assetType.value
+        });
+    }
+    if (shardId != null) {
+        query.push({
+            shardId
         });
     }
     if (onlyConfirmed) {
@@ -165,6 +177,7 @@ async function getUTXOQuery(params: {
 export async function getUTXO(params: {
     address?: string | null;
     assetType?: H160 | null;
+    shardId?: number | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -173,6 +186,7 @@ export async function getUTXO(params: {
     const {
         address,
         assetType,
+        shardId,
         page = 1,
         itemsPerPage = 15,
         onlyConfirmed = false,
@@ -181,6 +195,7 @@ export async function getUTXO(params: {
     const query: any = await getUTXOQuery({
         address,
         assetType,
+        shardId,
         onlyConfirmed,
         confirmThreshold
     });
@@ -236,6 +251,7 @@ export async function getUTXO(params: {
 export async function getAggsUTXO(params: {
     address?: string | null;
     assetType?: H160 | null;
+    shardId?: number | null;
     page?: number | null;
     itemsPerPage?: number | null;
     onlyConfirmed?: boolean | null;
@@ -244,6 +260,7 @@ export async function getAggsUTXO(params: {
     const {
         address,
         assetType,
+        shardId,
         page = 1,
         itemsPerPage = 15,
         onlyConfirmed = false,
@@ -252,6 +269,7 @@ export async function getAggsUTXO(params: {
     const query: any = await getUTXOQuery({
         address,
         assetType,
+        shardId,
         onlyConfirmed,
         confirmThreshold
     });
@@ -318,18 +336,21 @@ export async function getAggsUTXO(params: {
 export async function getCountOfAggsUTXO(params: {
     address?: string | null;
     assetType?: H160 | null;
+    shardId?: number | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
     const {
         address,
         assetType,
+        shardId,
         onlyConfirmed = false,
         confirmThreshold = 0
     } = params;
     const query: any = await getUTXOQuery({
         address,
         assetType,
+        shardId,
         onlyConfirmed,
         confirmThreshold
     });
