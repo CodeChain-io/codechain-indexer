@@ -220,9 +220,11 @@ export function handle(context: IndexerContext, router: Router) {
         }),
         async (req, res, next) => {
             const hashOrNumber = req.params.hashOrNumber;
-            const page = req.query.page && parseInt(req.query.page, 10);
+            const page = (req.query.page && parseInt(req.query.page, 10)) || 1;
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             let hashValue;
             let numberValue;
             // FIXME: Throw an error if hashOrNumber is not hash or number
