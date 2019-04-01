@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import { WorkerContext } from ".";
+import models from "../models";
 import { BlockAttribute } from "../models/block";
 import * as AccountModel from "../models/logic/account";
 
@@ -21,6 +22,18 @@ export async function updateAccount(
         affectedAddresses.push(block.author);
     } else {
         affectedAddresses.push(block.author);
+        affectedAddresses.push(
+            ...(await models.AddressLog.findAll({
+                attributes: ["address"],
+                where: {
+                    blockNumber: block.number
+                }
+            }).then(instances =>
+                instances
+                    .map(i => i.get().address)
+                    .filter(address => address.charAt(2) === "c")
+            ))
+        );
     }
 
     return Promise.all(
