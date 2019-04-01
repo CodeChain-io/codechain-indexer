@@ -583,7 +583,9 @@ function buildQueryForTransactions(params: {
     return {
         ...(params.type ? { type: { [Sequelize.Op.in]: params.type } } : {}),
         ...(params.tracker ? { tracker: params.tracker.value } : {}),
-        ...(params.blockNumber ? { blockNumber: params.blockNumber } : {}),
+        ...(params.blockNumber != null
+            ? { blockNumber: params.blockNumber }
+            : {}),
         ...(params.blockHash
             ? {
                   blockHash: params.blockHash.value
