@@ -44,21 +44,34 @@ yarn install
 
 #### Create the database and user on the PostgreSQL
 
+##### Mac
+
 ```
-# download postgresql with Homebrew
+# Download postgresql with Homebrew
 brew install postgresql
 brew services start postgresql
 
-# Create the user and db with supporting sql script
+# Create users and databases
 psql postgres -f create_user_and_db.sql
 
 # Create the schema of the database
 yarn run migrate
 ```
 
-## Run
+##### Ubuntu
 
-Run codechain-indexer to create indices on ElasticSearch
+```
+# Download postgresql
+sudo apt install postgresql postgresql-contrib
+
+# Create users and databases
+sudo -u postgres psql -f create_user_and_db.sql
+
+# Create tables
+yarn migrate
+```
+
+## Run
 
 ```
 yarn run start
