@@ -5,7 +5,7 @@ import * as Exception from "../../exception";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { TransactionInstance } from "../transaction";
 import { AssetTransferOutput } from "../transferAsset";
-import { UTXOAttribute, UTXOInstance } from "../utxo";
+import { UTXOInstance } from "../utxo";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
 import { getSuccessfulByTracker } from "./transaction";
@@ -425,12 +425,9 @@ export async function getByTxTrackerIndex(
     }
 }
 
-export async function getSnapshot(
-    assetType: H256,
-    blockNumber: number
-): Promise<UTXOAttribute[]> {
+export async function getSnapshot(assetType: H256, blockNumber: number) {
     try {
-        const utxoInsts = await models.UTXO.findAll({
+        return models.UTXO.findAll({
             where: {
                 assetType: strip0xPrefix(assetType.value),
                 usedBlockNumber: {
@@ -442,15 +439,32 @@ export async function getSnapshot(
                 blockNumber: {
                     [Sequelize.Op.lte]: blockNumber
                 }
-            }
-        });
-
-        return utxoInsts.map(utxoInst => {
-            const utxo = utxoInst.get({ plain: true });
-            utxo.usedBlockNumber = null;
-            utxo.usedTransactionHash = null;
-            return utxo;
-        });
+            },
+            attributes: [
+                [
+                    Sequelize.fn("SUM", Sequelize.col("quantity")),
+                    "totalAssetQuantity"
+                ],
+                "address",
+                "assetType",
+                [
+                    Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
+                    "utxoQuantity"
+                ]
+            ],
+            order: Sequelize.literal(
+                `"totalAssetQuantity" DESC, "assetType" DESC`
+            ),
+            include: [
+                {
+                    as: "assetScheme",
+                    model: models.AssetScheme
+                }
+            ],
+            group: ["UTXO.address", "UTXO.assetType", "assetScheme.assetType"]
+        }).then(instances =>
+            instances.map(instance => instance.get({ plain: true }))
+        );
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
