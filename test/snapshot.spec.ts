@@ -46,12 +46,6 @@ test("Sync", async done => {
 test("Get the mint snapshot", async done => {
     const snapshot = await UTXOModel.getSnapshot(assetType, mintBlock.number);
     expect(snapshot).toHaveLength(1);
-    expect(snapshot[0].blockNumber).toBe(mintBlock.number);
-    expect(snapshot[0].transactionHash).toBe(
-        mintBlock.transactions[0].hash().value
-    );
-    expect(snapshot[0].usedBlockNumber).toBeNull();
-    expect(snapshot[0].usedTransactionHash).toBeNull();
     done();
 });
 
@@ -82,22 +76,5 @@ test("Get the transfer snapshot", async done => {
         transferBlock.number
     );
     expect(snapshot).toHaveLength(2);
-
-    for (const utxo of snapshot) {
-        expect(utxo.blockNumber).toBe(transferBlock.number);
-        expect(utxo.transactionHash).toBe(
-            transferBlock.transactions[0].hash().value
-        );
-        expect(utxo.usedBlockNumber).toBeNull();
-        expect(utxo.usedTransactionHash).toBeNull();
-    }
-
-    expect(
-        new Set([
-            snapshot[0].transactionOutputIndex,
-            snapshot[1].transactionOutputIndex
-        ])
-    ).toEqual(new Set([0, 1]));
-
     done();
 });
