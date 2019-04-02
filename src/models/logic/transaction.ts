@@ -536,6 +536,21 @@ export async function getTransactionsByAssetType(params: {
     }
 }
 
+export async function getNumberOfEachTransactionType(params: {
+    blockNumber: number;
+}) {
+    try {
+        return models.Transaction.findAll({
+            where: { blockNumber: params.blockNumber },
+            group: ["type"],
+            attributes: ["type", [Sequelize.fn("COUNT", "type"), "count"]]
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 export async function getNumberOfTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
