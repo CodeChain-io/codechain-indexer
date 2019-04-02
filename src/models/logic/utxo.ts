@@ -313,6 +313,7 @@ export async function getAggsUTXO(params: {
                     Sequelize.fn("SUM", Sequelize.col("quantity")),
                     "totalAssetQuantity"
                 ],
+                "address",
                 "assetType",
                 [
                     Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
@@ -325,7 +326,7 @@ export async function getAggsUTXO(params: {
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             include: includeArray,
-            group: ["UTXO.assetType", "assetScheme.assetType"]
+            group: ["UTXO.address", "UTXO.assetType", "assetScheme.assetType"]
         });
     } catch (err) {
         console.error(err);
