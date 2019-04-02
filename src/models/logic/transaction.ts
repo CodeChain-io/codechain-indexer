@@ -29,6 +29,26 @@ import { getSigners } from "./utils/workerpool";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
+export async function tryUpdateTransaction(
+    tx: SignedTransaction
+): Promise<TransactionInstance | null> {
+    try {
+        const instance = await models.Transaction.findByPk(tx.hash().value);
+        if (instance == null) {
+            return null;
+        }
+        return instance.update({
+            blockNumber: tx.blockNumber,
+            blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
+            transactionIndex: tx.transactionIndex,
+            isPending: false
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 export async function createTransactions(
     txs: SignedTransaction[],
     isPending: boolean,
