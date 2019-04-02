@@ -29,13 +29,13 @@ export async function createBlock(
             miningReward: miningReward.value.toString(10)
         });
 
-        // FIXME: Currently, Sequelize doesn't support a bulkUpsert() for Postgres.
-        await TxModel.removePendings(block.transactions.map(t => t.hash()));
-        await TxModel.createTransactions(
-            block.transactions,
-            false,
-            block.timestamp
-        );
+        const newTxs = [];
+        for (const tx of block.transactions) {
+            if ((await TxModel.tryUpdateTransaction(tx)) == null) {
+                newTxs.push(tx);
+            }
+        }
+        await TxModel.createTransactions(newTxs, false, block.timestamp);
 
         for (const tx of block.transactions) {
             await TxModel.applyTransaction(tx, sdk, block.number);
