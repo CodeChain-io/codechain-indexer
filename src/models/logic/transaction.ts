@@ -30,7 +30,8 @@ import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
 export async function tryUpdateTransaction(
-    tx: SignedTransaction
+    tx: SignedTransaction,
+    timestamp: number
 ): Promise<TransactionInstance | null> {
     try {
         const instance = await models.Transaction.findByPk(tx.hash().value);
@@ -41,7 +42,8 @@ export async function tryUpdateTransaction(
             blockNumber: tx.blockNumber,
             blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
             transactionIndex: tx.transactionIndex,
-            isPending: false
+            isPending: false,
+            timestamp
         });
     } catch (err) {
         console.error(err);

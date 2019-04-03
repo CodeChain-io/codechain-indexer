@@ -31,7 +31,10 @@ export async function createBlock(
 
         const newTxs = [];
         for (const tx of block.transactions) {
-            if ((await TxModel.tryUpdateTransaction(tx)) == null) {
+            if (
+                (await TxModel.tryUpdateTransaction(tx, block.timestamp)) ==
+                null
+            ) {
                 newTxs.push(tx);
             }
         }
