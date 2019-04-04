@@ -18,3 +18,21 @@ export async function createAssetTypeLog(
         assetType: strip0xPrefix(assetType)
     });
 }
+
+export async function updateAssetTypeLog(tx: SignedTransaction): Promise<void> {
+    return models.AssetTypeLog.update(
+        {
+            blockNumber: tx.blockNumber,
+            transactionIndex: tx.transactionIndex,
+            isPending: false
+        },
+        {
+            where: {
+                transactionHash: tx.hash().value
+            },
+            returning: false
+        }
+    ).then(() => {
+        return;
+    });
+}
