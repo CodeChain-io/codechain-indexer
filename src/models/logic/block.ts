@@ -5,6 +5,8 @@ import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import { BlockInstance } from "../block";
 import models from "../index";
+import * as AddressLogModel from "./addressLog";
+import * as AssetTypeLogModel from "./assetTypeLog";
 import * as TxModel from "./transaction";
 import { strip0xPrefix } from "./utils/format";
 
@@ -36,6 +38,9 @@ export async function createBlock(
                 null
             ) {
                 newTxs.push(tx);
+            } else {
+                await AddressLogModel.updateAddressLog(tx);
+                await AssetTypeLogModel.updateAssetTypeLog(tx);
             }
         }
         await TxModel.createTransactions(newTxs, false, block.timestamp);

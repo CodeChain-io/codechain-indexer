@@ -19,3 +19,22 @@ export async function createAddressLog(
         type
     });
 }
+
+export async function updateAddressLog(tx: SignedTransaction): Promise<void> {
+    return models.AddressLog.update(
+        {
+            blockNumber: tx.blockNumber,
+            transactionIndex: tx.transactionIndex,
+            success: true,
+            isPending: false
+        },
+        {
+            where: {
+                transactionHash: tx.hash().value
+            },
+            returning: false
+        }
+    ).then(() => {
+        return;
+    });
+}
