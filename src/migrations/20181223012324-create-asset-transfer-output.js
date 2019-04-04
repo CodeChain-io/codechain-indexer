@@ -59,9 +59,10 @@ module.exports = {
                 }
             })
             .then(() =>
-                queryInterface.addIndex("AssetTransferOutputs", [
-                    "transactionHash"
-                ])
+                queryInterface.addIndex("AssetTransferOutputs", {
+                    fields: ["transactionHash"],
+                    indexType: "Hash"
+                })
             )
             .then(() =>
                 queryInterface.addIndex("AssetTransferOutputs", [
