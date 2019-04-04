@@ -52,7 +52,10 @@ module.exports = {
                 }
             })
             .then(() =>
-                queryInterface.addIndex("AssetSchemes", ["transactionHash"])
+                queryInterface.addIndex("AssetSchemes", {
+                    fields: ["transactionHash"],
+                    indexType: "Hash"
+                })
             );
     },
     down: (queryInterface, Sequelize) => {

@@ -86,7 +86,10 @@ module.exports = {
             fields: ["assetType", "usedBlockNumber"],
             name: "UTXOs_assetType_usedBlockNumber"
         });
-        await queryInterface.addIndex("UTXOs", ["transactionHash"]);
+        await queryInterface.addIndex("UTXOs", {
+            fields: ["transactionHash"],
+            indexType: "Hash"
+        });
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable("UTXOs", { force: true });

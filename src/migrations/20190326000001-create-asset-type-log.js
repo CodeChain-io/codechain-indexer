@@ -52,7 +52,12 @@ module.exports = {
                     type: DataTypes.DATE
                 }
             })
-            .then(() => queryInterface.addIndex(tableName, ["transactionHash"]))
+            .then(() =>
+                queryInterface.addIndex(tableName, {
+                    fields: ["transactionHash"],
+                    indexType: "Hash"
+                })
+            )
             .then(() => queryInterface.addIndex(tableName, ["assetType"]));
     },
     down: (queryInterface, Sequelize) => {
