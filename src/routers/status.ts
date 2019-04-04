@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { SERVICE_UNAVAILABLE } from "http-status-codes";
+import * as moment from "moment";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
 /**
@@ -149,6 +150,27 @@ export function handle(context: IndexerContext, router: Router) {
             } else {
                 next(e);
             }
+        }
+    });
+
+    /**
+     * @swagger
+     * /status/server-time:
+     *  get:
+     *    summary: Returns unix time of the indexer
+     *    tags: [Status]
+     *    responses:
+     *      200:
+     *        description: unix time of the indexer
+     *        schema:
+     *          type: number
+     *          example: 1500000000
+     */
+    router.get("/status/server-time", async (_, res, next) => {
+        try {
+            res.json(moment().unix());
+        } catch (e) {
+            next(e);
         }
     });
 }
