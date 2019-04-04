@@ -87,6 +87,10 @@ module.exports = {
             name: "UTXOs_assetType_usedBlockNumber"
         });
         await queryInterface.addIndex("UTXOs", {
+            fields: ["usedTransactionHash"],
+            indexType: "Hash"
+        });
+        await queryInterface.addIndex("UTXOs", {
             fields: ["transactionHash"],
             indexType: "Hash"
         });
