@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { SERVICE_UNAVAILABLE } from "http-status-codes";
-import moment = require("moment");
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
 /**
@@ -141,8 +140,7 @@ export function handle(context: IndexerContext, router: Router) {
                     : 0,
                 indexedBlockHash: latestBlockInst
                     ? latestBlockInst.get().hash
-                    : null,
-                serverTime: moment().unix()
+                    : null
             });
         } catch (e) {
             const error = e as Error;
