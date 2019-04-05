@@ -1,4 +1,6 @@
+import { getCCSHolders } from "codechain-stakeholder-sdk";
 import * as _ from "lodash";
+
 import { WorkerContext } from ".";
 import models from "../models";
 import { BlockAttribute } from "../models/block";
@@ -32,7 +34,8 @@ export async function updateAccount(
                 instances
                     .map(i => i.get().address)
                     .filter(address => address.charAt(2) === "c")
-            ))
+            )),
+            ...(await getCCSHolders(sdk, block.number)).map(p => p.toString())
         );
     }
 

@@ -1113,6 +1113,35 @@ codechain-primitives@^0.4.7:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
+"codechain-primitives@https://github.com/CodeChain-io/codechain-primitives-js.git#0.4.8-dev-workaround":
+  version "0.4.8"
+  resolved "https://github.com/CodeChain-io/codechain-primitives-js.git#1d3e7136611b9ddf21733a895b2f68e6a70cd86b"
+  dependencies:
+    bignumber.js "^7.2.1"
+    blakejs "^1.1.0"
+    bn.js "^4.11.8"
+    buffer "^5.2.1"
+    elliptic "^6.4.1"
+    hmac-drbg "^1.0.1"
+    lodash "^4.17.11"
+    node-forge "^0.7.6"
+    ripemd160 "^2.0.2"
+    rlp "^2.1.0"
+
+"codechain-sdk@git+https://github.com/joojis/codechain-sdk-js.git#corgi":
+  version "0.6.0"
+  resolved "git+https://github.com/joojis/codechain-sdk-js.git#4a17e1d3c8088102e100acb1b2a16cf6ad498f02"
+  dependencies:
+    buffer "5.1.0"
+    codechain-keystore "^0.6.0"
+    codechain-primitives "https://github.com/CodeChain-io/codechain-primitives-js.git#0.4.8-dev-workaround"
+    jayson "^2.0.6"
+    lodash "^4.17.10"
+    node-fetch "^2.1.2"
+    request "^2.88.0"
+    request-promise "^4.2.2"
+    rlp "^2.0.0"
+
 "codechain-sdk@https://github.com/sgkim126/codechain-sdk-js.git#result-lib":
   version "0.6.0"
   resolved "https://github.com/sgkim126/codechain-sdk-js.git#4ed32333c517d656b41b1bb904690d7b27a2aa84"
@@ -1126,6 +1155,14 @@ codechain-primitives@^0.4.7:
     request "^2.88.0"
     request-promise "^4.2.2"
     rlp "^2.0.0"
+
+codechain-stakeholder-sdk@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/codechain-stakeholder-sdk/-/codechain-stakeholder-sdk-0.1.0.tgz#a10d746da80bc311d128fa267e550fde4aeafd32"
+  integrity sha512-EEZK4sCOca6AIZf/XGFe5ZtBBwahi2jOpysmnjh7BW9M9XOgiVi10HgcaREV4VuWSSFT6/obtnM/XNBlUIwDww==
+  dependencies:
+    codechain-sdk "https://github.com/joojis/codechain-sdk-js.git#corgi"
+    rlp "^2.2.2"
 
 codecov@^3.2.0:
   version "3.2.0"
@@ -4632,6 +4669,14 @@ rlp@^2.0.0, rlp@^2.1.0:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/rlp/-/rlp-2.2.2.tgz#e6677b83cca9105371d930e01d8ffc1263139d05"
   integrity sha512-Ng2kJEN731Sfv4ZAY2i0ytPMc0BbJKBsVNl0QZY8LxOWSwd+1xpg+fpSRfaMn0heHU447s6Kgy8qfHZR0XTyVw==
+  dependencies:
+    bn.js "^4.11.1"
+    safe-buffer "^5.1.1"
+
+rlp@^2.2.2:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/rlp/-/rlp-2.2.3.tgz#7f94aef86cec412df87d5ea1d8cb116a47d45f0e"
+  integrity sha512-l6YVrI7+d2vpW6D6rS05x2Xrmq8oW7v3pieZOJKBEdjuTF4Kz/iwk55Zyh1Zaz+KOB2kC8+2jZlp2u9L4tTzCQ==
   dependencies:
     bn.js "^4.11.1"
     safe-buffer "^5.1.1"
