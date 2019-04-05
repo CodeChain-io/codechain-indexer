@@ -1,5 +1,6 @@
 import { H256 } from "codechain-primitives/lib";
 import { Router } from "express";
+import * as _ from "lodash";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
 import * as TransactionModel from "../models/logic/transaction";
@@ -249,6 +250,49 @@ export function handle(context: IndexerContext, router: Router) {
             }
         }
     );
+
+    /**
+     * @swagger
+     * /block/{blockNumber}/tx-count-types:
+     *   get:
+     *     summary: Returns count of each transaction type in the blockNumber
+     *     tags: [Block]
+     *     parameters:
+     *       - name: blockNumber
+     *         description: filter by blockNumber
+     *         in: path
+     *         required: true
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: count of each transaction type in the blockNumber
+     *         schema:
+     *           type: object
+     *           $ref: '#/definitions/Transaction'
+     */
+    router.get("/block/:blockNumber/tx-count-types", async (req, res, next) => {
+        const blockNumber = parseInt(req.params.blockNumber, 10);
+        try {
+            const models = (await TransactionModel.getNumberOfEachTransactionType(
+                {
+                    blockNumber
+                }
+            )).map(
+                model =>
+                    (model.get() as unknown) as { type: string; count: string }
+            );
+            const counts =
+                _.reduce(
+                    models.map(item => ({
+                        [item.type]: parseInt(item.count, 10)
+                    })),
+                    _.extend
+                ) || {};
+            res.json(counts);
+        } catch (e) {
+            next(e);
+        }
+    });
 
     /**
      * @swagger
