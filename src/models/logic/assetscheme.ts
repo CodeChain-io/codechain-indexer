@@ -69,7 +69,11 @@ export async function createAssetSchemeOfWCCC(
     shardId: number
 ): Promise<AssetSchemeInstance> {
     const assetType = H160.zero().value;
-    const metadata = "WCCC"; // FIXME
+    const metadata = JSON.stringify({
+        name: "wCCC",
+        description:
+            "CodeChain Coin, abbreviated as CCC, is the name of the currency used within CodeChain. wCCC can be exchanged for CCC through UnwrapCCC Transaction."
+    });
     try {
         const assetSchemeInstance = await models.AssetScheme.create({
             transactionHash: strip0xPrefix(transactionHash),
@@ -82,8 +86,7 @@ export async function createAssetSchemeOfWCCC(
             networkId,
             shardId
         });
-
-        // FIXME: Create asset image
+        await AssetImageModel.createAssetImageOfWCCC(transactionHash);
         return assetSchemeInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {

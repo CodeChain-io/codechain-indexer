@@ -36,6 +36,25 @@ export async function createAssetImage(
     }
 }
 
+export async function createAssetImageOfWCCC(
+    transactionHash: string
+): Promise<void> {
+    try {
+        const image = await sharp("./resources/wCCC.png")
+            .resize(100, 100)
+            .png()
+            .toBuffer();
+        await models.AssetImage.create({
+            transactionHash,
+            assetType: H160.zero().value,
+            image
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 export async function getByAssetType(assetType: H160) {
     try {
         return await models.AssetImage.findOne({
