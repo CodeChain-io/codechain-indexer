@@ -115,6 +115,8 @@ export default class Worker {
             }
             console.log("%d block is indexing...", nextBlockNumber);
             await this.indexNewBlock(nextBlock);
+            // FIXME: It's slow due to the getSignerAddress()
+            await TxModel.removeOutdatedPendings(nextBlock.transactions);
             console.log("%d block is synchronized", nextBlockNumber);
             lastIndexedBlockNumber = nextBlockNumber;
         }
