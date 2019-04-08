@@ -16,7 +16,7 @@ test("MintAsset", async () => {
         metadata: "" + Math.random(),
         supply: 1
     });
-    const recipient = await Helper.sdk.key.createAssetTransferAddress();
+    const recipient = await Helper.sdk.key.createAssetAddress();
     const { block } = await Helper.sendTransactionAndGetBlock(
         Helper.sdk.core.createMintAssetTransaction({
             scheme,

@@ -18,7 +18,7 @@ beforeAll(async done => {
     await Helper.worker.sync();
 
     const shardId = 0;
-    const aliceAddress = await Helper.sdk.key.createAssetTransferAddress();
+    const aliceAddress = await Helper.sdk.key.createAssetAddress();
     bobAddress = "tcaqyqckq0zgdxgpck6tjdg4qmp52p2vx3qaexqnegylk";
 
     const rubyAssetScheme = await Helper.sdk.core.createAssetScheme({

@@ -20,7 +20,7 @@ test("TransferAsset - success", async () => {
     const asset = mintAsset.getMintedAsset();
     const transferAsset = Helper.sdk.core.createTransferAssetTransaction();
     transferAsset.addInputs(asset);
-    const recipient = await Helper.sdk.key.createAssetTransferAddress();
+    const recipient = await Helper.sdk.key.createAssetAddress();
     transferAsset.addOutputs({
         quantity: asset.quantity,
         assetType: asset.assetType,
@@ -48,7 +48,7 @@ test.skip("TransferAsset - Nonexistent assetType", async () => {
         }
     });
     transferAsset.addInputs(input);
-    const recipient = await Helper.sdk.key.createAssetTransferAddress();
+    const recipient = await Helper.sdk.key.createAssetAddress();
     transferAsset.addOutputs({
         quantity: asset.quantity,
         assetType,
@@ -75,7 +75,7 @@ test.skip("TransferAsset - Nonexistent outPoint index", async () => {
         }
     });
     transferAsset.addInputs(input);
-    const recipient = await Helper.sdk.key.createAssetTransferAddress();
+    const recipient = await Helper.sdk.key.createAssetAddress();
     transferAsset.addOutputs({
         quantity: asset.quantity,
         assetType: asset.assetType,
@@ -105,7 +105,7 @@ test.skip("TransferAsset - Nonexistent outPoint index", async () => {
         }
     });
     transferAsset.addInputs(input);
-    const recipient = await Helper.sdk.key.createAssetTransferAddress();
+    const recipient = await Helper.sdk.key.createAssetAddress();
     transferAsset.addOutputs({
         quantity: asset.quantity,
         assetType: asset.assetType,

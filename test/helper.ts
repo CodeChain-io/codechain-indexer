@@ -1,6 +1,6 @@
 import { exec, execFile } from "child_process";
 import { SDK } from "codechain-sdk";
-import { Block, H256, U64, Transaction } from "codechain-sdk/lib/core/classes";
+import { Block, H256, Transaction, U64 } from "codechain-sdk/lib/core/classes";
 import { readFileSync, writeFile } from "fs";
 import * as path from "path";
 import { IndexerConfig } from "../src/config";
@@ -70,7 +70,7 @@ export const mintAsset = async () => {
         metadata: "" + Math.random(),
         supply: 1
     });
-    const recipient = await sdk.key.createAssetTransferAddress();
+    const recipient = await sdk.key.createAssetAddress();
     const transaction = sdk.core.createMintAssetTransaction({
         scheme,
         recipient
