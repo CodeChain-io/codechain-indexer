@@ -99,22 +99,9 @@ export const pay = async (params?: { inc_seq?: number }) => {
 };
 
 export const runExample = (name: string) => {
-    const originalPath = path.join(
-        __dirname,
-        "..",
-        "node_modules/codechain-sdk/",
-        `examples/${name}.js`
-    );
-    const code = String(readFileSync(originalPath)).replace(
-        `require("codechain-sdk")`,
-        `require("..")`
-    );
-    const testPath = path.join(
-        __dirname,
-        "..",
-        "node_modules/codechain-sdk/",
-        `examples/test-${name}.js`
-    );
+    const originalPath = path.join(__dirname, `sdk-examples/${name}.js`);
+    const code = String(readFileSync(originalPath));
+    const testPath = path.join(__dirname, `sdk-examples/test-${name}.js`);
     return new Promise((resolve, reject) => {
         writeFile(testPath, code, err => {
             if (err) {
