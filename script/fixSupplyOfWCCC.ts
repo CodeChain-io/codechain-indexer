@@ -1,7 +1,6 @@
 import { H160 } from "codechain-primitives/lib";
 
 import models from "../src/models";
-import * as AssetSchemeModel from "../src/models/logic/assetscheme";
 
 const networkId: string = process.env.CODECHAIN_NETWORK_ID!;
 const shardId: number = parseInt(process.env.CODECHAIN_SHARD_ID!, 10);
@@ -20,14 +19,11 @@ if (!Number.isInteger(shardId) || networkId == null) {
                 console.error("AssetScheme not found");
                 return;
             }
-            const { transactionHash } = instance.get();
-            await instance.destroy();
-            await AssetSchemeModel.createAssetSchemeOfWCCC(
-                transactionHash,
-                networkId,
-                shardId
-            );
-            console.log("created");
+            await instance.update({
+                supply:
+                    "10000000000000000000000000000000000000000000000000" /* FIXME */
+            });
+            console.log("updated");
         }
     );
     await models.sequelize.close();

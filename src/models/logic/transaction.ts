@@ -192,7 +192,9 @@ export async function applyTransaction(
     if (
         type === "changeAssetScheme" ||
         type === "increaseAssetSupply" ||
-        type === "transferAsset"
+        type === "transferAsset" ||
+        type === "wrapCCC" ||
+        type === "unwrapCCC"
     ) {
         await updateAssetScheme((await getByHash(tx.hash()))!);
     }
