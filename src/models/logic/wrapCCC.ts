@@ -43,7 +43,10 @@ export async function createWrapCCC(
     });
     const existing = await models.AssetScheme.findByPk(H160.zero().toString());
     if (existing == null) {
-        await createAssetSchemeOfWCCC(transactionHash, networkId, shardId);
+        await createAssetSchemeOfWCCC(transactionHash, {
+            networkId,
+            shardId
+        });
     }
     await createAssetTransferOutput(
         transactionHash,

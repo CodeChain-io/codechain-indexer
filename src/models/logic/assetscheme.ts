@@ -67,8 +67,10 @@ export async function createAssetScheme(
 
 export async function createAssetSchemeOfWCCC(
     transactionHash: string,
-    networkId: string,
-    shardId: number
+    assetScheme: {
+        networkId: string;
+        shardId: number;
+    }
 ): Promise<AssetSchemeInstance> {
     const assetType = H160.zero().value;
     const metadata = JSON.stringify({
@@ -77,6 +79,7 @@ export async function createAssetSchemeOfWCCC(
             "CodeChain Coin, abbreviated as CCC, is the name of the currency used within CodeChain. wCCC can be exchanged for CCC through UnwrapCCC Transaction."
     });
     try {
+        const { networkId, shardId } = assetScheme;
         const assetSchemeInstance = await models.AssetScheme.create({
             transactionHash: strip0xPrefix(transactionHash),
             assetType: strip0xPrefix(assetType),
@@ -84,7 +87,7 @@ export async function createAssetSchemeOfWCCC(
             approver: null,
             registrar: null,
             allowedScriptHashes: [],
-            supply: U64.MAX_VALUE.toString(10),
+            supply: "0",
             networkId,
             shardId,
             seq: 0
@@ -106,9 +109,13 @@ export async function createAssetSchemeOfWCCC(
 export async function updateAssetScheme(
     tx: TransactionInstance
 ): Promise<AssetSchemeInstance | AssetSchemeInstance[]> {
-    const { changeAssetScheme, increaseAssetSupply, transferAsset } = tx.get({
-        plain: true
-    });
+    const {
+        changeAssetScheme,
+        increaseAssetSupply,
+        transferAsset,
+        wrapCCC,
+        unwrapCCC
+    } = tx.get({ plain: true });
     if (changeAssetScheme) {
         const {
             assetType,
@@ -181,6 +188,46 @@ export async function updateAssetScheme(
                 }
             })
         );
+    }
+    if (wrapCCC) {
+        const { quantity } = wrapCCC;
+        try {
+            const instance = await models.AssetScheme.findByPk(
+                H160.zero().value
+            ).then(assetScheme => {
+                const updatedSupply = U64.plus(
+                    assetScheme!.get().supply!,
+                    quantity
+                );
+                return assetScheme!.update({
+                    supply: updatedSupply.toString()
+                });
+            });
+            return instance;
+        } catch (err) {
+            console.error(err);
+            throw Exception.DBError();
+        }
+    }
+    if (unwrapCCC) {
+        const { quantity } = unwrapCCC.burn.prevOut;
+        try {
+            const instance = await models.AssetScheme.findByPk(
+                H160.zero().value
+            ).then(assetScheme => {
+                const updatedSupply = U64.minus(
+                    assetScheme!.get().supply!,
+                    quantity
+                );
+                return assetScheme!.update({
+                    supply: updatedSupply.toString()
+                });
+            });
+            return instance;
+        } catch (err) {
+            console.error(err);
+            throw Exception.DBError();
+        }
     }
     console.error(
         "Unsupported transaction type for updateAssetScheme:",
