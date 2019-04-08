@@ -1060,14 +1060,6 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codechain-indexer-types@^0.6.0-alpha.0:
-  version "0.6.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/codechain-indexer-types/-/codechain-indexer-types-0.6.0-alpha.3.tgz#4765714983ef54f45b4606e899fa296fc13bab4c"
-  integrity sha512-7rqb1Hk7JKJjzhHKPB8cOf6r2iKFkKxWlIou8Q/QlXXGxouOepEZXLp2mk59ohUZ9OJYo+9UeorqZCm+Txg7vA==
-  dependencies:
-    buffer "^5.2.1"
-    lodash "^4.17.10"
-
 codechain-keystore@^0.6.0:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/codechain-keystore/-/codechain-keystore-0.6.1.tgz#b0b27fec28afe1b31bd42a2858d2d5fb59838252"
