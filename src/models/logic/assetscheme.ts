@@ -19,6 +19,7 @@ export async function createAssetScheme(
         supply: U64;
         networkId: string;
         shardId: number;
+        seq: number;
     }
 ): Promise<AssetSchemeInstance> {
     let assetSchemeInstance: AssetSchemeInstance;
@@ -34,7 +35,8 @@ export async function createAssetScheme(
             ),
             supply: assetScheme.supply.value.toString(10),
             networkId: assetScheme.networkId,
-            shardId: assetScheme.shardId
+            shardId: assetScheme.shardId,
+            seq: assetScheme.seq
         });
 
         let metadataObj;
@@ -84,7 +86,8 @@ export async function createAssetSchemeOfWCCC(
             allowedScriptHashes: [],
             supply: U64.MAX_VALUE.toString(10),
             networkId,
-            shardId
+            shardId,
+            seq: 0
         });
         await AssetImageModel.createAssetImageOfWCCC(transactionHash);
         return assetSchemeInstance;

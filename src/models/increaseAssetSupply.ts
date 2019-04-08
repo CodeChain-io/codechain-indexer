@@ -5,6 +5,7 @@ export interface IncreaseAssetSupplyAttribute {
     networkId: string;
     shardId: number;
     approvals: string[];
+    seq: number;
 
     lockScriptHash: string;
     parameters: string[];
@@ -56,6 +57,10 @@ export default (
             approvals: {
                 allowNull: false,
                 type: DataTypes.JSONB
+            },
+            seq: {
+                allowNull: false,
+                type: DataTypes.STRING
             },
 
             lockScriptHash: {

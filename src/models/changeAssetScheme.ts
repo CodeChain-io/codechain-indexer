@@ -10,6 +10,7 @@ export interface ChangeAssetSchemeAttribute {
     registrar?: string | null;
     allowedScriptHashes: string[];
     approvals: string[];
+    seq: number;
 }
 
 export interface ChangeAssetSchemeInstance
@@ -67,6 +68,10 @@ export default (
             approvals: {
                 allowNull: false,
                 type: DataTypes.JSONB
+            },
+            seq: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,

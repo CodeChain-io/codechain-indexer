@@ -22,7 +22,8 @@ export async function createChangeAssetScheme(
         approver,
         registrar,
         allowedScriptHashes,
-        approvals
+        approvals,
+        seq
     } = changeAssetScheme.toJSON().action as ChangeAssetSchemeActionJSON;
     const inst = await models.ChangeAssetScheme.create({
         transactionHash: strip0xPrefix(transactionHash),
@@ -35,7 +36,8 @@ export async function createChangeAssetScheme(
         allowedScriptHashes: allowedScriptHashes.map(hash =>
             strip0xPrefix(hash)
         ),
-        approvals
+        approvals,
+        seq
     });
     let metadataObj;
     try {
