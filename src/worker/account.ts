@@ -37,7 +37,7 @@ export async function updateAccount(
             )),
             ...(sdk.networkId === "tc"
                 ? []
-                : await getCCSHolders(sdk, block.number)
+                : await getCCSHolders(sdk as any, block.number)
             ).map(p => p.toString())
         );
     }

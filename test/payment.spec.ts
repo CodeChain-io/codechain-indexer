@@ -53,12 +53,12 @@ test("Pay large amount", async done => {
     );
 
     for (let i = 0; i < 1000; i += 1) {
-        if (await Helper.sdk.rpc.chain.containTransaction(hash)) {
+        if (await Helper.sdk.rpc.chain.containsTransaction(hash)) {
             break;
         }
         await new Promise(resolve => setTimeout(resolve, 300));
     }
-    expect(await Helper.sdk.rpc.chain.containTransaction(hash)).toEqual(true);
+    expect(await Helper.sdk.rpc.chain.containsTransaction(hash)).toEqual(true);
 
     const paymentBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
     const paymentBlock = await Helper.sdk.rpc.chain.getBlock(
