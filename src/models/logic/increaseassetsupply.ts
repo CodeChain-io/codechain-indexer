@@ -26,7 +26,8 @@ export async function createIncreaseAssetSupply(
         shardId,
         assetType,
         output,
-        approvals
+        approvals,
+        seq
     } = action as IncreaseAssetSupplyActionJSON;
 
     const incSupplyOutput = AssetMintOutput.fromJSON(output);
@@ -39,6 +40,7 @@ export async function createIncreaseAssetSupply(
         shardId,
         assetType: strip0xPrefix(assetType),
         approvals,
+        seq,
         lockScriptHash: strip0xPrefix(lockScriptHash),
         parameters: parameters.map(p => strip0xPrefix(p)),
         recipient,

@@ -10,6 +10,7 @@ export interface AssetSchemeAttribute {
     allowedScriptHashes: string[];
     supply?: string | null;
     networkId?: string | null;
+    seq: number;
 }
 
 export interface AssetSchemeInstance
@@ -64,6 +65,10 @@ export default (
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
             },
             networkId: {
+                type: DataTypes.STRING
+            },
+            seq: {
+                allowNull: false,
                 type: DataTypes.STRING
             },
             createdAt: {
