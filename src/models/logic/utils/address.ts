@@ -1,4 +1,4 @@
-import { AssetTransferAddress, H160 } from "codechain-sdk/lib/core/classes";
+import { AssetAddress, H160 } from "codechain-sdk/lib/core/classes";
 import { TransactionAttribute } from "../../transaction";
 
 const P2PKH = "5f5960a7bca6ceeeb0c97bc717562914e7a1de04";
@@ -11,23 +11,15 @@ export function getOwner(
 ) {
     let owner = "";
     if (lockScriptHash.value === P2PKH) {
-        owner = AssetTransferAddress.fromTypeAndPayload(
-            1,
-            new H160(parameters[0]),
-            {
-                networkId
-            }
-        ).value;
+        owner = AssetAddress.fromTypeAndPayload(1, new H160(parameters[0]), {
+            networkId
+        }).value;
     } else if (lockScriptHash.value === P2PKHBURN) {
-        owner = AssetTransferAddress.fromTypeAndPayload(
-            2,
-            new H160(parameters[0]),
-            {
-                networkId
-            }
-        ).value;
+        owner = AssetAddress.fromTypeAndPayload(2, new H160(parameters[0]), {
+            networkId
+        }).value;
     } else if (parameters.length === 0) {
-        owner = AssetTransferAddress.fromTypeAndPayload(0, lockScriptHash, {
+        owner = AssetAddress.fromTypeAndPayload(0, lockScriptHash, {
             networkId
         }).value;
     }

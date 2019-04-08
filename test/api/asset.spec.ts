@@ -2,10 +2,7 @@ import * as bodyParser from "body-parser";
 import * as express from "express";
 import * as request from "supertest";
 
-import {
-    AssetTransferAddress,
-    MintAsset
-} from "codechain-sdk/lib/core/classes";
+import { AssetAddress, MintAsset } from "codechain-sdk/lib/core/classes";
 
 import { IndexerContext } from "../../src/context";
 import models from "../../src/models";
@@ -14,7 +11,7 @@ import { createServer } from "../../src/server";
 import * as Helper from "../helper";
 
 let bobAddress: string;
-let aliceAddress: AssetTransferAddress;
+let aliceAddress: AssetAddress;
 let mintTx: MintAsset;
 let initialAggsUTXOCount: number;
 beforeAll(async done => {
@@ -24,7 +21,7 @@ beforeAll(async done => {
 
     initialAggsUTXOCount = await getCountOfAggsUTXO({});
     const shardId = 0;
-    aliceAddress = await Helper.sdk.key.createAssetTransferAddress();
+    aliceAddress = await Helper.sdk.key.createAssetAddress();
     bobAddress = "tcaqyqckq0zgdxgpck6tjdg4qmp52p2vx3qaexqnegylk";
 
     const rubyAssetScheme = await Helper.sdk.core.createAssetScheme({

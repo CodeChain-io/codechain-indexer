@@ -3,7 +3,7 @@ import * as express from "express";
 import * as sinon from "sinon";
 import * as request from "supertest";
 
-import { AssetTransferAddress, H256 } from "codechain-primitives/lib";
+import { AssetAddress, H256 } from "codechain-primitives/lib";
 import { MintAsset } from "codechain-sdk/lib/core/classes";
 
 import { IndexerContext } from "../../src/context";
@@ -12,7 +12,7 @@ import { getNumberOfTransactions } from "../../src/models/logic/transaction";
 import { createServer } from "../../src/server";
 import * as Helper from "../helper";
 
-let aliceAddress: AssetTransferAddress;
+let aliceAddress: AssetAddress;
 let bobAddress: string;
 let mintRubyTx: MintAsset;
 let mintEmeraldTx: MintAsset;
@@ -25,7 +25,7 @@ beforeAll(async done => {
 
     initialTxCount = await getNumberOfTransactions({});
     const shardId = 0;
-    aliceAddress = await Helper.sdk.key.createAssetTransferAddress();
+    aliceAddress = await Helper.sdk.key.createAssetAddress();
     bobAddress = "tcaqyqckq0zgdxgpck6tjdg4qmp52p2vx3qaexqnegylk";
 
     const rubyAssetScheme = await Helper.sdk.core.createAssetScheme({

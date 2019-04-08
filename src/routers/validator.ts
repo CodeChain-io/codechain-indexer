@@ -40,7 +40,7 @@ const LOG_FILTER = ["block", "tx", ...TYPES];
 
 // FIXME:
 export const platformAddressSchema = Joi.string();
-// FIXME: PlatformAddress or AssetTransferAddress
+// FIXME: PlatformAddress or AssetAddress
 const address = Joi.string();
 export const assetTypeSchema = Joi.string().regex(/^(0x)?[0-9a-f]{40}$/);
 const tracker = Joi.string().regex(/^(0x)?[0-9a-f]{64}$/);
