@@ -3,6 +3,9 @@ import { SERVICE_UNAVAILABLE } from "http-status-codes";
 import * as moment from "moment";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
+
+const { version } = require("../../package.json");
+
 /**
  * @swagger
  * tags:
@@ -35,6 +38,23 @@ export function handle(context: IndexerContext, router: Router) {
                 next(e);
             }
         }
+    });
+
+    /**
+     * @swagger
+     * /version:
+     *   get:
+     *     summary: Returns the version of the indexer
+     *     tags: [Status]
+     *     responses:
+     *       200:
+     *         description: The version of the indexer
+     *         schema:
+     *           type: string
+     *           example: 1.0.0
+     */
+    router.get("/version", async (_, res) => {
+        res.json(version);
     });
 
     /**
