@@ -189,7 +189,11 @@ export async function applyTransaction(
     if (type === "createShard") {
         await updateShardId((await getByHash(tx.hash()))!, sdk);
     }
-    if (type === "changeAssetScheme" || type === "increaseAssetSupply") {
+    if (
+        type === "changeAssetScheme" ||
+        type === "increaseAssetSupply" ||
+        type === "transferAsset"
+    ) {
         await updateAssetScheme((await getByHash(tx.hash()))!);
     }
 }
