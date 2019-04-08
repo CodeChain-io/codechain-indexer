@@ -105,8 +105,10 @@ export async function createAssetSchemeOfWCCC(
 
 export async function updateAssetScheme(
     tx: TransactionInstance
-): Promise<AssetSchemeInstance> {
-    const { changeAssetScheme, increaseAssetSupply } = tx.get({ plain: true });
+): Promise<AssetSchemeInstance | AssetSchemeInstance[]> {
+    const { changeAssetScheme, increaseAssetSupply, transferAsset } = tx.get({
+        plain: true
+    });
     if (changeAssetScheme) {
         const {
             assetType,
@@ -155,6 +157,30 @@ export async function updateAssetScheme(
             console.error(err);
             throw Exception.DBError();
         }
+    }
+    if (transferAsset) {
+        return Promise.all(
+            transferAsset.burns.map(async burn => {
+                const { quantity } = burn.prevOut;
+                try {
+                    const instance = await models.AssetScheme.findByPk(
+                        burn.assetType
+                    ).then(assetScheme => {
+                        const updatedSupply = U64.minus(
+                            assetScheme!.get().supply!,
+                            quantity
+                        );
+                        return assetScheme!.update({
+                            supply: updatedSupply.toString()
+                        });
+                    });
+                    return instance;
+                } catch (err) {
+                    console.error(err);
+                    throw Exception.DBError();
+                }
+            })
+        );
     }
     console.error(
         "Unsupported transaction type for updateAssetScheme:",
