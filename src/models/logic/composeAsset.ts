@@ -97,9 +97,12 @@ export async function createComposeAsset(
         )
     });
 
-    const assetScheme: any = compose.getAssetScheme();
-    assetScheme.networkId = assetScheme.networkId!;
-    await createAssetScheme(assetType, transactionHash, assetScheme);
+    const assetScheme = compose.getAssetScheme();
+    await createAssetScheme(assetType, transactionHash, {
+        ...assetScheme,
+        networkId,
+        shardId
+    });
 
     await createAssetTransferOutput(
         transactionHash,

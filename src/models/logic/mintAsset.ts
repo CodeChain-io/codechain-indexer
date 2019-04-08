@@ -21,7 +21,6 @@ export async function createMintAsset(
     const mintAsset = transaction.unsigned as MintAsset;
     const transactionHash = transaction.hash().value;
     const asset = mintAsset.getMintedAsset();
-    const assetScheme = mintAsset.getAssetScheme();
     const {
         networkId,
         shardId,
@@ -61,17 +60,16 @@ export async function createMintAsset(
         assetType: strip0xPrefix(assetType),
         recipient
     });
-    const assetSchemeWithNetworkId: any = assetScheme;
-    assetSchemeWithNetworkId.networkId = networkId;
     // FIXME: if clause is for avoiding primary key conflict. We need to address
     // it properly.
     const existing = await models.AssetScheme.findByPk(assetType);
     if (existing == null) {
-        await createAssetScheme(
-            assetType,
-            transactionHash,
-            assetSchemeWithNetworkId
-        );
+        const assetScheme = mintAsset.getAssetScheme();
+        await createAssetScheme(assetType, transactionHash, {
+            ...assetScheme,
+            networkId,
+            shardId
+        });
     }
     await createAssetTransferOutput(
         transactionHash,
