@@ -4,6 +4,7 @@ import { Block } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import { Job, scheduleJob } from "node-schedule";
 import { InvalidBlockNumber } from "../exception";
+import models from "../models";
 import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
 import * as TxModel from "../models/logic/transaction";
@@ -157,22 +158,33 @@ export default class Worker {
         if (miningReward == null) {
             throw InvalidBlockNumber();
         }
+        const transaction = await models.sequelize.transaction({
+            isolationLevel:
+                models.Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+            deferrable: models.Sequelize.Deferrable.SET_DEFERRED
+        });
         try {
-            await BlockModel.createBlock(block, sdk, miningReward);
+            await BlockModel.createBlock(block, sdk, miningReward, {
+                transaction
+            });
+            const blockInstance = await BlockModel.getByHash(block.hash, {
+                transaction
+            });
+            const blockAttribute = blockInstance!.get({ plain: true });
+            await AccountUtil.updateAccount(
+                blockAttribute,
+                {
+                    checkingBlockNumber: block.number
+                },
+                this.context,
+                { transaction }
+            );
+            await LogUtil.indexLog(blockAttribute, false, { transaction });
+            await transaction.commit();
         } catch (err) {
-            await BlockModel.deleteBlockByNumber(block.number);
+            await transaction.rollback();
             throw err;
         }
-        const blockInstance = await BlockModel.getByHash(block.hash);
-        const blockAttribute = blockInstance!.get({ plain: true });
-        await AccountUtil.updateAccount(
-            blockAttribute,
-            {
-                checkingBlockNumber: block.number
-            },
-            this.context
-        );
-        await LogUtil.indexLog(blockAttribute, false);
     };
 
     private deleteBlock = async (block: BlockAttribute) => {

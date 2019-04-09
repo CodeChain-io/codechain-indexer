@@ -31,20 +31,27 @@ import { createWrapCCC } from "./wrapCCC";
 
 export async function tryUpdateTransaction(
     tx: SignedTransaction,
-    timestamp: number
+    timestamp: number,
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<TransactionInstance | null> {
     try {
-        const instance = await models.Transaction.findByPk(tx.hash().value);
+        const { transaction } = options;
+        const instance = await models.Transaction.findByPk(tx.hash().value, {
+            transaction
+        });
         if (instance == null) {
             return null;
         }
-        return instance.update({
-            blockNumber: tx.blockNumber,
-            blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
-            transactionIndex: tx.transactionIndex,
-            isPending: false,
-            timestamp
-        });
+        return instance.update(
+            {
+                blockNumber: tx.blockNumber,
+                blockHash: tx.blockHash && strip0xPrefix(tx.blockHash.value),
+                transactionIndex: tx.transactionIndex,
+                isPending: false,
+                timestamp
+            },
+            { transaction }
+        );
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -55,7 +62,7 @@ export async function createTransactions(
     txs: SignedTransaction[],
     isPending: boolean,
     timestamp?: number | null,
-    errorHints?: { [transactionIndex: number]: string } | null
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<TransactionInstance[]> {
     try {
         const signers = await getSigners(txs);
@@ -72,21 +79,18 @@ export async function createTransactions(
                 networkId: tx.unsigned.networkId(),
                 sig: strip0xPrefix(tx.signature()),
                 signer: signers[i],
-                errorHint:
-                    errorHints == null
-                        ? undefined
-                        : errorHints[tx.transactionIndex!],
                 timestamp,
                 isPending,
                 pendingTimestamp: isPending ? +new Date() / 1000 : null
-            }))
+            })),
+            { transaction: options.transaction }
         );
         for (const tx of txs) {
-            await createTransactionAction(tx);
+            await createTransactionAction(tx, options);
         }
         await Promise.all(
             txs.map((tx, i) =>
-                createAddressLog(tx, signers[i], "TransactionSigner")
+                createAddressLog(tx, signers[i], "TransactionSigner", options)
             )
         );
         return txInstances;
@@ -105,71 +109,74 @@ export async function createTransactions(
     }
 }
 
-async function createTransactionAction(tx: SignedTransaction) {
+async function createTransactionAction(
+    tx: SignedTransaction,
+    options: { transaction?: Sequelize.Transaction } = {}
+) {
     const type = tx.unsigned.type();
     switch (type) {
         case "mintAsset": {
-            await createMintAsset(tx);
+            await createMintAsset(tx, options);
             break;
         }
         case "transferAsset": {
-            await createTransferAsset(tx);
+            await createTransferAsset(tx, options);
             break;
         }
         case "composeAsset": {
-            await createComposeAsset(tx);
+            await createComposeAsset(tx, options);
             break;
         }
         case "decomposeAsset": {
-            await createDecomposeAsset(tx);
+            await createDecomposeAsset(tx, options);
             break;
         }
         case "wrapCCC": {
-            await createWrapCCC(tx);
+            await createWrapCCC(tx, options);
             break;
         }
         case "unwrapCCC": {
-            await createUnwrapCCC(tx);
+            await createUnwrapCCC(tx, options);
             break;
         }
         case "changeAssetScheme": {
-            await createChangeAssetScheme(tx);
+            await createChangeAssetScheme(tx, options);
             break;
         }
         case "increaseAssetSupply": {
-            await createIncreaseAssetSupply(tx);
+            await createIncreaseAssetSupply(tx, options);
             break;
         }
         case "pay": {
-            await createPay(tx);
+            await createPay(tx, options);
             break;
         }
         case "setRegularKey": {
-            await createSetRegularKey(tx);
+            await createSetRegularKey(tx, options);
             break;
         }
         case "createShard": {
-            await createCreateShard(tx);
+            await createCreateShard(tx, options);
             break;
         }
         case "setShardOwners": {
-            await createSetShardOwners(tx);
+            await createSetShardOwners(tx, options);
             break;
         }
         case "setShardUsers": {
-            await createSetShardUsers(tx);
+            await createSetShardUsers(tx, options);
             break;
         }
         case "store": {
-            await createStore(tx);
+            await createStore(tx, options);
             break;
         }
         case "remove": {
-            await createRemove(tx);
+            await createRemove(tx, options);
             break;
         }
         case "custom": {
-            await createCustom(tx);
+            await createCustom(tx, options);
             break;
         }
         default:
@@ -180,14 +187,25 @@ async function createTransactionAction(tx: SignedTransaction) {
 export async function applyTransaction(
     tx: SignedTransaction,
     sdk: SDK,
-    blockNumber: number
+    blockNumber: number,
+    options: {
+        transaction?: Sequelize.Transaction;
+    } = {}
 ) {
     const type = tx.unsigned.type();
     if (isAssetTransactionType(type)) {
-        await transferUTXO((await getByHash(tx.hash()))!, blockNumber!);
+        await transferUTXO(
+            (await getByHash(tx.hash(), options))!,
+            blockNumber!,
+            options
+        );
     }
     if (type === "createShard") {
-        await updateShardId((await getByHash(tx.hash()))!, sdk);
+        await updateShardId(
+            (await getByHash(tx.hash(), options))!,
+            sdk,
+            options
+        );
     }
     if (
         type === "changeAssetScheme" ||
@@ -196,7 +214,10 @@ export async function applyTransaction(
         type === "wrapCCC" ||
         type === "unwrapCCC"
     ) {
-        await updateAssetScheme((await getByHash(tx.hash()))!);
+        await updateAssetScheme(
+            (await getByHash(tx.hash(), options))!,
+            options
+        );
     }
 }
 
@@ -338,14 +359,16 @@ export async function getNumberOfPendingTransactions(params: {
 }
 
 export async function getByHash(
-    hash: H256
+    hash: H256,
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<TransactionInstance | null> {
     try {
         return await models.Transaction.findOne({
             where: {
                 hash: strip0xPrefix(hash.value)
             },
-            include: fullIncludeArray
+            include: fullIncludeArray,
+            transaction: options.transaction
         });
     } catch (err) {
         console.error(err);
@@ -564,14 +587,21 @@ export async function getTransactionsByAssetType(params: {
     }
 }
 
-export async function getNumberOfEachTransactionType(params: {
-    blockNumber: number;
-}) {
+export async function getNumberOfEachTransactionType(
+    params: {
+        blockNumber: number;
+    },
+    options: {
+        transaction?: Sequelize.Transaction;
+    } = {}
+) {
     try {
+        const { transaction } = options;
         return models.Transaction.findAll({
             where: { blockNumber: params.blockNumber },
             group: ["type"],
-            attributes: ["type", [Sequelize.fn("COUNT", "type"), "count"]]
+            attributes: ["type", [Sequelize.fn("COUNT", "type"), "count"]],
+            transaction
         });
     } catch (err) {
         console.error(err);
@@ -719,13 +749,17 @@ export async function deleteByHash(hash: H256) {
 }
 
 export async function getSuccessfulByTracker(
-    tracker: H256
+    tracker: H256,
+    options: {
+        transaction?: Sequelize.Transaction;
+    } = {}
 ): Promise<TransactionInstance | null> {
     try {
         return await models.Transaction.findOne({
             where: {
                 tracker: strip0xPrefix(tracker.toString())
-            }
+            },
+            transaction: options.transaction
         });
     } catch (err) {
         console.error(err);

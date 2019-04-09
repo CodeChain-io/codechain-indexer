@@ -1,3 +1,4 @@
+import { Transaction } from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
 import { LogType } from "../log";
@@ -6,12 +7,15 @@ export async function increaseLogCount(
     date: string,
     type: LogType,
     count: number,
-    value?: string | null
+    options: {
+        value?: string | null;
+        transaction?: Transaction;
+    } = {}
 ) {
     if (count === 0) {
         return;
     }
-    const logInst = await getLog(date, type, value);
+    const logInst = await getLog(date, type, options);
     let newCount;
     if (logInst) {
         const currentCount = logInst.get().count;
@@ -19,23 +23,26 @@ export async function increaseLogCount(
     } else {
         newCount = count;
     }
-    await updateLog(date, type, newCount, value);
+    await updateLog(date, type, newCount, options);
 }
 
 export async function decreaseLogCount(
     date: string,
     type: LogType,
     count: number,
-    value?: string | null
+    options: {
+        value?: string | null;
+        transaction?: Transaction;
+    } = {}
 ) {
     if (count === 0) {
         return;
     }
-    const logInst = await getLog(date, type, value);
+    const logInst = await getLog(date, type, options);
     if (logInst) {
         const currentCount = logInst.get().count;
         const newCount = currentCount - count;
-        await updateLog(date, type, newCount, value);
+        await updateLog(date, type, newCount, options);
     } else {
         throw Exception.InvalidLogType();
     }
@@ -45,16 +52,23 @@ async function updateLog(
     date: string,
     type: LogType,
     count: number,
-    value?: string | null
+    options: {
+        value?: string | null;
+        transaction?: Transaction;
+    } = {}
 ) {
     try {
-        await models.Log.upsert({
-            id: getLogId(date, type, value),
-            date,
-            count,
-            type,
-            value
-        });
+        const { value, transaction } = options;
+        await models.Log.upsert(
+            {
+                id: getLogId(date, type, value),
+                date,
+                count,
+                type,
+                value
+            },
+            { transaction }
+        );
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -64,13 +78,18 @@ async function updateLog(
 export async function getLog(
     date: string,
     logType: LogType,
-    value?: string | null
+    options: {
+        value?: string | null;
+        transaction?: Transaction;
+    } = {}
 ) {
     try {
+        const { value, transaction } = options;
         return await models.Log.findOne({
             where: {
                 id: getLogId(date, logType, value)
-            }
+            },
+            transaction
         });
     } catch (err) {
         console.error(err);

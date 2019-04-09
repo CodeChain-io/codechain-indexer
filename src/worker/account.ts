@@ -1,5 +1,6 @@
 import { getCCSHolders } from "codechain-stakeholder-sdk";
 import * as _ from "lodash";
+import { Transaction } from "sequelize";
 
 import { WorkerContext } from ".";
 import models from "../models";
@@ -11,8 +12,12 @@ export async function updateAccount(
     params: {
         checkingBlockNumber: number;
     },
-    context: WorkerContext
+    context: WorkerContext,
+    options: {
+        transaction?: Transaction;
+    } = {}
 ) {
+    const { transaction } = options;
     const { sdk } = context;
     const affectedAddresses = new Array<string>();
     if (block.number === 0) {
@@ -29,7 +34,8 @@ export async function updateAccount(
                 attributes: ["address"],
                 where: {
                     blockNumber: block.number
-                }
+                },
+                transaction
             }).then(instances =>
                 instances
                     .map(i => i.get().address)
@@ -54,10 +60,14 @@ export async function updateAccount(
                     params.checkingBlockNumber
                 )
             ]);
-            await AccountModel.updateAccountOrCreate(affectedAddress, {
-                balance,
-                seq
-            });
+            await AccountModel.updateAccountOrCreate(
+                affectedAddress,
+                {
+                    balance,
+                    seq
+                },
+                { transaction }
+            );
         })
     );
 }

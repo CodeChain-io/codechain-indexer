@@ -20,24 +20,30 @@ export async function createAssetScheme(
         networkId: string;
         shardId: number;
         seq: number;
-    }
+    },
+    options: {
+        transaction?: Sequelize.Transaction;
+    } = {}
 ): Promise<AssetSchemeInstance> {
     let assetSchemeInstance: AssetSchemeInstance;
     try {
-        assetSchemeInstance = await models.AssetScheme.create({
-            transactionHash: strip0xPrefix(transactionHash),
-            assetType: strip0xPrefix(assetType),
-            metadata: assetScheme.metadata,
-            approver: assetScheme.approver && assetScheme.approver.value,
-            registrar: assetScheme.registrar && assetScheme.registrar.value,
-            allowedScriptHashes: assetScheme.allowedScriptHashes.map(hash =>
-                strip0xPrefix(hash.value)
-            ),
-            supply: assetScheme.supply.value.toString(10),
-            networkId: assetScheme.networkId,
-            shardId: assetScheme.shardId,
-            seq: assetScheme.seq
-        });
+        assetSchemeInstance = await models.AssetScheme.create(
+            {
+                transactionHash: strip0xPrefix(transactionHash),
+                assetType: strip0xPrefix(assetType),
+                metadata: assetScheme.metadata,
+                approver: assetScheme.approver && assetScheme.approver.value,
+                registrar: assetScheme.registrar && assetScheme.registrar.value,
+                allowedScriptHashes: assetScheme.allowedScriptHashes.map(hash =>
+                    strip0xPrefix(hash.value)
+                ),
+                supply: assetScheme.supply.value.toString(10),
+                networkId: assetScheme.networkId,
+                shardId: assetScheme.shardId,
+                seq: assetScheme.seq
+            },
+            { transaction: options.transaction }
+        );
 
         let metadataObj;
         try {
@@ -49,7 +55,8 @@ export async function createAssetScheme(
             await AssetImageModel.createAssetImage(
                 transactionHash,
                 assetType,
-                metadataObj.icon_url
+                metadataObj.icon_url,
+                options
             );
         }
     } catch (err) {
@@ -70,7 +77,8 @@ export async function createAssetSchemeOfWCCC(
     assetScheme: {
         networkId: string;
         shardId: number;
-    }
+    },
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<AssetSchemeInstance> {
     const assetType = H160.zero().value;
     const metadata = JSON.stringify({
@@ -80,19 +88,22 @@ export async function createAssetSchemeOfWCCC(
     });
     try {
         const { networkId, shardId } = assetScheme;
-        const assetSchemeInstance = await models.AssetScheme.create({
-            transactionHash: strip0xPrefix(transactionHash),
-            assetType: strip0xPrefix(assetType),
-            metadata,
-            approver: null,
-            registrar: null,
-            allowedScriptHashes: [],
-            supply: "0",
-            networkId,
-            shardId,
-            seq: 0
-        });
-        await AssetImageModel.createAssetImageOfWCCC(transactionHash);
+        const assetSchemeInstance = await models.AssetScheme.create(
+            {
+                transactionHash: strip0xPrefix(transactionHash),
+                assetType: strip0xPrefix(assetType),
+                metadata,
+                approver: null,
+                registrar: null,
+                allowedScriptHashes: [],
+                supply: "0",
+                networkId,
+                shardId,
+                seq: 0
+            },
+            { transaction: options.transaction }
+        );
+        await AssetImageModel.createAssetImageOfWCCC(transactionHash, options);
         return assetSchemeInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -107,7 +118,8 @@ export async function createAssetSchemeOfWCCC(
 }
 
 export async function updateAssetScheme(
-    tx: TransactionInstance
+    tx: TransactionInstance,
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<AssetSchemeInstance | AssetSchemeInstance[]> {
     const {
         changeAssetScheme,
@@ -136,7 +148,8 @@ export async function updateAssetScheme(
                 },
                 {
                     where: { assetType },
-                    returning: true
+                    returning: true,
+                    transaction: options.transaction
                 }
             );
             return instance;
@@ -148,17 +161,22 @@ export async function updateAssetScheme(
     if (increaseAssetSupply) {
         const { assetType, supply } = increaseAssetSupply;
         try {
-            const instance = await models.AssetScheme.findByPk(assetType).then(
-                assetScheme => {
-                    const updatedSupply = U64.plus(
-                        assetScheme!.get().supply!,
-                        supply
-                    );
-                    return assetScheme!.update({
+            const instance = await models.AssetScheme.findByPk(assetType, {
+                transaction: options.transaction
+            }).then(assetScheme => {
+                const updatedSupply = U64.plus(
+                    assetScheme!.get().supply!,
+                    supply
+                );
+                return assetScheme!.update(
+                    {
                         supply: updatedSupply.toString()
-                    });
-                }
-            );
+                    },
+                    {
+                        transaction: options.transaction
+                    }
+                );
+            });
             return instance;
         } catch (err) {
             console.error(err);
@@ -171,15 +189,23 @@ export async function updateAssetScheme(
                 const { quantity } = burn.prevOut;
                 try {
                     const instance = await models.AssetScheme.findByPk(
-                        burn.assetType
+                        burn.assetType,
+                        {
+                            transaction: options.transaction
+                        }
                     ).then(assetScheme => {
                         const updatedSupply = U64.minus(
                             assetScheme!.get().supply!,
                             quantity
                         );
-                        return assetScheme!.update({
-                            supply: updatedSupply.toString()
-                        });
+                        return assetScheme!.update(
+                            {
+                                supply: updatedSupply.toString()
+                            },
+                            {
+                                transaction: options.transaction
+                            }
+                        );
                     });
                     return instance;
                 } catch (err) {
@@ -193,15 +219,23 @@ export async function updateAssetScheme(
         const { quantity } = wrapCCC;
         try {
             const instance = await models.AssetScheme.findByPk(
-                H160.zero().value
+                H160.zero().value,
+                {
+                    transaction: options.transaction
+                }
             ).then(assetScheme => {
                 const updatedSupply = U64.plus(
                     assetScheme!.get().supply!,
                     quantity
                 );
-                return assetScheme!.update({
-                    supply: updatedSupply.toString()
-                });
+                return assetScheme!.update(
+                    {
+                        supply: updatedSupply.toString()
+                    },
+                    {
+                        transaction: options.transaction
+                    }
+                );
             });
             return instance;
         } catch (err) {
@@ -213,15 +247,23 @@ export async function updateAssetScheme(
         const { quantity } = unwrapCCC.burn.prevOut;
         try {
             const instance = await models.AssetScheme.findByPk(
-                H160.zero().value
+                H160.zero().value,
+                {
+                    transaction: options.transaction
+                }
             ).then(assetScheme => {
                 const updatedSupply = U64.minus(
                     assetScheme!.get().supply!,
                     quantity
                 );
-                return assetScheme!.update({
-                    supply: updatedSupply.toString()
-                });
+                return assetScheme!.update(
+                    {
+                        supply: updatedSupply.toString()
+                    },
+                    {
+                        transaction: options.transaction
+                    }
+                );
             });
             return instance;
         } catch (err) {
@@ -237,11 +279,14 @@ export async function updateAssetScheme(
 }
 
 export async function getByAssetType(
-    assetType: H160
+    assetType: H160,
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<AssetSchemeInstance | null> {
     try {
+        const { transaction } = options;
         return await models.AssetScheme.findByPk(
-            strip0xPrefix(assetType.value)
+            strip0xPrefix(assetType.value),
+            { transaction }
         );
     } catch (err) {
         console.error(err);

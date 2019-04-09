@@ -8,6 +8,7 @@ import {
     WrapCCC,
     WrapCCCActionJSON
 } from "codechain-sdk/lib/core/transaction/WrapCCC";
+import { Transaction } from "sequelize";
 import models from "../index";
 import { WrapCCCInstance } from "../wrapCCC";
 import { createAddressLog } from "./addressLog";
@@ -18,7 +19,8 @@ import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createWrapCCC(
-    transaction: SignedTransaction
+    transaction: SignedTransaction,
+    options: { transaction?: Transaction } = {}
 ): Promise<WrapCCCInstance> {
     const transactionHash = transaction.hash().value;
     const wrapCCC = transaction.unsigned as WrapCCC;
@@ -33,20 +35,29 @@ export async function createWrapCCC(
 
     const recipient = getOwner(new H160(lockScriptHash), parameters, networkId);
 
-    const result = await models.WrapCCC.create({
-        transactionHash: strip0xPrefix(transactionHash),
-        shardId,
-        lockScriptHash: strip0xPrefix(lockScriptHash),
-        parameters: parameters.map(p => strip0xPrefix(p)),
-        quantity: new U64(quantity).toString(),
-        recipient
+    const result = await models.WrapCCC.create(
+        {
+            transactionHash: strip0xPrefix(transactionHash),
+            shardId,
+            lockScriptHash: strip0xPrefix(lockScriptHash),
+            parameters: parameters.map(p => strip0xPrefix(p)),
+            quantity: new U64(quantity).toString(),
+            recipient
+        },
+        { transaction: options.transaction }
+    );
+    const existing = await models.AssetScheme.findByPk(H160.zero().toString(), {
+        transaction: options.transaction
     });
-    const existing = await models.AssetScheme.findByPk(H160.zero().toString());
     if (existing == null) {
-        await createAssetSchemeOfWCCC(transactionHash, {
-            networkId,
-            shardId
-        });
+        await createAssetSchemeOfWCCC(
+            transactionHash,
+            {
+                networkId,
+                shardId
+            },
+            options
+        );
     }
     await createAssetTransferOutput(
         transactionHash,
@@ -59,15 +70,17 @@ export async function createWrapCCC(
             assetType: H160.zero().toString()
         }),
         0,
-        { networkId }
+        { networkId },
+        options
     );
-    await createAddressLog(transaction, payer, "AssetOwner");
+    await createAddressLog(transaction, payer, "AssetOwner", options);
     if (recipient) {
-        await createAddressLog(transaction, recipient, "AssetOwner");
+        await createAddressLog(transaction, recipient, "AssetOwner", options);
     }
     await createAssetTypeLog(
         transaction,
-        "0000000000000000000000000000000000000000"
+        "0000000000000000000000000000000000000000",
+        options
     );
     return result;
 }
