@@ -8,6 +8,7 @@ import {
     ComposeAssetActionJSON
 } from "codechain-sdk/lib/core/transaction/ComposeAsset";
 import * as _ from "lodash";
+import { Transaction } from "sequelize";
 import { ComposeAssetInstance } from "../composeAsset";
 import models from "../index";
 import { createAddressLog } from "./addressLog";
@@ -22,7 +23,8 @@ import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createComposeAsset(
-    transaction: SignedTransaction
+    transaction: SignedTransaction,
+    options: { transaction?: Transaction } = {}
 ): Promise<ComposeAssetInstance> {
     const transactionHash = transaction.hash().value;
     const compose = transaction.unsigned as ComposeAsset;
@@ -50,59 +52,71 @@ export async function createComposeAsset(
         networkId
     );
 
-    const result = await models.ComposeAsset.create({
-        transactionHash: strip0xPrefix(transactionHash),
-        networkId,
-        shardId,
-        metadata,
-        approver,
-        registrar,
-        allowedScriptHashes: allowedScriptHashes.map(hash =>
-            strip0xPrefix(hash)
-        ),
-        approvals,
-        lockScriptHash: strip0xPrefix(lockScriptHash),
-        parameters: parameters.map((p: string) => strip0xPrefix(p)),
-        supply,
-        assetName,
-        assetType: strip0xPrefix(assetType),
-        recipient,
-        inputs: await Promise.all(
-            inputs.map(async (i, index) => {
-                const {
-                    owner,
-                    lockScriptHash: prevOutLockScriptHash,
-                    parameters: prevOutParameters
-                } = await getOutputOwner(i.prevOut.tracker, i.prevOut.index);
-                return {
-                    index,
-                    prevOut: {
-                        tracker: strip0xPrefix(i.prevOut.tracker),
-                        index: i.prevOut.index,
-                        assetType: strip0xPrefix(i.prevOut.assetType),
-                        shardId: i.prevOut.shardId,
-                        quantity: i.prevOut.quantity,
+    const result = await models.ComposeAsset.create(
+        {
+            transactionHash: strip0xPrefix(transactionHash),
+            networkId,
+            shardId,
+            metadata,
+            approver,
+            registrar,
+            allowedScriptHashes: allowedScriptHashes.map(hash =>
+                strip0xPrefix(hash)
+            ),
+            approvals,
+            lockScriptHash: strip0xPrefix(lockScriptHash),
+            parameters: parameters.map((p: string) => strip0xPrefix(p)),
+            supply,
+            assetName,
+            assetType: strip0xPrefix(assetType),
+            recipient,
+            inputs: await Promise.all(
+                inputs.map(async (i, index) => {
+                    const {
                         owner,
                         lockScriptHash: prevOutLockScriptHash,
                         parameters: prevOutParameters
-                    },
-                    timelock: i.timelock,
-                    assetType: strip0xPrefix(i.prevOut.assetType),
-                    shardId: i.prevOut.shardId,
-                    lockScript: Buffer.from(i.lockScript),
-                    unlockScript: Buffer.from(i.unlockScript),
-                    owner
-                };
-            })
-        )
-    });
+                    } = await getOutputOwner(
+                        i.prevOut.tracker,
+                        i.prevOut.index,
+                        options
+                    );
+                    return {
+                        index,
+                        prevOut: {
+                            tracker: strip0xPrefix(i.prevOut.tracker),
+                            index: i.prevOut.index,
+                            assetType: strip0xPrefix(i.prevOut.assetType),
+                            shardId: i.prevOut.shardId,
+                            quantity: i.prevOut.quantity,
+                            owner,
+                            lockScriptHash: prevOutLockScriptHash,
+                            parameters: prevOutParameters
+                        },
+                        timelock: i.timelock,
+                        assetType: strip0xPrefix(i.prevOut.assetType),
+                        shardId: i.prevOut.shardId,
+                        lockScript: Buffer.from(i.lockScript),
+                        unlockScript: Buffer.from(i.unlockScript),
+                        owner
+                    };
+                })
+            )
+        },
+        { transaction: options.transaction }
+    );
 
     const assetScheme = compose.getAssetScheme();
-    await createAssetScheme(assetType, transactionHash, {
-        ...assetScheme,
-        networkId,
-        shardId
-    });
+    await createAssetScheme(
+        assetType,
+        transactionHash,
+        {
+            ...assetScheme,
+            networkId,
+            shardId
+        },
+        options
+    );
 
     await createAssetTransferOutput(
         transactionHash,
@@ -115,29 +129,32 @@ export async function createComposeAsset(
             assetType: compose.getAssetType()
         }),
         0,
-        { networkId }
+        { networkId },
+        options
     );
 
     const { inputs: resultInputs } = result.get({ plain: true });
     await Promise.all([
         approver != null
-            ? createAddressLog(transaction, approver, "Approver")
+            ? createAddressLog(transaction, approver, "Approver", options)
             : Promise.resolve(null),
         registrar != null
-            ? createAddressLog(transaction, registrar, "Registrar")
+            ? createAddressLog(transaction, registrar, "Registrar", options)
             : Promise.resolve(null),
         ..._.uniq(
             [
                 recipient,
                 ...resultInputs.map(input => input.prevOut.owner)
             ].filter(address => address != null)
-        ).map(address => createAddressLog(transaction, address!, "AssetOwner"))
+        ).map(address =>
+            createAddressLog(transaction, address!, "AssetOwner", options)
+        )
     ]);
     await Promise.all(
         [
             compose.getAssetType().toString(),
             ..._.uniq(resultInputs.map(input => input.assetType))
-        ].map(type => createAssetTypeLog(transaction, type))
+        ].map(type => createAssetTypeLog(transaction, type, options))
     );
 
     return result;

@@ -25,27 +25,35 @@ export async function createUTXO(
         transactionTracker: H256;
         transactionOutputIndex: number;
     },
-    blockNumber: number
+    blockNumber: number,
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<UTXOInstance> {
     let utxoInstance;
     try {
-        const assetScheme = await getAssetSheme(utxo.assetType);
-        utxoInstance = await models.UTXO.create({
-            address,
-            assetType: strip0xPrefix(utxo.assetType.value),
-            shardId: utxo.shardId,
-            lockScriptHash: strip0xPrefix(utxo.lockScriptHash.value),
-            parameters: utxo.parameters.map(p => strip0xPrefix(p)),
-            quantity: utxo.quantity.value.toString(10),
-            orderHash: utxo.orderHash
-                ? strip0xPrefix(utxo.orderHash.value)
-                : null,
-            transactionHash: strip0xPrefix(utxo.transactionHash.value),
-            transactionTracker: strip0xPrefix(utxo.transactionTracker.value),
-            transactionOutputIndex: utxo.transactionOutputIndex,
-            assetScheme,
-            blockNumber
-        });
+        const assetScheme = await getAssetSheme(utxo.assetType, options);
+        utxoInstance = await models.UTXO.create(
+            {
+                address,
+                assetType: strip0xPrefix(utxo.assetType.value),
+                shardId: utxo.shardId,
+                lockScriptHash: strip0xPrefix(utxo.lockScriptHash.value),
+                parameters: utxo.parameters.map(p => strip0xPrefix(p)),
+                quantity: utxo.quantity.value.toString(10),
+                orderHash: utxo.orderHash
+                    ? strip0xPrefix(utxo.orderHash.value)
+                    : null,
+                transactionHash: strip0xPrefix(utxo.transactionHash.value),
+                transactionTracker: strip0xPrefix(
+                    utxo.transactionTracker.value
+                ),
+                transactionOutputIndex: utxo.transactionOutputIndex,
+                assetScheme,
+                blockNumber
+            },
+            {
+                transaction: options.transaction
+            }
+        );
     } catch (err) {
         console.error(err, utxo.assetType.value);
         throw Exception.DBError();
@@ -56,7 +64,8 @@ export async function createUTXO(
 export async function setUsed(
     id: string,
     blockNumber: number,
-    usedTransactionHash: H256
+    usedTransactionHash: H256,
+    options: { transaction?: Sequelize.Transaction } = {}
 ) {
     try {
         return await models.UTXO.update(
@@ -67,7 +76,8 @@ export async function setUsed(
             {
                 where: {
                     id
-                }
+                },
+                transaction: options.transaction
             }
         );
     } catch (err) {
@@ -76,9 +86,13 @@ export async function setUsed(
     }
 }
 
-async function getAssetSheme(assetType: H160): Promise<AssetSchemeAttribute> {
+async function getAssetSheme(
+    assetType: H160,
+    options: { transaction?: Sequelize.Transaction } = {}
+): Promise<AssetSchemeAttribute> {
     const assetSchemeInstance = await AssetSchemeModel.getByAssetType(
-        assetType
+        assetType,
+        options
     );
     if (!assetSchemeInstance) {
         throw Exception.InvalidTransaction();
@@ -393,14 +407,18 @@ export async function getCountOfAggsUTXO(params: {
 
 export async function getByTxHashIndex(
     transactionHash: H256,
-    outputIndex: number
+    outputIndex: number,
+    options: {
+        transaction?: Sequelize.Transaction;
+    } = {}
 ) {
     try {
         return await models.UTXO.findOne({
             where: {
                 transactionHash: strip0xPrefix(transactionHash.value),
                 transactionOutputIndex: outputIndex
-            }
+            },
+            transaction: options.transaction
         });
     } catch (err) {
         console.error(err);
@@ -473,7 +491,8 @@ export async function getSnapshot(assetType: H256, blockNumber: number) {
 
 export async function transferUTXO(
     txInst: TransactionInstance,
-    blockNumber: number
+    blockNumber: number,
+    options: { transaction?: Sequelize.Transaction } = {}
 ) {
     const tx = txInst.get({ plain: true });
     const networkId = tx.networkId;
@@ -481,7 +500,7 @@ export async function transferUTXO(
     const transactionTracker = new H256(tx.tracker!);
     const txType = tx.type;
     if (txType === "mintAsset") {
-        const mintAsset = (await txInst.getMintAsset())!.get();
+        const mintAsset = tx.mintAsset!;
         const lockScriptHash = new H160(mintAsset.lockScriptHash);
         const parameters = mintAsset.parameters;
         const recipient = getOwner(lockScriptHash, parameters, networkId);
@@ -501,12 +520,13 @@ export async function transferUTXO(
                 transactionTracker,
                 transactionOutputIndex
             },
-            blockNumber
+            blockNumber,
+            options
         );
     }
     if (txType === "transferAsset") {
-        const transferAsset = (await txInst.getTransferAsset())!;
-        const { outputs, orders } = transferAsset.get({ plain: true });
+        const transferAsset = tx.transferAsset!;
+        const { outputs, orders } = transferAsset;
         await Promise.all(
             outputs!.map(async (output: AssetTransferOutput) => {
                 const recipient = getOwner(
@@ -537,24 +557,27 @@ export async function transferUTXO(
                         transactionTracker,
                         transactionOutputIndex: output.index
                     },
-                    blockNumber
+                    blockNumber,
+                    options
                 );
             })
         );
-        const { inputs } = await transferAsset.get({ plain: true });
+        const { inputs } = await transferAsset;
         if (inputs) {
             await Promise.all(
                 inputs.map(async input => {
                     const prevTracker = input.prevOut.tracker;
                     const prevTransaction = await getSuccessfulByTracker(
-                        new H256(prevTracker)
+                        new H256(prevTracker),
+                        options
                     );
                     if (!prevTransaction) {
                         throw Exception.InvalidUTXO();
                     }
                     const utxoInst = await getByTxHashIndex(
                         new H256(prevTransaction.get("hash")),
-                        input.prevOut.index
+                        input.prevOut.index,
+                        options
                     );
                     if (!utxoInst) {
                         throw Exception.InvalidUTXO();
@@ -562,25 +585,28 @@ export async function transferUTXO(
                     return await setUsed(
                         utxoInst.get("id"),
                         blockNumber,
-                        transactionHash
+                        transactionHash,
+                        options
                     );
                 })
             );
         }
-        const { burns } = await transferAsset.get({ plain: true });
+        const { burns } = await transferAsset;
         if (burns) {
             await Promise.all(
                 burns.map(async burn => {
                     const prevTracker = burn.prevOut.tracker;
                     const prevTransaction = await getSuccessfulByTracker(
-                        new H256(prevTracker)
+                        new H256(prevTracker),
+                        options
                     );
                     if (!prevTransaction) {
                         throw Exception.InvalidUTXO();
                     }
                     const utxoInst = await getByTxHashIndex(
                         new H256(prevTransaction.get("hash")),
-                        burn.prevOut.index
+                        burn.prevOut.index,
+                        options
                     );
                     if (!utxoInst) {
                         throw Exception.InvalidUTXO();
@@ -588,7 +614,8 @@ export async function transferUTXO(
                     return setUsed(
                         utxoInst.get("id"),
                         blockNumber,
-                        transactionHash
+                        transactionHash,
+                        options
                     );
                 })
             );
@@ -596,20 +623,22 @@ export async function transferUTXO(
         return;
     }
     if (txType === "composeAsset") {
-        const composeAsset = (await txInst.getComposeAsset())!;
-        const { inputs } = await composeAsset.get({ plain: true });
+        const composeAsset = tx.composeAsset!;
+        const { inputs } = await composeAsset;
         await Promise.all(
             inputs!.map(async input => {
                 const prevTracker = input.prevOut.tracker;
                 const prevTransaction = await getSuccessfulByTracker(
-                    new H256(prevTracker)
+                    new H256(prevTracker),
+                    options
                 );
                 if (!prevTransaction) {
                     throw Exception.InvalidUTXO();
                 }
                 const utxoInst = await getByTxHashIndex(
                     new H256(prevTransaction.get("hash")),
-                    input.prevOut.index
+                    input.prevOut.index,
+                    options
                 );
                 if (!utxoInst) {
                     throw Exception.InvalidUTXO();
@@ -617,11 +646,12 @@ export async function transferUTXO(
                 return setUsed(
                     utxoInst.get("id"),
                     blockNumber,
-                    transactionHash
+                    transactionHash,
+                    options
                 );
             })
         );
-        const output = (await composeAsset.get())!;
+        const output = composeAsset;
         const recipient = getOwner(
             new H160(output.lockScriptHash),
             output.parameters,
@@ -645,29 +675,37 @@ export async function transferUTXO(
                 transactionTracker,
                 transactionOutputIndex
             },
-            blockNumber
+            blockNumber,
+            options
         );
     }
     if (txType === "decomposeAsset") {
-        const decomposeAsset = (await txInst.getDecomposeAsset())!;
-        const { input } = await decomposeAsset.get({ plain: true });
+        const decomposeAsset = tx.decomposeAsset!;
+        const { input } = decomposeAsset;
         const prevTracker = input.prevOut.tracker;
         const prevTransaction = await getSuccessfulByTracker(
-            new H256(prevTracker)
+            new H256(prevTracker),
+            options
         );
         if (!prevTransaction) {
             throw Exception.InvalidUTXO();
         }
         const utxoInst = await getByTxHashIndex(
             new H256(prevTransaction.get("hash")),
-            input.prevOut.index
+            input.prevOut.index,
+            options
         );
         if (!utxoInst) {
             throw Exception.InvalidUTXO();
         }
-        await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
+        await setUsed(
+            utxoInst.get("id"),
+            blockNumber,
+            transactionHash,
+            options
+        );
 
-        const { outputs } = (await decomposeAsset.get({ plain: true }))!;
+        const { outputs } = decomposeAsset;
         return await Promise.all(
             outputs!.map(output => {
                 const recipient = getOwner(
@@ -692,13 +730,14 @@ export async function transferUTXO(
                         transactionTracker,
                         transactionOutputIndex: output.index
                     },
-                    blockNumber
+                    blockNumber,
+                    options
                 );
             })
         );
     }
     if (txType === "increaseAssetSupply") {
-        const incAssetSupply = (await txInst.getIncreaseAssetSupply())!.get();
+        const incAssetSupply = tx.increaseAssetSupply!;
 
         const assetType = new H160(incAssetSupply.assetType);
         const { shardId, parameters } = incAssetSupply;
@@ -724,11 +763,12 @@ export async function transferUTXO(
                 transactionTracker,
                 transactionOutputIndex
             },
-            blockNumber
+            blockNumber,
+            options
         );
     }
     if (txType === "wrapCCC") {
-        const wrapCCC = (await txInst.getWrapCCC())!.get();
+        const wrapCCC = tx.wrapCCC!;
 
         const recipient = getOwner(
             new H160(wrapCCC.lockScriptHash),
@@ -754,16 +794,18 @@ export async function transferUTXO(
                 transactionTracker,
                 transactionOutputIndex
             },
-            blockNumber
+            blockNumber,
+            options
         );
     }
     if (txType === "unwrapCCC") {
         const {
             burn: { prevOut }
-        } = await (await txInst.getUnwrapCCC())!.get({ plain: true });
+        } = await tx.unwrapCCC!;
         const prevTracker = prevOut.tracker;
         const prevTransaction = await getSuccessfulByTracker(
-            new H256(prevTracker)
+            new H256(prevTracker),
+            options
         );
 
         if (!prevTransaction) {
@@ -771,11 +813,17 @@ export async function transferUTXO(
         }
         const utxoInst = await getByTxHashIndex(
             new H256(prevTransaction.get("hash")),
-            prevOut.index
+            prevOut.index,
+            options
         );
         if (!utxoInst) {
             throw Exception.InvalidUTXO();
         }
-        await setUsed(utxoInst.get("id"), blockNumber, transactionHash);
+        await setUsed(
+            utxoInst.get("id"),
+            blockNumber,
+            transactionHash,
+            options
+        );
     }
 }

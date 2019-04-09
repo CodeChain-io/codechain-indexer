@@ -5,6 +5,7 @@ import {
 } from "codechain-sdk/lib/core/classes";
 import { AssetMintOutput } from "codechain-sdk/lib/core/transaction/AssetMintOutput";
 import { MintAssetActionJSON } from "codechain-sdk/lib/core/transaction/MintAsset";
+import { Transaction } from "sequelize";
 import models from "../index";
 import { MintAssetInstance } from "../mintAsset";
 import { createAddressLog } from "./addressLog";
@@ -16,7 +17,8 @@ import { getAssetName } from "./utils/asset";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createMintAsset(
-    transaction: SignedTransaction
+    transaction: SignedTransaction,
+    options: { transaction?: Transaction } = {}
 ): Promise<MintAssetInstance> {
     const mintAsset = transaction.unsigned as MintAsset;
     const transactionHash = transaction.hash().value;
@@ -42,34 +44,44 @@ export async function createMintAsset(
         parameters,
         networkId
     );
-    const inst = await models.MintAsset.create({
-        transactionHash: strip0xPrefix(transactionHash),
-        networkId,
-        shardId,
-        metadata,
-        approver,
-        registrar,
-        allowedScriptHashes: allowedScriptHashes.map(scripthash =>
-            strip0xPrefix(scripthash)
-        ),
-        approvals,
-        lockScriptHash: strip0xPrefix(lockScriptHash),
-        parameters,
-        supply,
-        assetName,
-        assetType: strip0xPrefix(assetType),
-        recipient
-    });
+    const inst = await models.MintAsset.create(
+        {
+            transactionHash: strip0xPrefix(transactionHash),
+            networkId,
+            shardId,
+            metadata,
+            approver,
+            registrar,
+            allowedScriptHashes: allowedScriptHashes.map(scripthash =>
+                strip0xPrefix(scripthash)
+            ),
+            approvals,
+            lockScriptHash: strip0xPrefix(lockScriptHash),
+            parameters,
+            supply,
+            assetName,
+            assetType: strip0xPrefix(assetType),
+            recipient
+        },
+        { transaction: options.transaction }
+    );
     // FIXME: if clause is for avoiding primary key conflict. We need to address
     // it properly.
-    const existing = await models.AssetScheme.findByPk(assetType);
+    const existing = await models.AssetScheme.findByPk(assetType, {
+        transaction: options.transaction
+    });
     if (existing == null) {
         const assetScheme = mintAsset.getAssetScheme();
-        await createAssetScheme(assetType, transactionHash, {
-            ...assetScheme,
-            networkId,
-            shardId
-        });
+        await createAssetScheme(
+            assetType,
+            transactionHash,
+            {
+                ...assetScheme,
+                networkId,
+                shardId
+            },
+            options
+        );
     }
     await createAssetTransferOutput(
         transactionHash,
@@ -82,19 +94,20 @@ export async function createMintAsset(
             assetType: mintAsset.getAssetType()
         }),
         0,
-        { networkId }
+        { networkId },
+        options
     );
     await Promise.all([
         approver != null
-            ? createAddressLog(transaction, approver, "Approver")
+            ? createAddressLog(transaction, approver, "Approver", options)
             : Promise.resolve(null),
         registrar != null
-            ? createAddressLog(transaction, registrar, "Registrar")
+            ? createAddressLog(transaction, registrar, "Registrar", options)
             : Promise.resolve(null),
         recipient != null
-            ? createAddressLog(transaction, recipient, "AssetOwner")
+            ? createAddressLog(transaction, recipient, "AssetOwner", options)
             : Promise.resolve(null),
-        createAssetTypeLog(transaction, assetType)
+        createAssetTypeLog(transaction, assetType, options)
     ]);
     return inst;
 }

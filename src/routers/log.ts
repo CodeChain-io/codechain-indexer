@@ -42,7 +42,7 @@ export function handle(_C: IndexerContext, router: Router) {
         async (req, res) => {
             const filter = req.query.filter;
             const date = req.query.date;
-            LogModel.getLog(date, getLogTypeFromFilter(filter), null)
+            LogModel.getLog(date, getLogTypeFromFilter(filter), { value: null })
                 .then(instance => {
                     if (instance == null) {
                         res.json(0);

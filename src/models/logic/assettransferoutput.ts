@@ -1,4 +1,5 @@
 import { AssetTransferOutput } from "codechain-sdk/lib/core/classes";
+import { Transaction } from "sequelize";
 import * as Exception from "../../exception";
 import { AssetTransferOutputInstance } from "../assettransferoutput";
 import models from "../index";
@@ -12,7 +13,10 @@ export async function createAssetTransferOutput(
     index: number,
     params: {
         networkId: string;
-    }
+    },
+    options: {
+        transaction?: Transaction;
+    } = {}
 ): Promise<AssetTransferOutputInstance> {
     let assetTransferOuputInstance: AssetTransferOutputInstance;
     try {
@@ -22,17 +26,20 @@ export async function createAssetTransferOutput(
             parameters,
             params.networkId
         );
-        assetTransferOuputInstance = await models.AssetTransferOutput.create({
-            transactionHash: strip0xPrefix(transactionHash),
-            transactionTracker: strip0xPrefix(transactionTracker),
-            lockScriptHash: strip0xPrefix(output.lockScriptHash.value),
-            parameters: parameters.map(p => strip0xPrefix(p)),
-            assetType: strip0xPrefix(output.assetType.value),
-            shardId: output.shardId,
-            quantity: output.quantity.value.toString(10),
-            index,
-            owner
-        });
+        assetTransferOuputInstance = await models.AssetTransferOutput.create(
+            {
+                transactionHash: strip0xPrefix(transactionHash),
+                transactionTracker: strip0xPrefix(transactionTracker),
+                lockScriptHash: strip0xPrefix(output.lockScriptHash.value),
+                parameters: parameters.map(p => strip0xPrefix(p)),
+                assetType: strip0xPrefix(output.assetType.value),
+                shardId: output.shardId,
+                quantity: output.quantity.value.toString(10),
+                index,
+                owner
+            },
+            { transaction: options.transaction }
+        );
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -42,7 +49,10 @@ export async function createAssetTransferOutput(
 
 export async function getOutputOwner(
     tracker: string,
-    index: number
+    index: number,
+    options: {
+        transaction?: Transaction;
+    } = {}
 ): Promise<{
     owner?: string | null;
     lockScriptHash?: string;
@@ -53,7 +63,8 @@ export async function getOutputOwner(
             where: {
                 transactionTracker: strip0xPrefix(tracker),
                 index
-            }
+            },
+            transaction: options.transaction
         }).then(instance => {
             if (instance) {
                 const { owner, lockScriptHash, parameters } = instance.get({

@@ -13,40 +13,55 @@ import { strip0xPrefix } from "./utils/format";
 export async function createBlock(
     block: Block,
     sdk: SDK,
-    miningReward: U64
+    miningReward: U64,
+    options: {
+        transaction?: Sequelize.Transaction;
+    } = {}
 ): Promise<BlockInstance> {
+    const { transaction } = options;
     let blockInstance: BlockInstance;
     try {
-        blockInstance = await models.Block.create({
-            parentHash: strip0xPrefix(block.parentHash.value),
-            timestamp: block.timestamp,
-            number: block.number,
-            author: block.author.value,
-            extraData: Buffer.from(block.extraData),
-            transactionsRoot: strip0xPrefix(block.transactionsRoot.value),
-            stateRoot: strip0xPrefix(block.stateRoot.value),
-            score: block.score.value.toString(10),
-            seal: block.seal.map(s => Buffer.from(s)),
-            hash: strip0xPrefix(block.hash.value),
-            miningReward: miningReward.value.toString(10)
-        });
+        blockInstance = await models.Block.create(
+            {
+                parentHash: strip0xPrefix(block.parentHash.value),
+                timestamp: block.timestamp,
+                number: block.number,
+                author: block.author.value,
+                extraData: Buffer.from(block.extraData),
+                transactionsRoot: strip0xPrefix(block.transactionsRoot.value),
+                stateRoot: strip0xPrefix(block.stateRoot.value),
+                score: block.score.value.toString(10),
+                seal: block.seal.map(s => Buffer.from(s)),
+                hash: strip0xPrefix(block.hash.value),
+                miningReward: miningReward.value.toString(10)
+            },
+            { transaction }
+        );
 
         const newTxs = [];
         for (const tx of block.transactions) {
             if (
-                (await TxModel.tryUpdateTransaction(tx, block.timestamp)) ==
-                null
+                (await TxModel.tryUpdateTransaction(
+                    tx,
+                    block.timestamp,
+                    options
+                )) == null
             ) {
                 newTxs.push(tx);
             } else {
-                await AddressLogModel.updateAddressLog(tx);
-                await AssetTypeLogModel.updateAssetTypeLog(tx);
+                await AddressLogModel.updateAddressLog(tx, options);
+                await AssetTypeLogModel.updateAssetTypeLog(tx, options);
             }
         }
-        await TxModel.createTransactions(newTxs, false, block.timestamp);
+        await TxModel.createTransactions(
+            newTxs,
+            false,
+            block.timestamp,
+            options
+        );
 
         for (const tx of block.transactions) {
-            await TxModel.applyTransaction(tx, sdk, block.number);
+            await TxModel.applyTransaction(tx, sdk, block.number, options);
         }
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
@@ -82,13 +97,18 @@ const includeTransactionsCount = {
     subQuery: false
 };
 
-export async function getByHash(hash: H256): Promise<BlockInstance | null> {
+export async function getByHash(
+    hash: H256,
+    options: { transaction?: Sequelize.Transaction } = {}
+): Promise<BlockInstance | null> {
     try {
+        const { transaction } = options;
         return await models.Block.findOne({
             where: {
                 hash: strip0xPrefix(hash.value)
             },
-            ...includeTransactionsCount
+            ...includeTransactionsCount,
+            transaction
         });
     } catch (err) {
         console.error(err);

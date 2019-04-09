@@ -5,6 +5,7 @@ import {
     DecomposeAssetActionJSON
 } from "codechain-sdk/lib/core/transaction/DecomposeAsset";
 import * as _ from "lodash";
+import { Transaction } from "sequelize";
 import { DecomposeAssetInstance } from "../decomposeAsset";
 import models from "../index";
 import { createAddressLog } from "./addressLog";
@@ -17,7 +18,8 @@ import { getOwner } from "./utils/address";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createDecomposeAsset(
-    transaction: SignedTransaction
+    transaction: SignedTransaction,
+    options: { transaction?: Transaction } = {}
 ): Promise<DecomposeAssetInstance> {
     const transactionHash = transaction.hash().value;
     const decompose = transaction.unsigned as DecomposeAsset;
@@ -26,7 +28,8 @@ export async function createDecomposeAsset(
 
     const { owner, lockScriptHash, parameters } = await getOutputOwner(
         input.prevOut.tracker,
-        input.prevOut.index
+        input.prevOut.index,
+        options
     );
     const result = await models.DecomposeAsset.create({
         transactionHash: strip0xPrefix(transactionHash),
@@ -77,7 +80,8 @@ export async function createDecomposeAsset(
                 index,
                 {
                     networkId
-                }
+                },
+                options
             );
         })
     );
@@ -90,13 +94,15 @@ export async function createDecomposeAsset(
                 resultInput.owner,
                 ...resultOutputs.map(output => output.owner)
             ].filter(address => address != null)
-        ).map(address => createAddressLog(transaction, address!, "AssetOwner"))
+        ).map(address =>
+            createAddressLog(transaction, address!, "AssetOwner", options)
+        )
     );
     await Promise.all(
         [
             resultInput.assetType,
             ..._.uniq(resultOutputs.map(output => output.assetType))
-        ].map(assetType => createAssetTypeLog(transaction, assetType))
+        ].map(assetType => createAssetTypeLog(transaction, assetType, options))
     );
     return result;
 }
