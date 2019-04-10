@@ -63,6 +63,8 @@ export const paginationSchema = {
     itemsPerPage: Joi.number()
         .positive()
         .integer()
+        .min(1)
+        .max(100)
 };
 
 export const txSchema = {
