@@ -12,12 +12,9 @@ export interface BlockAttribute {
     score: string;
     seal: Buffer[];
     miningReward: string;
+    transactionsCount: number;
     createdAt?: string;
     updatedAt?: string;
-    // NOTE: Aggregates from postgres are returned as int8 which the
-    // node-postgres library does not convert in fear of data loss.
-    // https://github.com/sequelize/sequelize/issues/4550
-    transactionsCount?: string;
 }
 
 export interface BlockInstance extends Sequelize.Instance<BlockAttribute> {}
@@ -85,6 +82,10 @@ export default (
             miningReward: {
                 allowNull: false,
                 type: DataTypes.NUMERIC({ precision: 20, scale: 0 })
+            },
+            transactionsCount: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,
