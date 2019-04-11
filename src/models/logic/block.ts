@@ -33,7 +33,8 @@ export async function createBlock(
                 score: block.score.value.toString(10),
                 seal: block.seal.map(s => Buffer.from(s)),
                 hash: strip0xPrefix(block.hash.value),
-                miningReward: miningReward.value.toString(10)
+                miningReward: miningReward.value.toString(10),
+                transactionsCount: block.transactions.length
             },
             { transaction }
         );
@@ -76,27 +77,6 @@ export async function createBlock(
     return blockInstance;
 }
 
-const includeTransactionsCount = {
-    attributes: {
-        include: [
-            [
-                Sequelize.fn("COUNT", Sequelize.col("transactions.hash")),
-                "transactionsCount"
-                // NOTE: Its type conversion is necessary, but I have no idea why it is.
-            ] as any
-        ]
-    },
-    include: [
-        {
-            as: "transactions",
-            model: models.Transaction,
-            attributes: []
-        }
-    ],
-    group: ["Block.hash"],
-    subQuery: false
-};
-
 export async function getByHash(
     hash: H256,
     options: { transaction?: Sequelize.Transaction } = {}
@@ -107,7 +87,6 @@ export async function getByHash(
             where: {
                 hash: strip0xPrefix(hash.value)
             },
-            ...includeTransactionsCount,
             transaction
         });
     } catch (err) {
@@ -146,8 +125,7 @@ export async function getBlocks(params: {
             order: [["number", "DESC"]],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
-            where: query,
-            ...includeTransactionsCount
+            where: query
         });
     } catch (err) {
         console.log(err);
@@ -176,8 +154,7 @@ export async function getNumberOfBlocks(params: { address?: string }) {
 export async function getLatestBlock(): Promise<BlockInstance | null> {
     try {
         return await models.Block.findOne({
-            order: [["number", "DESC"]],
-            ...includeTransactionsCount
+            order: [["number", "DESC"]]
         });
     } catch (err) {
         console.log(err);
@@ -192,8 +169,7 @@ export async function getByNumber(
         return await models.Block.findOne({
             where: {
                 number: blockNumber
-            },
-            ...includeTransactionsCount
+            }
         });
     } catch (err) {
         console.error(err);
@@ -211,8 +187,7 @@ export async function getByTime(
                     [Sequelize.Op.lte]: timestamp
                 }
             },
-            order: [["timestamp", "DESC"], ["number", "DESC"]],
-            ...includeTransactionsCount
+            order: [["timestamp", "DESC"], ["number", "DESC"]]
         });
 
         if (block == null) {

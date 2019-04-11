@@ -22,12 +22,12 @@ export async function indexLog(
         value: block.author,
         transaction: options.transaction
     });
-    if (block.transactionsCount) {
+    if (block.transactionsCount > 0) {
         await queryLog(
             isRetracted,
             dateString,
             LogType.TX_COUNT,
-            parseInt(block.transactionsCount, 10),
+            block.transactionsCount,
             options
         );
     }
