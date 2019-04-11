@@ -2,6 +2,7 @@ import models from "../src/models";
 
 async function main() {
     const numbers = await models.Block.findAll({
+        attributes: ["number"],
         where: {
             transactionsCount: {
                 [models.Sequelize.Op.eq]: null
