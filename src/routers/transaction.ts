@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { H160, H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import * as Joi from "joi";
@@ -260,6 +261,44 @@ export function handle(context: IndexerContext, router: Router) {
 
     /**
      * @swagger
+     * /tx/fee-stats:
+     *   get:
+     *     summary: Returns the statistics of transaction fee of latest 200 transactions for each transaction type
+     *     tags: [Transaction]
+     *     responses:
+     *       200:
+     *         description: The average, min, max value of fees of Pay and TransferAsset transactions.
+     *         schema:
+     *           type: object
+     *           example: {
+     *             "pay": { "avg": "100", "min": "100", "max": "100" },
+     *             "transferAsset": { "avg": "100", "min": "100", "max": "100" }
+     *           }
+     */
+    router.get("/tx/fee-stats", async (__, res, next) => {
+        try {
+            const samples = 200;
+            const payFees = await TxModel.getTransactions({
+                type: ["pay"],
+                page: 1,
+                itemsPerPage: samples
+            }).then(txs => txs.map(tx => tx.get().fee));
+            const transferAssetFees = await TxModel.getTransactions({
+                type: ["transferAsset"],
+                page: 1,
+                itemsPerPage: samples
+            }).then(txs => txs.map(tx => tx.get().fee));
+            res.json({
+                pay: getFeeStats(payFees),
+                transferAsset: getFeeStats(transferAssetFees)
+            });
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    /**
+     * @swagger
      * /tx/{hash}:
      *   get:
      *     summary: Returns the specific transaction
@@ -446,4 +485,21 @@ export function handle(context: IndexerContext, router: Router) {
             }
         }
     );
+}
+
+function getFeeStats(
+    fees: string[]
+): { min: string; max: string; avg: string } {
+    const max = BigNumber.max(...fees).toString();
+    const min = BigNumber.min(...fees).toString();
+    let sum = new BigNumber(0);
+    for (const fee of fees) {
+        sum = sum.plus(fee);
+    }
+
+    return {
+        max,
+        min,
+        avg: sum.idiv(fees.length).toString()
+    };
 }
