@@ -116,6 +116,12 @@ export default (
             as: "transactions",
             onDelete: "CASCADE"
         });
+        Block.hasMany(models.CCCChange, {
+            sourceKey: "number",
+            foreignKey: "blockNumber",
+            as: "changes",
+            onDelete: "CASCADE"
+        });
     };
     return Block;
 };
