@@ -13,6 +13,9 @@ export interface BlockAttribute {
     seal: Buffer[];
     miningReward: string;
     transactionsCount: number;
+    transactionsCountByType: {
+        [type: string]: number;
+    };
     createdAt?: string;
     updatedAt?: string;
 }
@@ -86,6 +89,10 @@ export default (
             transactionsCount: {
                 allowNull: false,
                 type: DataTypes.INTEGER
+            },
+            transactionsCountByType: {
+                allowNull: false,
+                type: DataTypes.JSONB
             },
             createdAt: {
                 allowNull: false,

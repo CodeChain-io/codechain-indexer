@@ -34,7 +34,8 @@ export async function createBlock(
                 seal: block.seal.map(s => Buffer.from(s)),
                 hash: strip0xPrefix(block.hash.value),
                 miningReward: miningReward.value.toString(10),
-                transactionsCount: block.transactions.length
+                transactionsCount: block.transactions.length,
+                transactionsCountByType: getTransactionsCountByType(block)
             },
             { transaction }
         );
@@ -205,4 +206,15 @@ export async function getByTime(
         console.error(err);
         throw Exception.DBError();
     }
+}
+
+function getTransactionsCountByType(block: Block) {
+    const transactionsCountByType: { [type: string]: number } = {};
+    block.transactions.forEach(t => {
+        if (transactionsCountByType[t.unsigned.type()] == null) {
+            transactionsCountByType[t.unsigned.type()] = 0;
+        }
+        transactionsCountByType[t.unsigned.type()] += 1;
+    });
+    return transactionsCountByType;
 }
