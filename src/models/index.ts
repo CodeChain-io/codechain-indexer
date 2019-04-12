@@ -13,6 +13,7 @@ import {
 } from "./assettransferoutput";
 import { AssetTypeLogAttribute, AssetTypeLogInstance } from "./assetTypeLog";
 import { BlockAttribute, BlockInstance } from "./block";
+import { CCCChangeAttribute, CCCChangeInstance } from "./cccChanges";
 import {
     ChangeAssetSchemeAttribute,
     ChangeAssetSchemeInstance
@@ -134,6 +135,7 @@ interface DB {
     Log: Sequelize.Model<LogInstance, LogAttribute>;
     AddressLog: Sequelize.Model<AddressLogInstance, AddressLogAttribute>;
     AssetTypeLog: Sequelize.Model<AssetTypeLogInstance, AssetTypeLogAttribute>;
+    CCCChange: Sequelize.Model<CCCChangeInstance, CCCChangeAttribute>;
 }
 
 export default models as DB;

@@ -9,6 +9,7 @@ import { BlockAttribute } from "../models/block";
 import * as BlockModel from "../models/logic/block";
 import * as TxModel from "../models/logic/transaction";
 import * as AccountUtil from "./account";
+import { updateCCCChange } from "./cccChange";
 import * as LogUtil from "./log";
 
 const ASYNC_LOCK_KEY = "worker";
@@ -180,6 +181,9 @@ export default class Worker {
                 { transaction }
             );
             await LogUtil.indexLog(blockAttribute, false, { transaction });
+
+            await updateCCCChange(sdk, block, miningReward, transaction);
+
             await transaction.commit();
         } catch (err) {
             await transaction.rollback();
