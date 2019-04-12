@@ -35,7 +35,8 @@ export async function createBlock(
                 hash: strip0xPrefix(block.hash.value),
                 miningReward: miningReward.value.toString(10),
                 transactionsCount: block.transactions.length,
-                transactionsCountByType: getTransactionsCountByType(block)
+                transactionsCountByType: getTransactionsCountByType(block),
+                size: block.getSize()
             },
             { transaction }
         );

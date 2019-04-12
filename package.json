@@ -12,7 +12,7 @@
     "async-lock": "^1.1.4",
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
-    "codechain-sdk": "^1.1.0",
+    "codechain-sdk": "^1.2.0",
     "codechain-stakeholder-sdk": "^0.1.0",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",

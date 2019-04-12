@@ -16,6 +16,7 @@ export interface BlockAttribute {
     transactionsCountByType: {
         [type: string]: number;
     };
+    size: number;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -93,6 +94,10 @@ export default (
             transactionsCountByType: {
                 allowNull: false,
                 type: DataTypes.JSONB
+            },
+            size: {
+                allowNull: false,
+                type: DataTypes.INTEGER
             },
             createdAt: {
                 allowNull: false,
