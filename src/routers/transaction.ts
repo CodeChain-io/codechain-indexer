@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import { H160, H256 } from "codechain-primitives/lib";
 import { Router } from "express";
 import * as Joi from "joi";
@@ -289,8 +288,8 @@ export function handle(context: IndexerContext, router: Router) {
                 itemsPerPage: samples
             }).then(txs => txs.map(tx => tx.get().fee));
             res.json({
-                pay: getFeeStats(payFees),
-                transferAsset: getFeeStats(transferAssetFees)
+                pay: payFees,
+                transferAsset: transferAssetFees
             });
         } catch (e) {
             next(e);
@@ -485,21 +484,4 @@ export function handle(context: IndexerContext, router: Router) {
             }
         }
     );
-}
-
-function getFeeStats(
-    fees: string[]
-): { min: string; max: string; avg: string } {
-    const max = BigNumber.max(...fees).toString();
-    const min = BigNumber.min(...fees).toString();
-    let sum = new BigNumber(0);
-    for (const fee of fees) {
-        sum = sum.plus(fee);
-    }
-
-    return {
-        max,
-        min,
-        avg: sum.idiv(fees.length).toString()
-    };
 }
