@@ -8,6 +8,7 @@ export function isAssetTransactionType(type: string) {
         type === "composeAsset" ||
         type === "decomposeAsset" ||
         type === "increaseAssetSupply" ||
+        type === "changeAssetScheme" ||
         type === "wrapCCC" ||
         type === "unwrapCCC"
     );
