@@ -269,6 +269,14 @@ export default (
             as: "custom",
             onDelete: "CASCADE"
         });
+        Transaction.hasMany(models.AddressLog, {
+            foreignKey: "transactionHash",
+            as: "addressLogs"
+        });
+        Transaction.hasMany(models.AssetTypeLog, {
+            foreignKey: "transactionHash",
+            as: "assetTypeLogs"
+        });
     };
     return Transaction;
 };
