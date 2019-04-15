@@ -98,7 +98,7 @@ async function distributeFee(
     const totalMinFee = new U64(
         (await Promise.all(
             transactions.map(async tx => {
-                const fee = await minFee(sdk, tx.unsigned.type(), blockNumber);
+                const fee = await minFee(tx.unsigned.type());
                 if (fee == null) {
                     throw Error(
                         `No min fee for ${tx.unsigned.type()} on : ${blockNumber}`
@@ -148,21 +148,25 @@ async function distributeFee(
     return Promise.all(queries);
 }
 
-const MINIMUM_FEES: { [param: string]: Promise<number | null> } = {};
+const MINIMUM_FEES: { [param: string]: number } = {
+    pay: 100,
+    setRegularKey: 10000,
+    setShardOwners: 100000,
+    setShardUsers: 10000,
+    wrapCCC: 100000,
+    custom: 0,
+    store: 5000,
+    remove: 5000,
+    mintAsset: 100000,
+    transferAsset: 100,
+    changeAssetScheme: 100000,
+    increaseAssetSupply: 100000,
+    unwrapCCC: 100
+};
 
-function minFee(
-    sdk: SDK,
-    transactionType: string,
-    blockNumber: number
-): Promise<number | null> {
-    // FIXME: This code assumes that minimum fees are same in all blocks, but it can be changed per block.
-    if (MINIMUM_FEES[transactionType] == null) {
-        MINIMUM_FEES[transactionType] = sdk.rpc.chain.getMinTransactionFee(
-            transactionType,
-            blockNumber
-        );
-    }
-    return MINIMUM_FEES[transactionType];
+function minFee(transactionType: string): Promise<number | null> {
+    // FIXME: Revert this hard code after upgrading the mainnet.
+    return Promise.resolve(MINIMUM_FEES[transactionType]);
 }
 
 async function getDelegation(
