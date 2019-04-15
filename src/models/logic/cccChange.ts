@@ -1,5 +1,6 @@
 import { U64 } from "codechain-sdk/lib/core/classes";
 import { Transaction } from "sequelize";
+import * as Exception from "../../exception";
 import { CCCChangeInstance } from "../cccChanges";
 import models from "../index";
 
@@ -137,4 +138,34 @@ export async function changeByTx(
         },
         options
     );
+}
+
+export async function getByAddress(
+    address: string,
+    option: {
+        page: number;
+        itemsPerPage: number;
+    }
+): Promise<CCCChangeInstance[]> {
+    const { page, itemsPerPage } = option;
+    try {
+        return await models.CCCChange.findAll({
+            attributes: [
+                "address",
+                "change",
+                "blockNumber",
+                "reason",
+                "transactionHash"
+            ],
+            where: {
+                address
+            },
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage,
+            order: [["id", "ASC"]]
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
 }

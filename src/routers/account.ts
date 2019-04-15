@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as AccountModel from "../models/logic/account";
+import * as CCCChangeModel from "../models/logic/cccChange";
 import { paginationSchema, platformAddressSchema, validate } from "./validator";
 
 /**
@@ -118,6 +119,71 @@ export function handle(_C: IndexerContext, router: Router) {
             try {
                 const accountInst = await AccountModel.getByAddress(address);
                 res.json(accountInst ? accountInst.get({ plain: true }) : null);
+            } catch (e) {
+                next(e);
+            }
+        }
+    );
+
+    /**
+     * @swagger
+     * /account/{address}/balance-history:
+     *   get:
+     *     summary: Returns account of the specific address
+     *     tags: [Account]
+     *     parameters:
+     *       - name: address
+     *         description: Account's address
+     *         required: true
+     *         in: path
+     *         type: string
+     *       - name: page
+     *         description: page for the pagination (default 1)
+     *         in: query
+     *         required: false
+     *         type: number
+     *       - name: itemsPerPage
+     *         description: items per page for the pagination (default 15)
+     *         in: query
+     *         required: false
+     *         type: number
+     *     responses:
+     *       200:
+     *         description: account
+     *         schema:
+     *           type: object
+     *           properties:
+     *             address:
+     *               type: string
+     *               example: "tccq9zwe3yyg6zq0jxdr68ssrh99l2vnfxu0gwlgse8"
+     *             change:
+     *               type: string
+     *               example: "-100"
+     *             blockNumber:
+     *               type: number
+     *               example: 1231
+     *             reason:
+     *               type: number
+     *               example: "tx"
+     *             transactionHash:
+     *               type: string
+     *               example: "2894e93a7b7bff4638dbe08d87d48a74115be2a406169afb729264b8e2cb5ec5"
+     */
+    router.get(
+        "/account/:address/balance-history",
+        validate({ params: { address: platformAddressSchema } }),
+        async (req, res, next) => {
+            const address = req.params.address;
+            const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+            const itemsPerPage = req.query.itemsPerPage
+                ? parseInt(req.query.itemsPerPage, 10)
+                : 15;
+            try {
+                const accounts = await CCCChangeModel.getByAddress(address, {
+                    page,
+                    itemsPerPage
+                });
+                res.json(accounts.map(account => account.get({ plain: true })));
             } catch (e) {
                 next(e);
             }
