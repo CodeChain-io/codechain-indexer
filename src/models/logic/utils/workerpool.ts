@@ -1,11 +1,17 @@
-import { SignedTransaction } from "codechain-sdk/lib/core/classes";
+import {
+    PlatformAddress,
+    SignedTransaction
+} from "codechain-sdk/lib/core/classes";
+import { blake160, recoverEcdsa } from "codechain-sdk/lib/utils";
 import * as _ from "lodash";
 import * as workerpool from "workerpool";
+import { getApprovals, getTracker } from "./transaction";
 
 const getSignersFromSignatures = (
     txs: { signature: string; message: string }[],
     networkId: string
 ) => {
+    // tslint:disable:no-shadowed-variable
     const { recoverEcdsa, blake160 } = require("codechain-sdk/lib/utils");
     const { PlatformAddress } = require("codechain-sdk/lib/core/classes");
     return txs.map(tx => {
@@ -48,4 +54,25 @@ export const getSigners = async (
     // FIXME: Check if we need to await the terminate().
     pool.terminate();
     return signer;
+};
+
+// FIXME: Utilize multicore
+export const getApprovers = async (
+    txs: SignedTransaction[]
+): Promise<(string[] | null)[]> => {
+    return txs.map(tx => {
+        const networkId = tx.unsigned.networkId();
+        const approvals = getApprovals(tx);
+        if (approvals != null) {
+            const tracker = getTracker(tx)!;
+            return approvals.map(approval => {
+                const accountId = blake160(recoverEcdsa(tracker, approval));
+                return PlatformAddress.fromAccountId(accountId, {
+                    networkId
+                }).toString();
+            });
+        } else {
+            return null;
+        }
+    });
 };

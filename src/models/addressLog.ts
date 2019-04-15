@@ -2,6 +2,7 @@ import * as Sequelize from "sequelize";
 
 export type AddressLogType =
     | "TransactionSigner"
+    | "TransactionApprover"
     | "AssetOwner"
     | "Approver"
     | "Registrar";
