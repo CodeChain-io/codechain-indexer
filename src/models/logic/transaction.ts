@@ -25,7 +25,7 @@ import { createUnwrapCCC } from "./unwrapCCC";
 import { strip0xPrefix } from "./utils/format";
 import { fullIncludeArray } from "./utils/includeArray";
 import { getTracker, isAssetTransactionType } from "./utils/transaction";
-import { getSigners } from "./utils/workerpool";
+import { getApprovers, getSigners } from "./utils/workerpool";
 import { transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
@@ -88,6 +88,23 @@ export async function createTransactions(
         for (const tx of txs) {
             await createTransactionAction(tx, options);
         }
+        const allApprovers = await getApprovers(txs);
+        await Promise.all(
+            allApprovers.map(async (approvers, i) => {
+                if (approvers != null) {
+                    await Promise.all(
+                        approvers.map(approver =>
+                            createAddressLog(
+                                txs[i],
+                                approver,
+                                "TransactionApprover",
+                                options
+                            )
+                        )
+                    );
+                }
+            })
+        );
         await Promise.all(
             txs.map((tx, i) =>
                 createAddressLog(tx, signers[i], "TransactionSigner", options)
