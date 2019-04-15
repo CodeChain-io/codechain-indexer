@@ -43,6 +43,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: addressFilter
+     *         description: filter by type of address such as TransactionSigner, AssetOwner, Approver, Registrar given by comma saperating
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: assetType
      *         description: filter by assetType
      *         in: query
@@ -112,6 +117,7 @@ export function handle(context: IndexerContext, router: Router) {
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
+            const addressFilter = req.query.addressFilter;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
             const trackerString = req.query.tracker;
@@ -137,6 +143,10 @@ export function handle(context: IndexerContext, router: Router) {
                 }
                 const txInsts = await TxModel.getTransactions({
                     address,
+                    addressFilter:
+                        typeof addressFilter === "string"
+                            ? addressFilter.split(",")
+                            : undefined,
                     assetType,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
@@ -165,6 +175,11 @@ export function handle(context: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: sender, receiver, input, output, shard user, shard owner filter by address
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: addressFilter
+     *         description: filter by type of address such as TransactionSigner, AssetOwner, Approver, Registrar given by comma saperating
      *         in: query
      *         required: false
      *         type: string
@@ -223,6 +238,7 @@ export function handle(context: IndexerContext, router: Router) {
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
+            const addressFilter = req.query.addressFilter;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
             const trackerString = req.query.tracker;
@@ -243,6 +259,10 @@ export function handle(context: IndexerContext, router: Router) {
                 }
                 const count = await TxModel.getNumberOfTransactions({
                     address,
+                    addressFilter:
+                        typeof addressFilter === "string"
+                            ? addressFilter.split(",")
+                            : undefined,
                     assetType,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
@@ -353,6 +373,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
+     *       - name: addressFilter
+     *         description: filter by type of address such as TransactionSigner, AssetOwner, Approver, Registrar given by comma saperating
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: assetType
      *         description: filter by assetType
      *         in: query
@@ -397,6 +422,7 @@ export function handle(context: IndexerContext, router: Router) {
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
+            const addressFilter = req.query.addressFilter;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
             const page = req.query.page || 1;
@@ -408,6 +434,10 @@ export function handle(context: IndexerContext, router: Router) {
                 }
                 const pendingTxInsts = await TxModel.getPendingTransactions({
                     address,
+                    addressFilter:
+                        typeof addressFilter === "string"
+                            ? addressFilter.split(",")
+                            : undefined,
                     assetType,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
@@ -432,6 +462,11 @@ export function handle(context: IndexerContext, router: Router) {
      *     parameters:
      *       - name: address
      *         description: input, output, shard user, shard owner filter by address
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: addressFilter
+     *         description: filter by type of address such as TransactionSigner, AssetOwner, Approver, Registrar given by comma saperating
      *         in: query
      *         required: false
      *         type: string
@@ -467,6 +502,7 @@ export function handle(context: IndexerContext, router: Router) {
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
+            const addressFilter = req.query.addressFilter;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
             try {
@@ -476,6 +512,10 @@ export function handle(context: IndexerContext, router: Router) {
                 }
                 const count = await TxModel.getNumberOfPendingTransactions({
                     address,
+                    addressFilter:
+                        typeof addressFilter === "string"
+                            ? addressFilter.split(",")
+                            : undefined,
                     assetType,
                     type: typeof type === "string" ? type.split(",") : undefined
                 });

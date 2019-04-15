@@ -223,6 +223,7 @@ export async function applyTransaction(
 
 export async function getPendingTransactions(params: {
     address?: string | null;
+    addressFilter?: string[] | null;
     assetType?: H160 | null;
     type?: string[] | null;
     page: number;
@@ -273,6 +274,7 @@ export async function getAllPendingTransactionHashes() {
 
 export async function getNumberOfPendingTransactions(params: {
     address?: string | null;
+    addressFilter?: string[] | null;
     assetType?: H160 | null;
     type?: string[] | null;
 }) {
@@ -399,6 +401,7 @@ export async function removeOutdatedPendings(
 
 export async function getTransactions(params: {
     address?: string | null;
+    addressFilter?: string[] | null;
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
@@ -455,6 +458,7 @@ export async function getNumberOfEachTransactionType(
 
 export async function getNumberOfTransactions(params: {
     address?: string | null;
+    addressFilter?: string[] | null;
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
