@@ -72,7 +72,8 @@ export default class Worker {
             })
             .catch(err => {
                 console.error(
-                    "================ sync failed ===================\n"
+                    "================ sync failed ===================\n",
+                    err
                 );
                 throw err;
             });
