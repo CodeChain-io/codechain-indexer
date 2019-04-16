@@ -246,7 +246,14 @@ export async function getPendingTransactions(params: {
     page: number;
     itemsPerPage: number;
 }) {
-    const { address, assetType, type, page, itemsPerPage } = params;
+    const {
+        address,
+        addressFilter,
+        assetType,
+        type,
+        page,
+        itemsPerPage
+    } = params;
     const query = {
         isPending: true,
         ...(type == null
@@ -265,7 +272,7 @@ export async function getPendingTransactions(params: {
             offset: (page - 1) * itemsPerPage,
             include: [
                 ...fullIncludeArray,
-                ...buildIncludeArray({ address, assetType })
+                ...buildIncludeArray({ address, addressFilter, assetType })
             ]
         });
     } catch (err) {
@@ -295,7 +302,7 @@ export async function getNumberOfPendingTransactions(params: {
     assetType?: H160 | null;
     type?: string[] | null;
 }) {
-    const { address, assetType, type } = params;
+    const { address, addressFilter, assetType, type } = params;
     const query = {
         isPending: true,
         ...(type == null
@@ -307,7 +314,9 @@ export async function getNumberOfPendingTransactions(params: {
     try {
         return models.Transaction.count({
             where: query,
-            include: [...buildIncludeArray({ address, assetType })],
+            include: [
+                ...buildIncludeArray({ address, addressFilter, assetType })
+            ],
             distinct: true,
             col: "hash"
         });
@@ -431,7 +440,7 @@ export async function getTransactions(params: {
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, assetType, page, itemsPerPage } = params;
+    const { address, addressFilter, assetType, page, itemsPerPage } = params;
     try {
         return models.Transaction.findAll({
             where: {
@@ -442,7 +451,7 @@ export async function getTransactions(params: {
             offset: (page - 1) * itemsPerPage,
             include: [
                 ...fullIncludeArray,
-                ...buildIncludeArray({ address, assetType })
+                ...buildIncludeArray({ address, addressFilter, assetType })
             ]
         });
     } catch (err) {
@@ -486,13 +495,15 @@ export async function getNumberOfTransactions(params: {
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, assetType } = params;
+    const { address, addressFilter, assetType } = params;
     try {
         return models.Transaction.count({
             where: {
                 ...buildQueryForTransactions(params)
             },
-            include: [...buildIncludeArray({ address, assetType })],
+            include: [
+                ...buildIncludeArray({ address, addressFilter, assetType })
+            ],
             distinct: true,
             col: "hash"
         });
@@ -560,9 +571,10 @@ export async function getSuccessfulByTracker(
 
 function buildIncludeArray(params: {
     address?: string | null;
+    addressFilter?: string[] | null;
     assetType?: H160 | null;
 }): Sequelize.IncludeOptions[] {
-    const { address, assetType } = params;
+    const { address, addressFilter, assetType } = params;
     return [
         ...(address == null
             ? []
@@ -572,7 +584,14 @@ function buildIncludeArray(params: {
                       as: "addressLogs",
                       attributes: [],
                       where: {
-                          address
+                          address,
+                          ...(addressFilter == null
+                              ? {}
+                              : {
+                                    type: {
+                                        [Sequelize.Op.in]: addressFilter
+                                    }
+                                })
                       },
                       required: true
                   }

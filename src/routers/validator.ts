@@ -38,6 +38,7 @@ const TYPES = [
 
 const ADDRESS_TYPES = [
     "TransactionSigner",
+    "TransactionApprover",
     "AssetOwner",
     "Approver",
     "Registrar"
