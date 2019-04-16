@@ -160,6 +160,13 @@ export async function getByAddress(
             where: {
                 address
             },
+            include: [
+                {
+                    attributes: ["type"],
+                    model: models.Transaction,
+                    as: "transaction"
+                }
+            ],
             limit: itemsPerPage,
             offset: (page - 1) * itemsPerPage,
             order: [["blockNumber", "DESC"], ["id", "DESC"]]
