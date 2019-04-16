@@ -192,4 +192,17 @@ export function handle(_C: IndexerContext, router: Router) {
             }
         }
     );
+
+    router.get(
+        "/account/:address/balance-history/count",
+        validate({ params: { address: platformAddressSchema } }),
+        async (req, res, next) => {
+            try {
+                const address = req.params.address;
+                res.json(await CCCChangeModel.getCountByAddress(address));
+            } catch (e) {
+                next(e);
+            }
+        }
+    );
 }
