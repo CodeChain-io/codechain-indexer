@@ -1,6 +1,15 @@
 import { SDK } from "codechain-sdk";
+import { Transaction } from "sequelize";
 import models from "../src/models";
 import { updateCCCChange } from "../src/worker/cccChange";
+
+async function createTransaction(): Promise<Transaction> {
+    return await models.sequelize.transaction({
+        isolationLevel:
+            models.Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+        deferrable: models.Sequelize.Deferrable.SET_DEFERRED
+    });
+}
 
 async function main() {
     const networkId: string = process.env.CODECHAIN_NETWORK_ID!;
@@ -20,12 +29,9 @@ async function main() {
     let blockNumber = cccChange == null ? 0 : cccChange.get("blockNumber") + 1;
     console.log(`Start sync from ${blockNumber}`);
 
-    const transaction = await models.sequelize.transaction({
-        isolationLevel:
-            models.Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
-        deferrable: models.Sequelize.Deferrable.SET_DEFERRED
-    });
+    let transaction = await createTransaction();
     try {
+        let queries = [];
         while (true) {
             const blockProj = await models.Block.findOne({
                 order: [["number", "DESC"]]
@@ -35,10 +41,7 @@ async function main() {
             if (bestBlock <= blockNumber) {
                 break;
             }
-            const queries = [];
             for (; blockNumber <= bestBlock; blockNumber += 1) {
-                console.log(`Synchronize ${blockNumber}`);
-
                 const block = await sdk.rpc.chain.getBlock(blockNumber);
                 if (block == null) {
                     throw Error(
@@ -56,11 +59,19 @@ async function main() {
                 queries.push(
                     updateCCCChange(sdk, block, miningReward, transaction)
                 );
+                if (queries.length >= 500) {
+                    await Promise.all(queries);
+                    await transaction.commit();
+                    console.log(`#${blockNumber} block has been synchronized`);
+                    queries = [];
+                    transaction = await createTransaction();
+                }
             }
-            await Promise.all(queries);
         }
-
-        await transaction.commit();
+        if (queries.length !== 0) {
+            await Promise.all(queries);
+            await transaction.commit();
+        }
         console.log("Migration finished");
     } catch (err) {
         console.error(err);
