@@ -114,22 +114,24 @@ async function distributeFee(
     );
     let distributed = new U64(0);
     const queries = [];
-    for (const [holder, weight] of stakeBalances) {
-        const fraction = totalMinFee.times(weight).idiv(totalStake);
-        if (fraction.isEqualTo(0)) {
-            continue;
+    if (totalStake.isGreaterThan(0)) {
+        for (const [holder, weight] of stakeBalances) {
+            const fraction = totalMinFee.times(weight).idiv(totalStake);
+            if (fraction.isEqualTo(0)) {
+                continue;
+            }
+            distributed = distributed.plus(fraction);
+            queries.push(
+                CCCChangeModel.stakeReward(
+                    {
+                        address: holder.value,
+                        change: fraction,
+                        blockNumber
+                    },
+                    { transaction }
+                )
+            );
         }
-        distributed = distributed.plus(fraction);
-        queries.push(
-            CCCChangeModel.stakeReward(
-                {
-                    address: holder.value,
-                    change: fraction,
-                    blockNumber
-                },
-                { transaction }
-            )
-        );
     }
     const change = miningReward.minus(distributed);
     if (change.isEqualTo(0)) {
