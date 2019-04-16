@@ -162,7 +162,7 @@ export async function getByAddress(
             },
             limit: itemsPerPage,
             offset: (page - 1) * itemsPerPage,
-            order: [["id", "ASC"]]
+            order: [["blockNumber", "DESC"], ["id", "DESC"]]
         });
     } catch (err) {
         console.error(err);
