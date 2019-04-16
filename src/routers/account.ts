@@ -171,7 +171,10 @@ export function handle(_C: IndexerContext, router: Router) {
      */
     router.get(
         "/account/:address/balance-history",
-        validate({ params: { address: platformAddressSchema } }),
+        validate({
+            params: { address: platformAddressSchema },
+            query: { ...paginationSchema }
+        }),
         async (req, res, next) => {
             const address = req.params.address;
             const page = req.query.page ? parseInt(req.query.page, 10) : 1;
