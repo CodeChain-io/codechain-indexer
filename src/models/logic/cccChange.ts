@@ -169,3 +169,16 @@ export async function getByAddress(
         throw Exception.DBError();
     }
 }
+
+export async function getCountByAddress(address: string): Promise<number> {
+    try {
+        return models.CCCChange.count({
+            where: {
+                address
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
