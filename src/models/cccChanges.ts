@@ -76,5 +76,11 @@ export default (
         },
         {}
     );
+    CCCChange.associate = models => {
+        CCCChange.belongsTo(models.Transaction, {
+            foreignKey: "transactionHash",
+            as: "transaction"
+        });
+    };
     return CCCChange;
 };
