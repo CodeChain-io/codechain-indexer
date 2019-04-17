@@ -8,6 +8,20 @@ async function runServer() {
     process.env.NODE_ENV = process.env.NODE_ENV || "dev";
     const options = require("config") as IndexerConfig;
     const context = IndexerContext.newInstance(options);
+
+    const rpcNetworkId = await context.sdk.rpc.chain
+        .getNetworkId()
+        .catch(() => "unavailable");
+    if (rpcNetworkId !== options.codechain.networkId) {
+        console.error("Error: The network ID does not match.");
+        console.error(`- Your configuration: ${options.codechain.networkId}`);
+        console.error(
+            `- Response from ${options.codechain.host}: ${rpcNetworkId}`
+        );
+        console.error("Aborted.");
+        return;
+    }
+
     process.on("SIGINT", async () => {
         console.log("Caught interrupt signal.");
         await context.destroy();
