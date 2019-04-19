@@ -7,6 +7,7 @@ import * as _ from "lodash";
 import * as workerpool from "workerpool";
 import { getApprovals, getTracker } from "./transaction";
 
+/* istanbul ignore next */
 const getSignersFromSignatures = (
     txs: { signature: string; message: string }[],
     networkId: string
