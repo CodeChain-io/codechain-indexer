@@ -44,6 +44,8 @@ const ADDRESS_TYPES = [
     "Registrar"
 ];
 
+const REASON_TYPES = ["fee", "author", "stake", "tx", "initial_distribution"];
+
 const LOG_FILTER = ["block", "tx", ...TYPES];
 
 // FIXME:
@@ -57,6 +59,9 @@ export const assetTypeSchema = Joi.string().regex(/^(0x)?[0-9a-f]{40}$/);
 const tracker = Joi.string().regex(/^(0x)?[0-9a-f]{64}$/);
 const type = Joi.string().regex(
     new RegExp(`^(${TYPES.join("|")})(,(${TYPES.join("|")}))*$`)
+);
+const reasonFilter = Joi.string().regex(
+    new RegExp(`^(${REASON_TYPES.join("|")})(,(${REASON_TYPES.join("|")}))*$`)
 );
 const shardId = Joi.number();
 const onlyConfirmed = Joi.boolean();
@@ -105,6 +110,10 @@ export const blockSchema = {
 
 export const syncSchema = {
     sync
+};
+
+export const reasonFilterSchema = {
+    reasonFilter
 };
 
 const logFilter = Joi.string().regex(
