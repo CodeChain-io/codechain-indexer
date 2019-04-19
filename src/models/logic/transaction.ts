@@ -694,8 +694,16 @@ function buildIncludeArray(params: {
 
 export async function getRegularKeyOwnerByPublicKey(
     pubkey: string,
-    options: { transaction?: Transaction }
+    options: { transaction?: Transaction; blockNumber?: number }
 ): Promise<string | null> {
+    const where: any =
+        options.blockNumber != null
+            ? {
+                  blockNumber: {
+                      [Sequelize.Op.lte]: options.blockNumber
+                  }
+              }
+            : undefined;
     const tx = await models.Transaction.findOne({
         include: [
             {
@@ -707,6 +715,7 @@ export async function getRegularKeyOwnerByPublicKey(
             }
         ],
         order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+        where,
         transaction: options.transaction
     });
     if (tx == null) {
