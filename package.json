@@ -38,6 +38,7 @@
     "workerpool": "^3.1.1"
   },
   "scripts": {
+    "build": "tsc -p .",
     "reset": "sequelize db:migrate:undo:all && sequelize db:migrate",
     "drop": "sequelize db:migrate:undo:all",
     "migrate": "sequelize db:migrate",

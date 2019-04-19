@@ -28,3 +28,5 @@ kibana.yml
 
 # keyfile for test
 keystore.db
+
+/build/

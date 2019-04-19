@@ -71,12 +71,21 @@ sudo -u postgres psql -f create_user_and_db.sql
 yarn migrate
 ```
 
-## Run
+## Run (for development)
 
 ```
 yarn run start
 
 # You can change the host of CodeChain and DB host on the config/dev.json
+```
+
+## Run (for production)
+
+```
+yarn build
+NODE_ENV=production node ./build/index.js
+
+# You can change the host of CodeChain and DB host on the config/production.json
 ```
 
 ## Test
