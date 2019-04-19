@@ -1,8 +1,8 @@
 import * as moment from "moment";
 import { Transaction } from "sequelize";
-import * as LogModel from "../../src/models/logic/log";
 import { BlockAttribute } from "../models/block";
 import { LogType } from "../models/log";
+import * as LogModel from "../models/logic/log";
 import { getNumberOfEachTransactionType } from "../models/logic/transaction";
 
 export async function indexLog(
