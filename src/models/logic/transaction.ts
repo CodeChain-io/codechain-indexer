@@ -2,6 +2,7 @@ import * as assert from "assert";
 import { SDK } from "codechain-sdk";
 import { H160, H256, SignedTransaction } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
+import { Transaction } from "sequelize";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import models from "../index";
@@ -66,7 +67,7 @@ export async function createTransactions(
     options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<TransactionInstance[]> {
     try {
-        const signers = await getSigners(txs);
+        const signers = await getSigners(txs, options);
         const txInstances = await models.Transaction.bulkCreate(
             txs.map((tx, i) => ({
                 hash: strip0xPrefix(tx.hash().value),
@@ -689,4 +690,27 @@ function buildIncludeArray(params: {
                   }
               ])
     ];
+}
+
+export async function getRegularKeyOwnerByPublicKey(
+    pubkey: string,
+    options: { transaction?: Transaction }
+): Promise<string | null> {
+    const tx = await models.Transaction.findOne({
+        include: [
+            {
+                model: models.SetRegularKey,
+                as: "setRegularKey",
+                where: {
+                    key: strip0xPrefix(pubkey)
+                }
+            }
+        ],
+        order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+        transaction: options.transaction
+    });
+    if (tx == null) {
+        return null;
+    }
+    return tx.get("signer");
 }

@@ -44,7 +44,7 @@
     "migrate": "sequelize db:migrate",
     "start": "ts-node src/index.ts",
     "del": "ts-node script/deleteBlock.ts",
-    "test": "NODE_ENV=test mocha --exit -r ts-node/register --timeout 30000 --recursive \"test/**/*.spec.ts\"",
+    "test": "NODE_ENV=test mocha --exit -r ts-node/register --timeout 60000 --recursive \"test/**/*.spec.ts\"",
     "lint": "tslint -p . && prettier '{src,test,script}/**/*.{ts,js,json}' -l",
     "fmt": "tslint -p . --fix && prettier '{src,test,script}/**/*.{ts,js,json}' --write"
   },
