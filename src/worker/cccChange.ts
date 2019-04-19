@@ -11,6 +11,7 @@ import { getCCSBalance, getCCSHolders } from "codechain-stakeholder-sdk";
 import { Transaction } from "sequelize";
 import { CCCChangeInstance } from "../models/cccChanges";
 import * as CCCChangeModel from "../models/logic/cccChange";
+import * as TransactionModel from "../models/logic/transaction";
 
 const rlp = require("rlp");
 
@@ -193,15 +194,16 @@ async function getDelegation(
 async function getFeePayer(
     sdk: SDK,
     signerPublic: H512,
-    blockNumber: number
+    blockNumber: number,
+    transaction: Transaction
 ): Promise<PlatformAddress> {
-    const owner = await sdk.rpc.chain.getRegularKeyOwner(
-        signerPublic,
-        blockNumber
+    const owner = await TransactionModel.getRegularKeyOwnerByPublicKey(
+        signerPublic.value,
+        { blockNumber, transaction }
     );
     return owner == null
         ? PlatformAddress.fromPublic(signerPublic, { networkId: sdk.networkId })
-        : owner;
+        : PlatformAddress.ensure(owner);
 }
 
 async function payFee(
@@ -213,8 +215,12 @@ async function payFee(
     const queries = [];
     for (const tx of transactions) {
         const signerPublic = tx.getSignerPublic();
-        const address = (await getFeePayer(sdk, signerPublic, blockNumber))
-            .value;
+        const address = (await getFeePayer(
+            sdk,
+            signerPublic,
+            blockNumber,
+            transaction
+        )).value;
         const transactionHash = tx.hash().value;
         const change = tx.unsigned.fee()!;
         if (change.isEqualTo(0)) {
@@ -252,7 +258,8 @@ async function trackBalanceChangeByTx(
                 const sender = (await getFeePayer(
                     sdk,
                     tx.getSignerPublic(),
-                    blockNumber
+                    blockNumber,
+                    transaction
                 )).value;
                 if (receiver === sender) {
                     continue;
@@ -288,7 +295,8 @@ async function trackBalanceChangeByTx(
                 const receiver = (await getFeePayer(
                     sdk,
                     tx.getSignerPublic(),
-                    blockNumber
+                    blockNumber,
+                    transaction
                 )).value;
                 const wrap = tx.unsigned as any;
                 const change = wrap.quantity;
@@ -310,7 +318,8 @@ async function trackBalanceChangeByTx(
                 const receiver = (await getFeePayer(
                     sdk,
                     tx.getSignerPublic(),
-                    blockNumber
+                    blockNumber,
+                    transaction
                 )).value;
                 const unwrap = tx.unsigned as UnwrapCCC;
                 const change = unwrap.burn(0)!.prevOut.quantity;
