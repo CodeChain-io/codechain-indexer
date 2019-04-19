@@ -1,7 +1,8 @@
 import { U64 } from "codechain-sdk/lib/core/classes";
 import { Transaction } from "sequelize";
+import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
-import { CCCChangeInstance } from "../cccChanges";
+import { CCCChangeInstance, defaultAllReasons } from "../cccChanges";
 import models from "../index";
 
 async function createCCCChange(
@@ -145,9 +146,10 @@ export async function getByAddress(
     option: {
         page: number;
         itemsPerPage: number;
+        reasonFilter?: string[];
     }
 ): Promise<CCCChangeInstance[]> {
-    const { page, itemsPerPage } = option;
+    const { page, itemsPerPage, reasonFilter = defaultAllReasons } = option;
     try {
         return await models.CCCChange.findAll({
             attributes: [
@@ -158,7 +160,10 @@ export async function getByAddress(
                 "transactionHash"
             ],
             where: {
-                address
+                address,
+                reason: {
+                    [Sequelize.Op.in]: reasonFilter
+                }
             },
             include: [
                 {

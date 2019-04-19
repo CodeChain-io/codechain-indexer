@@ -2,7 +2,12 @@ import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as AccountModel from "../models/logic/account";
 import * as CCCChangeModel from "../models/logic/cccChange";
-import { paginationSchema, platformAddressSchema, validate } from "./validator";
+import {
+    paginationSchema,
+    platformAddressSchema,
+    reasonFilterSchema,
+    validate
+} from "./validator";
 
 /**
  * @swagger
@@ -173,9 +178,10 @@ export function handle(_C: IndexerContext, router: Router) {
         "/account/:address/balance-history",
         validate({
             params: { address: platformAddressSchema },
-            query: { ...paginationSchema }
+            query: { ...reasonFilterSchema, ...paginationSchema }
         }),
         async (req, res, next) => {
+            const reasonFilter = req.query.reasonFilter;
             const address = req.params.address;
             const page = req.query.page ? parseInt(req.query.page, 10) : 1;
             const itemsPerPage = req.query.itemsPerPage
@@ -184,7 +190,11 @@ export function handle(_C: IndexerContext, router: Router) {
             try {
                 const accounts = await CCCChangeModel.getByAddress(address, {
                     page,
-                    itemsPerPage
+                    itemsPerPage,
+                    reasonFilter:
+                        typeof reasonFilter === "string"
+                            ? reasonFilter.split(",")
+                            : undefined
                 });
                 res.json(accounts.map(account => account.get({ plain: true })));
             } catch (e) {

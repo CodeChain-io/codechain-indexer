@@ -1,10 +1,19 @@
 import * as Sequelize from "sequelize";
 
+export type Reason = "fee" | "author" | "stake" | "tx" | "initial_distribution";
+export const defaultAllReasons = [
+    "fee",
+    "author",
+    "stake",
+    "tx",
+    "initial_distribution"
+];
+
 export interface CCCChangeAttribute {
     address: string;
     change: string;
     blockNumber: number;
-    reason: "fee" | "author" | "stake" | "tx" | "initial_distribution";
+    reason: Reason;
     transactionHash?: string;
     createdAt?: string;
     updatedAt?: string;
