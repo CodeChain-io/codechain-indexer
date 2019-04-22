@@ -182,11 +182,20 @@ export async function getByAddress(
     }
 }
 
-export async function getCountByAddress(address: string): Promise<number> {
+export async function getCountByAddress(
+    address: string,
+    option: {
+        reasonFilter?: string[];
+    }
+): Promise<number> {
+    const { reasonFilter = defaultAllReasons } = option;
     try {
         return models.CCCChange.count({
             where: {
-                address
+                address,
+                reason: {
+                    [Sequelize.Op.in]: reasonFilter
+                }
             }
         });
     } catch (err) {
