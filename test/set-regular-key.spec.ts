@@ -2,6 +2,7 @@ import { expect } from "chai";
 import "mocha";
 import { SignedTransaction } from "codechain-sdk/lib/core/SignedTransaction";
 import * as AccountModel from "../src/models/logic/account";
+import { getSigners } from "../src/models/logic/utils/workerpool";
 import * as Helper from "./helper";
 
 describe("set-regular-key", function() {
@@ -23,6 +24,173 @@ describe("set-regular-key", function() {
 
     it("1000 transactions after Set regular key", async function() {
         await testPayAfterSetRegularKey(1000);
+    });
+
+    it("get signers of 100 transactions without workerpool", async function() {
+        const masterPrivateKey = Helper.sdk.util.generatePrivateKey();
+        const masterAccountId = Helper.sdk.util
+            .getAccountIdFromPrivate(masterPrivateKey)
+            .toString();
+        const master = Helper.sdk.core.classes.PlatformAddress.fromAccountId(
+            masterAccountId,
+            {
+                networkId: Helper.sdk.networkId
+            }
+        ).toString();
+        const regularPrivateKey = Helper.sdk.util.generatePrivateKey();
+        await prepareRegularKeyRegisteredAccount(
+            1_000_000,
+            masterPrivateKey,
+            regularPrivateKey
+        );
+        await Helper.worker.sync();
+
+        const quantity = 1000;
+        const fee = 100;
+        const count = 100;
+        const transactions = createSignedPay({
+            count,
+            quantity,
+            fee,
+            secret: regularPrivateKey,
+            seq: 10
+        });
+        const signers = await getSigners(transactions, {
+            threshold: 400
+        });
+        for (const signer of signers) {
+            expect(signer).equal(master);
+        }
+    });
+
+    it("get signers of 100 transactions with workerpool", async function() {
+        const masterPrivateKey = Helper.sdk.util.generatePrivateKey();
+        const masterAccountId = Helper.sdk.util
+            .getAccountIdFromPrivate(masterPrivateKey)
+            .toString();
+        const master = Helper.sdk.core.classes.PlatformAddress.fromAccountId(
+            masterAccountId,
+            {
+                networkId: Helper.sdk.networkId
+            }
+        ).toString();
+        const regularPrivateKey = Helper.sdk.util.generatePrivateKey();
+        await prepareRegularKeyRegisteredAccount(
+            1_000_000,
+            masterPrivateKey,
+            regularPrivateKey
+        );
+        await Helper.worker.sync();
+
+        const quantity = 1000;
+        const fee = 100;
+        const count = 100;
+        const transactions = createSignedPay({
+            count,
+            quantity,
+            fee,
+            secret: regularPrivateKey,
+            seq: 10
+        });
+        for (const tx of transactions) {
+            expect(tx.unsigned.networkId()).equal("tc");
+        }
+        const signers = await getSigners(transactions, {
+            threshold: 30
+        });
+        for (const signer of signers) {
+            expect(signer).equal(master);
+        }
+    });
+
+    it("get signers of 10 different signer without workerpool", async function() {
+        const keys = [];
+        for (let i = 0; i < 10; i += 1) {
+            const masterPrivateKey = Helper.sdk.util.generatePrivateKey();
+            const masterAccountId = Helper.sdk.util
+                .getAccountIdFromPrivate(masterPrivateKey)
+                .toString();
+            const master = Helper.sdk.core.classes.PlatformAddress.fromAccountId(
+                masterAccountId,
+                {
+                    networkId: Helper.sdk.networkId
+                }
+            ).toString();
+            const regularPrivateKey = Helper.sdk.util.generatePrivateKey();
+            keys.push([masterPrivateKey, master, regularPrivateKey]);
+        }
+        for (const key of keys) {
+            await prepareRegularKeyRegisteredAccount(1_000_000, key[0], key[2]);
+        }
+        await Helper.worker.sync();
+
+        const quantity = 1000;
+        const fee = 100;
+        const transactions = [];
+        for (const key of keys) {
+            transactions.push(
+                createSignedPay({
+                    count: 1,
+                    quantity,
+                    fee,
+                    secret: key[2],
+                    seq: 10
+                })[0]
+            );
+        }
+        const signers = await getSigners(transactions, {
+            threshold: 400
+        });
+        expect(signers.length).equal(10);
+        expect(transactions.length).equal(10);
+        expect(keys.length).equal(10);
+        for (let i = 0; i < 10; i += 1) {
+            expect(signers[i]).equal(keys[i][1]);
+        }
+    });
+
+    it("get signers of 10 different signer with workerpool", async function() {
+        const keys = [];
+        for (let i = 0; i < 10; i += 1) {
+            const masterPrivateKey = Helper.sdk.util.generatePrivateKey();
+            const masterAccountId = Helper.sdk.util
+                .getAccountIdFromPrivate(masterPrivateKey)
+                .toString();
+            const master = Helper.sdk.core.classes.PlatformAddress.fromAccountId(
+                masterAccountId,
+                {
+                    networkId: Helper.sdk.networkId
+                }
+            ).toString();
+            const regularPrivateKey = Helper.sdk.util.generatePrivateKey();
+            keys.push([masterPrivateKey, master, regularPrivateKey]);
+        }
+        for (const key of keys) {
+            await prepareRegularKeyRegisteredAccount(1_000_000, key[0], key[2]);
+        }
+        await Helper.worker.sync();
+
+        const quantity = 1000;
+        const fee = 100;
+        const transactions = [];
+        for (const key of keys) {
+            transactions.push(
+                createSignedPay({
+                    count: 1,
+                    quantity,
+                    fee,
+                    secret: key[2],
+                    seq: 10
+                })[0]
+            );
+        }
+        const signers = await getSigners(transactions, { threshold: 4 });
+        expect(signers.length).equal(10);
+        expect(transactions.length).equal(10);
+        expect(keys.length).equal(10);
+        for (let i = 0; i < 10; i += 1) {
+            expect(signers[i]).equal(keys[i][1]);
+        }
     });
 });
 
