@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Data synchronizing tool between CodeChain and DB",
   "repository": "https://github.com/CodeChain-io/codechain-indexer",
+  "author": "CodeChain Team <hi@codechain.io>",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=10",
