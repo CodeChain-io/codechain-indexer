@@ -22,7 +22,9 @@ const ACCOUNT_PASSPHRASE = process.env.ACCOUNT_PASSPHRASE || "satoshi";
         metadata: {
             name: "Gold",
             description: "An asset example",
-            icon_url: "https://gold.image/"
+            icon_url: "https://gold.image/",
+            seed: Math.floor(Math.random().toString() * 10000),
+            created_at: new Date().toISOString()
         },
         supply: 10000,
         approver: null
@@ -52,40 +54,29 @@ const ACCOUNT_PASSPHRASE = process.env.ACCOUNT_PASSPHRASE || "satoshi";
         );
     await sdk.key.signTransactionInput(transferTx, 0);
 
-    await sdk.rpc.chain.sendTransaction(mintTx, {
-        account: ACCOUNT_ADDRESS,
-        passphrase: ACCOUNT_PASSPHRASE
-    });
-    await sdk.rpc.chain.sendTransaction(transferTx, {
+    const mintHash = await sdk.rpc.chain.sendTransaction(mintTx, {
         account: ACCOUNT_ADDRESS,
         passphrase: ACCOUNT_PASSPHRASE
     });
 
-    const mintTxResults = await sdk.rpc.chain.getTransactionResultsByTracker(
-        mintTx.tracker(),
-        {
-            timeout: 300 * 1000
-        }
-    );
-    if (!mintTxResults[0]) {
-        throw Error(
-            `AssetMintTransaction failed: ${JSON.stringify(
-                mintTxResults[0].error
-            )}`
-        );
+    const mintError = await sdk.rpc.chain.getErrorHint(mintHash);
+    if (mintError != null) {
+        throw Error(`AssetMintTransaction failed: ${mintError}`);
     }
-    const transferTxResults = await sdk.rpc.chain.getTransactionResultsByTracker(
-        transferTx.tracker(),
-        {
-            timeout: 300 * 1000
-        }
-    );
-    if (!transferTxResults[0]) {
-        throw Error(
-            `AssetTransferTransaction failed: ${JSON.stringify(
-                transferTxResults[0].error
-            )}`
-        );
+    if ((await sdk.rpc.chain.getTransaction(mintHash)) == null) {
+        throw Error(`Mint transaction ${mintHash.value} failed`);
+    }
+
+    const transferHash = await sdk.rpc.chain.sendTransaction(transferTx, {
+        account: ACCOUNT_ADDRESS,
+        passphrase: ACCOUNT_PASSPHRASE
+    });
+    const transferError = await sdk.rpc.chain.getErrorHint(transferHash);
+    if (transferError != null) {
+        throw Error(`AssetTransferTransaction failed: ${transferError}`);
+    }
+    if ((await sdk.rpc.chain.getTransaction(transferHash)) == null) {
+        throw Error(`Transfer transaction ${transferHash.value} failed`);
     }
 
     // Unspent Bob's 3000 golds

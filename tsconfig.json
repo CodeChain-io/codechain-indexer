@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "types": ["node", "jest"],
+    "types": ["node"],
     "module": "commonjs",
     "declaration": true,
     "strict": true,
