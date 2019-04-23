@@ -37,16 +37,17 @@ const getSignersFromPubKeyAndRegularKeyOwner = (
 
 export const getSigners = async (
     txs: SignedTransaction[],
-    options: { transaction?: Sequelize.Transaction }
+    options: { transaction?: Sequelize.Transaction; threshold?: number } = {}
 ): Promise<string[]> => {
-    if (txs.length < 400) {
+    const threshold = options.threshold == null ? 400 : options.threshold;
+    if (txs.length < threshold) {
         // NOTE: Don't create workerpool when there is a small number of transactions.
         return Promise.all(
             txs.map(async tx => {
                 const pubKey = tx.getSignerPublic().value;
                 const regularKeyOwner = await getRegularKeyOwnerByPublicKey(
                     pubKey,
-                    options
+                    { transaction: options.transaction }
                 );
                 if (regularKeyOwner != null) {
                     return regularKeyOwner;
