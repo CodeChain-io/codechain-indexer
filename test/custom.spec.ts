@@ -1,3 +1,3 @@
-test("Test for custom action", done => {
-    done();
-});
+import "mocha";
+
+describe.skip("Test for custom action", function() {});

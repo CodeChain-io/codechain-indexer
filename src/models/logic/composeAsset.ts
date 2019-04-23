@@ -111,7 +111,12 @@ export async function createComposeAsset(
         assetType,
         transactionHash,
         {
-            ...assetScheme,
+            metadata: assetScheme.metadata,
+            approver: assetScheme.approver,
+            registrar: assetScheme.registrar,
+            allowedScriptHashes: assetScheme.allowedScriptHashes,
+            supply: assetScheme.supply,
+            seq: assetScheme.seq,
             networkId,
             shardId
         },

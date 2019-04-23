@@ -1,143 +1,121 @@
+import { expect } from "chai";
+import "mocha";
 import * as moment from "moment";
-import models from "../src/models";
 import { LogType } from "../src/models/log";
 import * as LogModel from "../src/models/logic/log";
 import * as Helper from "./helper";
 
 let blockLogCount = 0;
 let txLogCount = 0;
-beforeAll(async done => {
-    await Helper.resetDb();
-    const date = moment()
-        .utc()
-        .format("YYYY-MM-DD");
 
-    await Helper.worker.sync();
+describe("log", function() {
+    before(async function() {
+        this.timeout("60s");
 
-    const blockLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
-    if (blockLogInst) {
-        blockLogCount = blockLogInst!.get().count;
-    }
-    const txLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
-    if (txLogInst) {
-        txLogCount = txLogInst!.get().count;
-    }
+        await Helper.resetDb();
+        const date = moment()
+            .utc()
+            .format("YYYY-MM-DD");
 
-    await Helper.runExample("mint-and-transfer");
+        await Helper.worker.sync();
 
-    await Helper.worker.sync();
+        const blockLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
+        if (blockLogInst) {
+            blockLogCount = blockLogInst!.get().count;
+        }
+        const txLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
+        if (txLogInst) {
+            txLogCount = txLogInst!.get().count;
+        }
 
-    done();
-}, 60_000);
+        await Helper.runExample("mint-and-transfer");
 
-afterAll(async done => {
-    await models.sequelize.close();
-    done();
-});
+        await Helper.worker.sync();
+    });
 
-test("Check log block count", async done => {
-    const date = moment()
-        .utc()
-        .format("YYYY-MM-DD");
-    const nextLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
-    expect(nextLogInst).toBeTruthy();
-    expect(nextLogInst!.get().count).toEqual(blockLogCount + 2);
+    it("Check log block count", async function() {
+        const date = moment()
+            .utc()
+            .format("YYYY-MM-DD");
+        const nextLogInst = await LogModel.getLog(date, LogType.BLOCK_COUNT);
+        expect(nextLogInst).not.null;
+        expect(nextLogInst!.get().count).equal(blockLogCount + 2);
+    });
 
-    done();
-});
+    it.skip("Check log block miner", function() {
+        // TODO
+    });
 
-test("Check log block miner", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log pay count", function() {
+        // TODO
+    });
 
-test("Check log pay count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log setRegularKey count", function() {
+        // TODO
+    });
 
-test("Check log setRegularKey count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log createShard count", function() {
+        // TODO
+    });
 
-test("Check log createShard count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log setShardUsers count", function() {
+        // TODO
+    });
 
-test("Check log setShardUsers count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log setShardOwners count", function() {
+        // TODO
+    });
 
-test("Check log setShardOwners count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log assetTransaciton count", function() {
+        // TODO
+    });
 
-test("Check log assetTransaciton count", async done => {
-    // TODO
-    done();
-});
+    it("Check log transaction count", async function() {
+        const date = moment()
+            .utc()
+            .format("YYYY-MM-DD");
+        const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
+        expect(nextLogInst).not.null;
+        expect(nextLogInst!.get().count).equal(txLogCount + 2);
+    });
 
-test("Check log transaction count", async done => {
-    const date = moment()
-        .utc()
-        .format("YYYY-MM-DD");
-    const nextLogInst = await LogModel.getLog(date, LogType.TX_COUNT);
-    expect(nextLogInst).toBeTruthy();
-    expect(nextLogInst!.get().count).toEqual(txLogCount + 2);
+    it.skip("Check log mint transaction count", function() {
+        // TODO
+    });
 
-    done();
-});
+    it.skip("Check log transfer transaction count", function() {
+        // TODO
+    });
 
-test("Check log mint transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log compose transaction count", function() {
+        // TODO
+    });
 
-test("Check log transfer transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log decompose transaction count", function() {
+        // TODO
+    });
 
-test("Check log compose transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log change assetScheme transaction count", function() {
+        // TODO
+    });
 
-test("Check log decompose transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log store transaction count", function() {
+        // TODO
+    });
 
-test("Check log change assetScheme transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log remove transaction count", function() {
+        // TODO
+    });
 
-test("Check log store transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log custom transaction count", function() {
+        // TODO
+    });
 
-test("Check log remove transaction count", async done => {
-    // TODO
-    done();
-});
+    it.skip("Check log wrapCCC transaction count", function() {
+        // TODO
+    });
 
-test("Check log custom transaction count", async done => {
-    // TODO
-    done();
-});
-
-test("Check log wrapCCC transaction count", async done => {
-    // TODO
-    done();
-});
-
-test("Check log unwrapCCC transaction count", async done => {
-    // TODO
-    done();
+    it.skip("Check log unwrapCCC transaction count", function() {
+        // TODO
+    });
 });

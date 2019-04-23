@@ -1,3 +1,3 @@
-test("Create compose-decompose block", done => {
-    done();
-});
+import "mocha";
+
+describe.skip("Create compose-decompose block", function() {});

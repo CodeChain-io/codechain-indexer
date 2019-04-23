@@ -1,80 +1,103 @@
+import { expect } from "chai";
 import { H256 } from "codechain-primitives/lib";
 import { Block, MintAsset } from "codechain-sdk/lib/core/classes";
-import models from "../src/models";
+import "mocha";
 import * as BlockModel from "../src/models/logic/block";
 import * as UTXOModel from "../src/models/logic/utxo";
 import * as Helper from "./helper";
 
-let mintBlock: Block;
-let transferBlock: Block;
-let assetType: H256;
+describe("snapshot", function() {
+    let mintBlock: Block;
+    let transferBlock: Block;
+    let assetType: H256;
 
-beforeAll(async done => {
-    // Sync the genesis block.
-    await Helper.worker.sync();
-    await Helper.runExample("import-test-account");
-    await Helper.runExample("mint-and-transfer");
-    const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
-    const mintBlockNumber = bestBlockNumber - 1;
-    mintBlock = (await Helper.sdk.rpc.chain.getBlock(mintBlockNumber))!;
-    const assetMintTransaction = mintBlock.transactions[0]
-        .unsigned as MintAsset;
-    assetType = assetMintTransaction.getAssetType();
-    transferBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber))!;
-    done();
-}, 30_000);
+    beforeEach(async function() {
+        this.timeout("30s");
 
-afterAll(async done => {
-    await models.sequelize.close();
-    done();
+        // Sync the genesis block.
+        await Helper.resetDb();
+        await Helper.worker.sync();
+        await Helper.runExample("import-test-account");
+        await Helper.runExample("mint-and-transfer");
+        const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
+        const mintBlockNumber = bestBlockNumber - 1;
+        mintBlock = (await Helper.sdk.rpc.chain.getBlock(mintBlockNumber))!;
+        const assetMintTransaction = mintBlock.transactions[0]
+            .unsigned as MintAsset;
+        assetType = assetMintTransaction.getAssetType();
+        transferBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber))!;
+    });
+
+    it("Get an empty snapshot", async function() {
+        const snapshot = await UTXOModel.getSnapshot(
+            assetType,
+            mintBlock.number
+        );
+        expect(snapshot.length).equal(0);
+    });
+
+    it("Sync", async function() {
+        const prevBlockCount = await BlockModel.getNumberOfBlocks({});
+        await Helper.worker.sync();
+        const blockCount = await BlockModel.getNumberOfBlocks({});
+        expect(blockCount).equal(prevBlockCount + 2);
+    });
+
+    it("Fail to get the transfer block by timestamp", async function() {
+        const block = await BlockModel.getByTime(transferBlock.timestamp);
+        expect(block).be.null;
+    });
 });
 
-test("Get an empty snapshot", async done => {
-    const snapshot = await UTXOModel.getSnapshot(assetType, mintBlock.number);
-    expect(snapshot).toHaveLength(0);
-    done();
-});
+describe("snapshot synchronized", function() {
+    let mintBlock: Block;
+    let transferBlock: Block;
+    let assetType: H256;
 
-test("Sync", async done => {
-    const prevBlockCount = await BlockModel.getNumberOfBlocks({});
-    await Helper.worker.sync();
-    const blockCount = await BlockModel.getNumberOfBlocks({});
-    expect(blockCount).toBe(prevBlockCount + 2);
-    done();
-});
+    before(async function() {
+        this.timeout("30s");
 
-test("Get the mint snapshot", async done => {
-    const snapshot = await UTXOModel.getSnapshot(assetType, mintBlock.number);
-    expect(snapshot).toHaveLength(1);
-    done();
-});
+        // Sync the genesis block.
+        await Helper.resetDb();
+        await Helper.worker.sync();
+        await Helper.runExample("import-test-account");
+        await Helper.runExample("mint-and-transfer");
+        const bestBlockNumber = await Helper.sdk.rpc.chain.getBestBlockNumber();
+        const mintBlockNumber = bestBlockNumber - 1;
+        mintBlock = (await Helper.sdk.rpc.chain.getBlock(mintBlockNumber))!;
+        const assetMintTransaction = mintBlock.transactions[0]
+            .unsigned as MintAsset;
+        assetType = assetMintTransaction.getAssetType();
+        transferBlock = (await Helper.sdk.rpc.chain.getBlock(bestBlockNumber))!;
+        await Helper.worker.sync();
+    });
 
-test("Fail to get the transfer block by timestamp", async done => {
-    const block = await BlockModel.getByTime(transferBlock.timestamp);
-    expect(block).toBeNull();
-    done();
-});
+    it("Get the mint snapshot", async function() {
+        const snapshot = await UTXOModel.getSnapshot(
+            assetType,
+            mintBlock.number
+        );
+        expect(snapshot.length).equal(1);
+    });
 
-test("Add another block", async done => {
-    const prevBlockCount = await BlockModel.getNumberOfBlocks({});
-    await Helper.runExample("send-signed-tx");
-    await Helper.worker.sync();
-    const blockCount = await BlockModel.getNumberOfBlocks({});
-    expect(blockCount).toBe(prevBlockCount + 1);
-    done();
-});
+    it("Add another block", async function() {
+        const prevBlockCount = await BlockModel.getNumberOfBlocks({});
+        await Helper.runExample("send-signed-tx");
+        await Helper.worker.sync();
+        const blockCount = await BlockModel.getNumberOfBlocks({});
+        expect(blockCount).equal(prevBlockCount + 1);
+    });
 
-test("Get the transfer block by timestamp", async done => {
-    const block = await BlockModel.getByTime(transferBlock.timestamp);
-    expect(block).toBeTruthy();
-    done();
-});
+    it("Get the transfer block by timestamp", async function() {
+        const block = await BlockModel.getByTime(transferBlock.timestamp);
+        expect(block).not.null;
+    });
 
-test("Get the transfer snapshot", async done => {
-    const snapshot = await UTXOModel.getSnapshot(
-        assetType,
-        transferBlock.number
-    );
-    expect(snapshot).toHaveLength(2);
-    done();
+    it("Get the transfer snapshot", async function() {
+        const snapshot = await UTXOModel.getSnapshot(
+            assetType,
+            transferBlock.number
+        );
+        expect(snapshot.length).equal(2);
+    });
 });
