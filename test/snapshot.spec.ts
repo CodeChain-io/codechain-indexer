@@ -12,8 +12,6 @@ describe("snapshot", function() {
     let assetType: H256;
 
     beforeEach(async function() {
-        this.timeout("30s");
-
         // Sync the genesis block.
         await Helper.resetDb();
         await Helper.worker.sync();
@@ -55,8 +53,6 @@ describe("snapshot synchronized", function() {
     let assetType: H256;
 
     before(async function() {
-        this.timeout("30s");
-
         // Sync the genesis block.
         await Helper.resetDb();
         await Helper.worker.sync();

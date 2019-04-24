@@ -17,8 +17,6 @@ describe("log-api", function() {
     let app: express.Express;
 
     before(async function() {
-        this.timeout("30s");
-
         await Helper.resetDb();
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
@@ -83,7 +81,6 @@ describe("log-api", function() {
     });
 
     it("api /log/count", async function() {
-        this.timeout("30s");
         const date = "2000-01-01";
 
         await request(app)
@@ -92,7 +89,6 @@ describe("log-api", function() {
     });
 
     it("api /log/miners", async function() {
-        this.timeout("30s");
         const date = "2000-01-01";
 
         await request(app)

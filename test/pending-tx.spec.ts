@@ -19,8 +19,6 @@ describe("pending-tx", function() {
     });
 
     it("Check pending transactions", async function() {
-        this.timeout("25s");
-
         await Helper.sdk.rpc.devel.stopSealing();
         let pendingTx;
         try {

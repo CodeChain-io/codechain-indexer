@@ -10,8 +10,6 @@ let txLogCount = 0;
 
 describe("log", function() {
     before(async function() {
-        this.timeout("60s");
-
         await Helper.resetDb();
         const date = moment()
             .utc()
