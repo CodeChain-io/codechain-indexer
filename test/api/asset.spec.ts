@@ -21,8 +21,6 @@ describe("asset-api", function() {
     let app: express.Express;
 
     before(async function() {
-        this.timeout("30s");
-
         await Helper.resetDb();
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
@@ -93,14 +91,12 @@ describe("asset-api", function() {
     });
 
     it("api /utxo", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/utxo")
             .expect(200);
     });
 
     it("api /utxo with args", async function() {
-        this.timeout("30s");
         const address = aliceAddress;
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
@@ -114,7 +110,6 @@ describe("asset-api", function() {
     });
 
     it("api /asset-scheme/{assetType}", async function() {
-        this.timeout("30s");
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
             .get(`/api/asset-scheme/${assetType}`)
@@ -122,7 +117,6 @@ describe("asset-api", function() {
     });
 
     it("api /asset-image/{assetType}", async function() {
-        this.timeout("30s");
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
             .get(`/api/asset-image/${assetType}`)
@@ -130,14 +124,12 @@ describe("asset-api", function() {
     });
 
     it("api /aggs-utxo", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/aggs-utxo")
             .expect(200);
     });
 
     it("api /aggs-utxo with args", async function() {
-        this.timeout("30s");
         const address = bobAddress;
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
@@ -151,7 +143,6 @@ describe("asset-api", function() {
     });
 
     it("api /aggs-utxo/count", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/aggs-utxo/count")
             .expect(200)
@@ -161,7 +152,6 @@ describe("asset-api", function() {
     });
 
     it("api /aggs-utxo/count with args", async function() {
-        this.timeout("30s");
         const address = bobAddress;
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
@@ -173,7 +163,6 @@ describe("asset-api", function() {
     });
 
     it("api /snapshot", async function() {
-        this.timeout("30s");
         const assetType = mintTx.getMintedAsset().assetType;
         const date = "2019-03-11";
         await request(app)

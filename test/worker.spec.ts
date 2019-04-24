@@ -18,7 +18,6 @@ describe("worker", function() {
     });
 
     it("Sync block test", async function() {
-        this.timeout("30s");
         const beforeLatestBlockInst = await BlockModel.getLatestBlock();
 
         await Helper.worker.sync();
@@ -44,7 +43,6 @@ describe("worker", function() {
     });
 
     it.skip("Sync account test", async function() {
-        this.timeout("30s");
         const genesisAccounts: string[] = await Helper.sdk.rpc.sendRpcRequest(
             "chain_getGenesisAccounts",
             []

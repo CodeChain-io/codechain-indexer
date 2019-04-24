@@ -18,8 +18,6 @@ describe("account-api", function() {
     let app: express.Express;
 
     before(async function() {
-        this.timeout("30s");
-
         await Helper.resetDb();
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
@@ -84,14 +82,12 @@ describe("account-api", function() {
     });
 
     it("api /account", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/account")
             .expect(200);
     });
 
     it("api /account with args", async function() {
-        this.timeout("30s");
         const itemsPerPage = 2;
         await request(app)
             .get(`/api/account?page=1&itemsPerPage=${itemsPerPage}`)
@@ -104,14 +100,12 @@ describe("account-api", function() {
     });
 
     it("api /account/count", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/account/count")
             .expect(200);
     });
 
     it("api /account/{address}", async function() {
-        this.timeout("30s");
         const address = "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqungah99";
         await request(app)
             .get(`/api/account/${address}`)

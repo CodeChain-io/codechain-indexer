@@ -17,8 +17,6 @@ describe("block-api", function() {
     let app: express.Express;
 
     before(async function() {
-        this.timeout("30s");
-
         await Helper.resetDb();
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
@@ -83,21 +81,18 @@ describe("block-api", function() {
     });
 
     it("api /block/latest", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/block/latest")
             .expect(200);
     });
 
     it("api /block/count", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/block/count")
             .expect(200);
     });
 
     it("api /block/count with args", async function() {
-        this.timeout("30s");
         const address = bobAddress;
         await request(app)
             .get(`/api/block/count?address=${address}`)
@@ -105,7 +100,6 @@ describe("block-api", function() {
     });
 
     it("api /block/{hashOrNumber}", async function() {
-        this.timeout("30s");
         const hash =
             "d9c2a05f4f1e53634f1f68a3560d419b53e1900c2e85ae77f0abf97954d9b66d";
         await request(app)
@@ -114,7 +108,6 @@ describe("block-api", function() {
     });
 
     it("api /block/{hashOrNumber}", async function() {
-        this.timeout("30s");
         const num = 1;
         await request(app)
             .get(`/api/block/${num}`)
@@ -122,14 +115,12 @@ describe("block-api", function() {
     });
 
     it("api /block", async function() {
-        this.timeout("30s");
         await request(app)
             .get(`/api/block`)
             .expect(200);
     });
 
     it("api /block with args", async function() {
-        this.timeout("30s");
         const address = "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhhn9p3";
         await request(app)
             .get(`/api/block?address=${address}`)

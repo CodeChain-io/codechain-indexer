@@ -18,8 +18,6 @@ describe("status-api", function() {
     let app: express.Express;
 
     before(async function() {
-        this.timeout("30s");
-
         await Helper.resetDb();
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
@@ -84,14 +82,12 @@ describe("status-api", function() {
     });
 
     it("api /ping", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/ping")
             .expect(200);
     });
 
     it("api /ping rpc fail", async function() {
-        this.timeout("30s");
         const pingStub = sinon.stub(context.sdk.rpc.node, "ping");
         pingStub.rejects(Error("ECONNREFUSED"));
 
@@ -103,14 +99,12 @@ describe("status-api", function() {
     });
 
     it("api /status/codechain", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/status/codechain")
             .expect(200);
     });
 
     it("api /status/codechain rpc fail", async function() {
-        this.timeout("30s");
         const pingStub = sinon.stub(context.sdk.rpc.node, "getNodeVersion");
         pingStub.rejects(Error("ECONNREFUSED"));
         await request(app)
@@ -121,14 +115,12 @@ describe("status-api", function() {
     });
 
     it("api /status/sync", async function() {
-        this.timeout("30s");
         request(app)
             .get("/api/status/sync")
             .expect(200);
     });
 
     it("api /status/sync rpc fail", async function() {
-        this.timeout("30s");
         const getBestBlockNumberStub = sinon.stub(
             context.sdk.rpc.chain,
             "getBestBlockNumber"

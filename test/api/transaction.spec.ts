@@ -25,7 +25,6 @@ describe("transaction-api", function() {
     let app: express.Express;
 
     before(async function() {
-        this.timeout("30s");
         await Helper.resetDb();
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
@@ -120,14 +119,12 @@ describe("transaction-api", function() {
     });
 
     it("api /tx", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/tx")
             .expect(200);
     });
 
     it("api /tx rpc fail", async function() {
-        this.timeout("30s");
         const getBestBlockNumberStub = sinon.stub(
             context.sdk.rpc.chain,
             "getBestBlockNumber"
@@ -146,7 +143,6 @@ describe("transaction-api", function() {
     });
 
     it("api /tx with args", async function() {
-        this.timeout("30s");
         const assetType = mintRubyTx.getMintedAsset().assetType;
         const tracker = mintRubyTx.tracker().value;
         await request(app)
@@ -160,7 +156,6 @@ describe("transaction-api", function() {
     });
 
     it("api /tx/count", async function() {
-        this.timeout("30s");
         await request(app)
             .get("/api/tx/count")
             .expect(200)
@@ -168,7 +163,6 @@ describe("transaction-api", function() {
     });
 
     it("api /tx/count with args", async function() {
-        this.timeout("30s");
         const assetType = mintRubyTx.getMintedAsset().assetType;
         const tracker = mintRubyTx.tracker().value;
 
@@ -181,21 +175,18 @@ describe("transaction-api", function() {
     });
 
     it("api /tx/{hash}", async function() {
-        this.timeout("30s");
         await request(app)
             .get(`/api/tx/${transferTxHash}`)
             .expect(200);
     });
 
     it("api /pending-tx", async function() {
-        this.timeout("30s");
         await request(app)
             .get(`/api/pending-tx`)
             .expect(200);
     });
 
     it.skip("api /pending-tx with args", async function() {
-        this.timeout("30s");
         const address = aliceAddress.value;
         const assetType = mintEmeraldTx.getMintedAsset().assetType;
         await request(app)
@@ -206,7 +197,6 @@ describe("transaction-api", function() {
     });
 
     it("api /pending-tx/count", async function() {
-        this.timeout("30s");
         await request(app)
             .get(`/api/pending-tx/count`)
             .expect(200)
@@ -214,7 +204,6 @@ describe("transaction-api", function() {
     });
 
     it.skip("api /pending-tx/count with args", async function() {
-        this.timeout("30s");
         const address = aliceAddress.value;
         const assetType = mintEmeraldTx.getMintedAsset().assetType;
         await request(app)
