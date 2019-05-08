@@ -1,10 +1,11 @@
+import * as assert from "assert";
 import { SDK } from "codechain-sdk";
 import { H160, H256, SignedTransaction } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
 import models from "../index";
-import { TransactionInstance } from "../transaction";
+import { TransactionAttribute, TransactionInstance } from "../transaction";
 import { createAddressLog } from "./addressLog";
 import { updateAssetScheme } from "./assetscheme";
 import { createChangeAssetScheme } from "./changeAssetScheme";
@@ -425,6 +426,60 @@ export async function removeOutdatedPendings(
     }
 }
 
+async function getTransactionHashes(params: {
+    address?: string | null;
+    addressFilter?: string[] | null;
+    assetType?: H160 | null;
+    page: number;
+    itemsPerPage: number;
+    type?: string[] | null;
+    tracker?: H256 | null;
+    blockNumber?: number | null;
+    blockHash?: H256 | null;
+    includePending?: boolean | null;
+    onlySuccessful?: boolean | null;
+}): Promise<string[]> {
+    const where: Sequelize.WhereOptions<TransactionAttribute> = {};
+    if (params.type != null) {
+        where.type = { [Sequelize.Op.in]: params.type };
+    }
+    if (params.tracker != null) {
+        where.tracker = params.tracker.value;
+    }
+    if (params.blockNumber != null) {
+        where.blockNumber = params.blockNumber;
+    }
+    if (params.blockHash != null) {
+        where.blockHash = params.blockHash.value;
+    }
+    if (params.onlySuccessful) {
+        where.errorHint = null;
+    }
+    if (params.includePending !== true) {
+        where.isPending = false;
+    }
+    const { page, itemsPerPage, address, addressFilter, assetType } = params;
+    try {
+        return await models.Transaction.findAll({
+            subQuery: false,
+            attributes: ["hash"],
+            where,
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            group: [
+                "Transaction.hash",
+                "Transaction.blockNumber",
+                "Transaction.transactionIndex"
+            ],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage,
+            include: buildIncludeArray({ address, addressFilter, assetType })
+        }).map(result => result.get("hash"));
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+
 export async function getTransactions(params: {
     address?: string | null;
     addressFilter?: string[] | null;
@@ -440,15 +495,23 @@ export async function getTransactions(params: {
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, addressFilter, assetType, page, itemsPerPage } = params;
+    const { address, addressFilter, assetType, itemsPerPage } = params;
     try {
+        // TODO: Querying twice will waste IO bandwidth and take longer time as long as the response time
+        //       Find a way to merge these queries.
+        const hashes = await getTransactionHashes(params);
+        assert(
+            hashes.length <= itemsPerPage,
+            `The number of hashes(${
+                hashes.length
+            })  must not be greater than itemsPerPage(${itemsPerPage})`
+        );
         return models.Transaction.findAll({
             where: {
+                hash: hashes,
                 ...buildQueryForTransactions(params)
             },
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
-            limit: itemsPerPage,
-            offset: (page - 1) * itemsPerPage,
             include: [
                 ...fullIncludeArray,
                 ...buildIncludeArray({ address, addressFilter, assetType })
