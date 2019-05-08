@@ -1,6 +1,5 @@
 import * as cors from "cors";
 import * as express from "express";
-import * as _ from "lodash";
 import * as AccountHandler from "./routers/account";
 import * as AssetHandler from "./routers/asset";
 import * as BlockHandler from "./routers/block";
