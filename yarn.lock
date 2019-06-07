@@ -1791,26 +1791,10 @@ js-tokens@^3.0.2:
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.2.tgz#9866df395102130e38f7f996bceb65443209c25b"
   integrity sha1-mGbfOVECEw449/mWvOtlRDIJwls=
 
-js-yaml@3.12.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.0.tgz#eaed656ec8344f10f527c6bfa1b6e2244de167d1"
-  integrity sha512-PIt2cnwmPfL4hKNwqeiuz4bKfnzHTBv6HyVgjahA6mPLwPDzjDWrplJBMjHUFxku/N3FlmrbyPclad+I+4mJ3A==
-  dependencies:
-    argparse "^1.0.7"
-    esprima "^4.0.0"
-
-js-yaml@3.13.1:
+js-yaml@3.13.1, js-yaml@^3.12.0, js-yaml@^3.7.0:
   version "3.13.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.1.tgz#aff151b30bfdfa8e49e05da22e7415e9dfa37847"
   integrity sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==
-  dependencies:
-    argparse "^1.0.7"
-    esprima "^4.0.0"
-
-js-yaml@^3.12.0, js-yaml@^3.7.0:
-  version "3.12.1"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.1.tgz#295c8632a18a23e054cf5c9d3cecafe678167600"
-  integrity sha512-um46hB9wNOKlwkHgiuyEVAybXBjwFUV0Z/RaHJblRd9DXltue9FTYvzCr9ErQrK9Adz5MU4gHWVaNUfdmrC8qA==
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
@@ -3128,15 +3112,15 @@ supports-color@^5.3.0, supports-color@^5.5.0:
   dependencies:
     has-flag "^3.0.0"
 
-swagger-jsdoc@^3.2.6:
-  version "3.2.7"
-  resolved "https://registry.yarnpkg.com/swagger-jsdoc/-/swagger-jsdoc-3.2.7.tgz#0cb807240725831269960a376cfb7422ff9dfba1"
-  integrity sha512-QzDXwwH3iov9GgnPS5NXnPalxWrO55ehf4pyAMaXl2ZwvmahyLY0MTTIFJ/jRUV73xA2XHh9HEuCiW41fJSsOQ==
+swagger-jsdoc@^3.2.9:
+  version "3.2.9"
+  resolved "https://registry.yarnpkg.com/swagger-jsdoc/-/swagger-jsdoc-3.2.9.tgz#9fe2f10c480e06f62d207c00396b0a759fa569c5"
+  integrity sha512-yEGoqnIA5Owb15266x8JyQQM054kyhqkqz/zGxCEsrcx/fq/gf14alEp3qqLpknGOxTr3cqxQr3LrgOxXVm5vg==
   dependencies:
     commander "2.17.1"
     doctrine "2.1.0"
     glob "7.1.3"
-    js-yaml "3.12.0"
+    js-yaml "3.13.1"
     swagger-parser "5.0.5"
 
 swagger-methods@^1.0.4:
