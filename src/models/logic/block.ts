@@ -137,16 +137,28 @@ export async function getBlocks(params: {
 
 export async function getNumberOfBlocks(params: { address?: string }) {
     const { address } = params;
-    let query = {};
-    if (address) {
-        query = {
-            author: address
-        };
-    }
     try {
-        return await models.Block.count({
-            where: query
-        });
+        if (address) {
+            // FIXME: "SELECT count(*) FROM Blocks" takes seconds if the payload
+            // is huge. Keep in mind that the size of a block header is around
+            // 2KB. We need some count table for the performance.
+            return await models.Block.count({
+                where: {
+                    author: address
+                }
+            });
+        } else {
+            const block = await models.Block.findOne({
+                attributes: ["number"],
+                order: [["number", "DESC"]]
+            });
+            if (block) {
+                // NOTE: Plus 1 because there is a genesis block.
+                return block.get("number") + 1;
+            } else {
+                return 0;
+            }
+        }
     } catch (err) {
         console.log(err);
         throw Exception.DBError();
