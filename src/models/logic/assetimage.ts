@@ -77,7 +77,7 @@ export async function getByAssetType(assetType: H160) {
     }
 }
 
-function getImageBuffer(url: string) {
+function getImageBuffer(url: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
         request({ url, encoding: null }, (err, _R, buffer) => {
             if (err) {
