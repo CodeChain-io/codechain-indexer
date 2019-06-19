@@ -465,14 +465,22 @@ async function getTransactionHashes(params: {
             attributes: ["hash"],
             where,
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
-            group: [
-                "Transaction.hash",
-                "Transaction.blockNumber",
-                "Transaction.transactionIndex"
-            ],
             limit: itemsPerPage,
             offset: (page - 1) * itemsPerPage,
-            include: buildIncludeArray({ address, addressFilter, assetType })
+            ...(address || assetType
+                ? {
+                      group: [
+                          "Transaction.hash",
+                          "Transaction.blockNumber",
+                          "Transaction.transactionIndex"
+                      ],
+                      include: buildIncludeArray({
+                          address,
+                          addressFilter,
+                          assetType
+                      })
+                  }
+                : {})
         }).map(result => result.get("hash"));
     } catch (err) {
         console.error(err);
@@ -564,11 +572,19 @@ export async function getNumberOfTransactions(params: {
             where: {
                 ...buildQueryForTransactions(params)
             },
-            include: [
-                ...buildIncludeArray({ address, addressFilter, assetType })
-            ],
-            distinct: true,
-            col: "hash"
+            ...(address || assetType
+                ? {
+                      include: [
+                          ...buildIncludeArray({
+                              address,
+                              addressFilter,
+                              assetType
+                          })
+                      ],
+                      distinct: true,
+                      col: "hash"
+                  }
+                : {})
         });
     } catch (err) {
         console.error(err);
