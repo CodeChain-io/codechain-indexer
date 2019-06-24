@@ -1,7 +1,7 @@
+import { SDK } from "codechain-sdk";
 import { getCCSHolders } from "codechain-stakeholder-sdk";
 import * as _ from "lodash";
 import { Transaction } from "sequelize";
-
 import { WorkerContext } from ".";
 import models from "../models";
 import { BlockAttribute } from "../models/block";
@@ -52,6 +52,9 @@ export async function updateAccount(
                 x => x.address.value
             )
         );
+        affectedAddresses.push(
+            ...(await getTermValidatorsIfTermEnd(sdk, block.number))
+        );
     }
 
     return Promise.all(
@@ -76,4 +79,26 @@ export async function updateAccount(
             );
         })
     );
+}
+
+async function getTermValidatorsIfTermEnd(
+    sdk: SDK,
+    blockNumber: number
+): Promise<string[]> {
+    const [
+        [prevTermEndBlockNumber],
+        [maybeCurrentTermEndBlockNumber]
+    ] = await Promise.all([
+        sdk.rpc.sendRpcRequest("chain_getTermMetadata", [blockNumber]),
+        sdk.rpc.sendRpcRequest("chain_getTermMetadata", [blockNumber - 1])
+    ]);
+
+    // The current block is not the last block in the current term.
+    if (blockNumber !== maybeCurrentTermEndBlockNumber) {
+        return [];
+    }
+
+    return sdk.rpc.sendRpcRequest("chain_getPossibleAuthors", [
+        prevTermEndBlockNumber
+    ]);
 }
