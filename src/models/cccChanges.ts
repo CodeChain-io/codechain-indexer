@@ -6,14 +6,17 @@ export type Reason =
     | "stake"
     | "tx"
     | "initial_distribution"
-    | "deposit";
+    | "deposit"
+    | "validator";
+
 export const defaultAllReasons = [
     "fee",
     "author",
     "stake",
     "tx",
     "initial_distribution",
-    "deposit"
+    "deposit",
+    "validator"
 ];
 
 export interface CCCChangeAttribute {

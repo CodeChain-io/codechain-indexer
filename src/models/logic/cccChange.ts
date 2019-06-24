@@ -100,6 +100,27 @@ export async function blockReward(
     );
 }
 
+export async function validatorReward(
+    params: {
+        address: string;
+        change: U64;
+        // validator reward is applied at the next term's last block.
+        blockNumber: number;
+    },
+    options: {
+        transaction?: Transaction;
+    } = {}
+): Promise<CCCChangeInstance> {
+    return createCCCChange(
+        {
+            ...params,
+            reason: "validator",
+            isNegative: false
+        },
+        options
+    );
+}
+
 export async function stakeReward(
     params: {
         address: string;

@@ -102,11 +102,13 @@ export default class Worker {
             if (!nextBlock) {
                 throw InvalidBlockNumber();
             }
+            let lastIndexedBlock: BlockAttribute | "ParentOfGenesis" =
+                "ParentOfGenesis";
             if (lastIndexedBlockNumber > 0) {
                 const lastIndexedBlockInst = await BlockModel.getByNumber(
                     lastIndexedBlockNumber
                 );
-                const lastIndexedBlock = lastIndexedBlockInst!.get({
+                lastIndexedBlock = lastIndexedBlockInst!.get({
                     plain: true
                 });
                 if (nextBlock.parentHash.value !== lastIndexedBlock.hash) {
@@ -117,7 +119,7 @@ export default class Worker {
                 }
             }
             console.log("%d block is indexing...", nextBlockNumber);
-            await this.indexNewBlock(nextBlock);
+            await this.indexNewBlock(lastIndexedBlock, nextBlock);
             // FIXME: It's slow due to the getSignerAddress()
             await TxModel.removeOutdatedPendings(nextBlock.transactions);
             console.log("%d block is synchronized", nextBlockNumber);
@@ -153,7 +155,10 @@ export default class Worker {
         return currentBlockNumber;
     };
 
-    private indexNewBlock = async (block: Block) => {
+    private indexNewBlock = async (
+        parentBlock: BlockAttribute | "ParentOfGenesis",
+        block: Block
+    ) => {
         const { sdk } = this.context;
 
         const miningReward = await sdk.rpc.chain.getMiningReward(block.number);
@@ -183,7 +188,13 @@ export default class Worker {
             );
             await LogUtil.indexLog(blockAttribute, false, { transaction });
 
-            await updateCCCChange(sdk, block, miningReward, transaction);
+            await updateCCCChange(
+                sdk,
+                block,
+                parentBlock,
+                miningReward,
+                transaction
+            );
 
             await transaction.commit();
         } catch (err) {
