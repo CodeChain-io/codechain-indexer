@@ -7,7 +7,7 @@ import {
     U64,
     UnwrapCCC
 } from "codechain-sdk/lib/core/classes";
-import { getCCSBalance, getCCSHolders } from "codechain-stakeholder-sdk";
+import { getCCSHolders, getUndelegatedCCS } from "codechain-stakeholder-sdk";
 import { Transaction } from "sequelize";
 import { CCCChangeInstance } from "../models/cccChanges";
 import * as CCCChangeModel from "../models/logic/cccChange";
@@ -77,21 +77,15 @@ async function distributeFee(
     transaction: Transaction
 ): Promise<(CCCChangeInstance | undefined)[]> {
     const stakeHolders =
-        sdk.networkId === "tc"
-            ? []
-            : await getCCSHolders(sdk as any, blockNumber);
+        sdk.networkId === "tc" ? [] : await getCCSHolders(sdk, blockNumber);
     const stakeBalances: [PlatformAddress, U64][] = await Promise.all(
         stakeHolders.map(
             async holder =>
                 [
                     holder,
-                    (await getDelegation(
-                        sdk as any,
-                        holder,
-                        blockNumber
-                    )).reduce(
+                    (await getDelegation(sdk, holder, blockNumber)).reduce(
                         U64.plus,
-                        await getCCSBalance(sdk as any, holder, blockNumber)
+                        await getUndelegatedCCS(sdk, holder, blockNumber)
                     )
                 ] as [PlatformAddress, U64]
         )
