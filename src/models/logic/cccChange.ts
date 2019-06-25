@@ -2,7 +2,7 @@ import { U64 } from "codechain-sdk/lib/core/classes";
 import { Transaction } from "sequelize";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
-import { CCCChangeInstance, defaultAllReasons } from "../cccChanges";
+import { CCCChangeInstance, defaultAllReasons, Reason } from "../cccChanges";
 import models from "../index";
 
 async function createCCCChange(
@@ -11,7 +11,7 @@ async function createCCCChange(
         change: U64;
         isNegative: boolean;
         blockNumber: number;
-        reason: "fee" | "author" | "stake" | "tx" | "initial_distribution";
+        reason: Reason;
         transactionHash?: string;
     },
     options: {
@@ -136,6 +136,27 @@ export async function changeByTx(
         {
             ...params,
             reason: "tx"
+        },
+        options
+    );
+}
+
+export async function stakeDeposit(
+    params: {
+        address: string;
+        change: U64;
+        isNegative: boolean;
+        blockNumber: number;
+        transactionHash: string;
+    },
+    options: {
+        transaction?: Transaction;
+    } = {}
+): Promise<CCCChangeInstance> {
+    return createCCCChange(
+        {
+            ...params,
+            reason: "deposit"
         },
         options
     );

@@ -1,12 +1,19 @@
 import * as Sequelize from "sequelize";
 
-export type Reason = "fee" | "author" | "stake" | "tx" | "initial_distribution";
+export type Reason =
+    | "fee"
+    | "author"
+    | "stake"
+    | "tx"
+    | "initial_distribution"
+    | "deposit";
 export const defaultAllReasons = [
     "fee",
     "author",
     "stake",
     "tx",
-    "initial_distribution"
+    "initial_distribution",
+    "deposit"
 ];
 
 export interface CCCChangeAttribute {
@@ -54,17 +61,9 @@ export default (
             },
             reason: {
                 allowNull: false,
-                type: DataTypes.ENUM(
-                    "fee",
-                    "author",
-                    "stake",
-                    "tx",
-                    "initial_distribution"
-                ),
+                type: DataTypes.ENUM(...defaultAllReasons),
                 validate: {
-                    isIn: [
-                        ["fee", "author", "stake", "tx", "initial_distribution"]
-                    ]
+                    isIn: [defaultAllReasons]
                 }
             },
             transactionHash: {
