@@ -17,6 +17,7 @@ import { Transaction } from "sequelize";
 import { CCCChangeInstance } from "../models/cccChanges";
 import * as CCCChangeModel from "../models/logic/cccChange";
 import * as TransactionModel from "../models/logic/transaction";
+import { getBecomeEligible } from "../models/logic/utils/custom";
 
 const rlp = require("rlp");
 
@@ -51,6 +52,7 @@ export async function updateCCCChange(
             transaction
         )
     );
+    queries.push(onTermClose(sdk, block.number, { transaction }));
     await Promise.all(queries);
 }
 
@@ -365,4 +367,28 @@ async function trackBalanceChangeByTx(
         }
     }
     return Promise.all(queries);
+}
+
+async function onTermClose(
+    sdk: SDK,
+    blockNumber: number,
+    options: {
+        transaction?: Transaction;
+    } = {}
+): Promise<(CCCChangeInstance | undefined)[]> {
+    const becomeEligibles = await getBecomeEligible(sdk, blockNumber);
+
+    return Promise.all(
+        becomeEligibles.map(({ address, deposit }) =>
+            CCCChangeModel.stakeDeposit(
+                {
+                    address: address.value,
+                    change: deposit,
+                    isNegative: false,
+                    blockNumber
+                },
+                options
+            )
+        )
+    );
 }

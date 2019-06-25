@@ -147,7 +147,7 @@ export async function stakeDeposit(
         change: U64;
         isNegative: boolean;
         blockNumber: number;
-        transactionHash: string;
+        transactionHash?: string;
     },
     options: {
         transaction?: Transaction;
