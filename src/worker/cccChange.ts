@@ -7,7 +7,12 @@ import {
     U64,
     UnwrapCCC
 } from "codechain-sdk/lib/core/classes";
-import { getCCSHolders, getUndelegatedCCS } from "codechain-stakeholder-sdk";
+import { Custom } from "codechain-sdk/lib/core/transaction/Custom";
+import {
+    actionFromCustom as stakeActionFromCustom,
+    getCCSHolders,
+    getUndelegatedCCS
+} from "codechain-stakeholder-sdk";
 import { Transaction } from "sequelize";
 import { CCCChangeInstance } from "../models/cccChanges";
 import * as CCCChangeModel from "../models/logic/cccChange";
@@ -330,6 +335,30 @@ async function trackBalanceChangeByTx(
                     )
                 );
                 break;
+            }
+            case "custom": {
+                const stakeAction = stakeActionFromCustom(
+                    sdk,
+                    tx.unsigned as Custom
+                );
+                if (stakeAction && stakeAction.type === "selfNominate") {
+                    const signer = tx.getSignerAddress({
+                        networkId: sdk.networkId
+                    });
+                    const deposit = stakeAction.deposit;
+                    queries.push(
+                        CCCChangeModel.stakeDeposit(
+                            {
+                                address: signer.value,
+                                change: deposit,
+                                isNegative: true,
+                                blockNumber,
+                                transactionHash
+                            },
+                            { transaction }
+                        )
+                    );
+                }
             }
             default:
                 break;
