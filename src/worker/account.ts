@@ -6,6 +6,7 @@ import { WorkerContext } from ".";
 import models from "../models";
 import { BlockAttribute } from "../models/block";
 import * as AccountModel from "../models/logic/account";
+import { getBecomeEligible } from "../models/logic/utils/custom";
 
 export async function updateAccount(
     block: BlockAttribute,
@@ -45,6 +46,11 @@ export async function updateAccount(
                 ? []
                 : await getCCSHolders(sdk, block.number)
             ).map(p => p.toString())
+        );
+        affectedAddresses.push(
+            ...(await getBecomeEligible(sdk, block.number)).map(
+                x => x.address.value
+            )
         );
     }
 
