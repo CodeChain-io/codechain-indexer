@@ -9,8 +9,8 @@ jobs:
         - npm install -g yarn
         - yarn install
       before_script:
-        - docker pull kodebox/codechain:v1.1.0
-        - docker run -d -p 8080:8080 kodebox/codechain:v1.1.0 --jsonrpc-interface 0.0.0.0 -c solo --reseal-min-period 0 --enable-devel-api
+        - docker pull kodebox/codechain:ebacfe7b74296cc1e793cf3238748b7280f8072a
+        - docker run -d -p 8080:8080 kodebox/codechain:ebacfe7b74296cc1e793cf3238748b7280f8072a --jsonrpc-interface 0.0.0.0 -c solo --reseal-min-period 0 --enable-devel-api
         - psql -c 'CREATE DATABASE "codechain-indexer-test";' -U postgres
         - psql -c "CREATE USER \"user\" WITH ENCRYPTED PASSWORD 'password';" -U postgres
         - docker ps -a
