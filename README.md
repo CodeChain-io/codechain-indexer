@@ -16,7 +16,7 @@ The software dependencies required to install and run CodeChain-indexer are:
 
 - Latest version of the [CodeChain](https://github.com/CodeChain-io/codechain)
 - PostgreSQL [`v11.*`](https://www.postgresql.org/download/)
-- Nodejs higher than version 8
+- Nodejs higher than version 10
 
 #### Download
 
