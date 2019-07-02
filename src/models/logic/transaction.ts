@@ -639,7 +639,8 @@ export async function getSuccessfulByTracker(
     try {
         return await models.Transaction.findOne({
             where: {
-                tracker: strip0xPrefix(tracker.toString())
+                tracker: strip0xPrefix(tracker.toString()),
+                isPending: false
             },
             transaction: options.transaction
         });
