@@ -201,7 +201,7 @@ export async function getByTime(
                     [Sequelize.Op.lte]: timestamp
                 }
             },
-            order: [["timestamp", "DESC"], ["number", "DESC"]]
+            order: [["timestamp", "DESC"]]
         });
 
         if (block == null) {
