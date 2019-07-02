@@ -118,8 +118,6 @@ export default class Worker {
             }
             console.log("%d block is indexing...", nextBlockNumber);
             await this.indexNewBlock(nextBlock);
-            // FIXME: It's slow due to the getSignerAddress()
-            await TxModel.removeOutdatedPendings(nextBlock.transactions);
             console.log("%d block is synchronized", nextBlockNumber);
             lastIndexedBlockNumber = nextBlockNumber;
         }
@@ -185,6 +183,11 @@ export default class Worker {
 
             await updateCCCChange(sdk, block, miningReward, transaction);
 
+            // FIXME: It's slow due to the getSignerAddress()
+            await TxModel.removeOutdatedPendings(block.transactions, {
+                transaction
+            });
+
             await transaction.commit();
         } catch (err) {
             await transaction.rollback();
@@ -215,16 +218,34 @@ export default class Worker {
             `Indexed: ${indexedHashes.length} / RPC: ${transactions.length}`
         );
 
-        // Remove dropped pending transactions
-        if (transactions.length > 0) {
-            await TxModel.removeOutdatedPendings(transactions);
-        }
+        const transaction = await models.sequelize.transaction({
+            isolationLevel:
+                models.Sequelize.Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+            deferrable: models.Sequelize.Deferrable.SET_DEFERRED
+        });
+        try {
+            // Remove dropped pending transactions
+            if (transactions.length > 0) {
+                await TxModel.removeOutdatedPendings(transactions, {
+                    transaction
+                });
+            }
 
-        // Index new pending transactions
-        const newPendingTransactions = _.filter(
-            transactions,
-            pending => !_.includes(indexedHashes, pending.hash().value)
-        );
-        await TxModel.createTransactions(newPendingTransactions, true);
+            // Index new pending transactions
+            const newPendingTransactions = _.filter(
+                transactions,
+                pending => !_.includes(indexedHashes, pending.hash().value)
+            );
+            await TxModel.createTransactions(
+                newPendingTransactions,
+                true,
+                undefined,
+                { transaction }
+            );
+            await transaction.commit();
+        } catch (err) {
+            await transaction.rollback();
+            throw err;
+        }
     };
 }
