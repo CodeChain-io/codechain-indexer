@@ -394,7 +394,8 @@ export async function removePendings(hashes: H256[]): Promise<void> {
 }
 
 export async function removeOutdatedPendings(
-    updatedTransactions: SignedTransaction[]
+    updatedTransactions: SignedTransaction[],
+    options: { transaction?: Sequelize.Transaction } = {}
 ): Promise<void> {
     try {
         await models.Transaction.destroy({
@@ -419,7 +420,8 @@ export async function removeOutdatedPendings(
                         }))
                     }
                 ]
-            }
+            },
+            transaction: options.transaction
         });
     } catch (err) {
         console.error(err);
