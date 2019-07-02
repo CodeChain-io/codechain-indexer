@@ -1071,9 +1071,9 @@ codechain-sdk@^1.2.0:
     request-promise "^4.2.2"
     rlp "^2.0.0"
 
-"codechain-stakeholder-sdk@https://github.com/foriequal0/codechain-stakeholder-sdk#dist":
+"codechain-stakeholder-sdk@https://github.com/majecty/codechain-stakeholder-sdk-js#dist":
   version "0.1.0"
-  resolved "https://github.com/foriequal0/codechain-stakeholder-sdk#9b80fa3b370cae91a41dc0cb83c62752f9e49b09"
+  resolved "https://github.com/majecty/codechain-stakeholder-sdk-js#625a96fea22363e6179e968fe963bbeac2ccd52f"
   dependencies:
     cli-table3 "^0.5.1"
     codechain-primitives "^1.0.1"
