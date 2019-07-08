@@ -208,11 +208,13 @@ export async function getByTime(
             return null;
         }
 
-        const nextBlock = await getByNumber(block.get("number") + 1);
-        if (nextBlock == null || nextBlock.get("timestamp") <= timestamp) {
-            // If the `block` is the latest block, the future block's timestamp also could be less than or equal to the timestamp.
-            // To ensure the `block` is the nearest block, the `block` should have the next block whose timestamp is greater than the `timestamp`.
-            return null;
+        if (block.get("timestamp") < timestamp) {
+            const nextBlock = await getByNumber(block.get("number") + 1);
+            if (nextBlock == null || nextBlock.get("timestamp") <= timestamp) {
+                // If the `block` is the latest block, the future block's timestamp also could be less than or equal to the timestamp.
+                // To ensure the `block` is the nearest block, the `block` should have the next block whose timestamp is greater than the `timestamp`.
+                return null;
+            }
         }
         return block;
     } catch (err) {
