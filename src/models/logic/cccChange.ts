@@ -245,3 +245,25 @@ export async function getCountByAddress(
         throw Exception.DBError();
     }
 }
+
+export async function getByBlockNumber(
+    blockNumber: number
+): Promise<CCCChangeInstance[]> {
+    try {
+        return await models.CCCChange.findAll({
+            attributes: [
+                "address",
+                "change",
+                "blockNumber",
+                "reason",
+                "transactionHash"
+            ],
+            where: {
+                blockNumber
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
