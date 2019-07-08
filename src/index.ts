@@ -1,4 +1,5 @@
 import * as http from "http";
+import { run as runChecker } from "./checker";
 import { IndexerConfig } from "./config";
 import { IndexerContext } from "./context";
 import log from "./log";
@@ -38,6 +39,10 @@ async function runServer() {
         );
     });
     context.worker.run();
+
+    if (process.env.ENABLE_CCC_CHANGES_CHECK) {
+        runChecker(context.sdk).catch(console.error);
+    }
 }
 
 runServer();
