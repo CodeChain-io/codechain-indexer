@@ -10,6 +10,8 @@
     "yarn": "^1.10.0"
   },
   "dependencies": {
+    "@sendgrid/mail": "^6.4.0",
+    "@slack/client": "^5.0.1",
     "async-lock": "^1.1.4",
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
