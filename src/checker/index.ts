@@ -1,11 +1,26 @@
 import { SDK } from "codechain-sdk";
+import { IndexerConfig } from "../config";
 import * as BlockModel from "../models/logic/block";
 import * as CCCChangeModel from "../models/logic/cccChange";
+import { createEmail, Email } from "./email";
+import { createSlack, Slack } from "./slack";
 
-export async function run(sdk: SDK) {
+export async function run(sdk: SDK, options: IndexerConfig) {
     console.log("Start to check CCCChanges");
     const prevBlockInstance = await BlockModel.getLatestBlock();
     let lastCheckedBlockNumber: number | "NotExist";
+
+    const email = createEmail({
+        tag: `[${options.codechain.networkId}][indexer-cccchanges-checker]`,
+        sendgridApiKey: process.env.SENDGRID_API_KEY,
+        to: process.env.SENDGRID_TO
+    });
+
+    const slack = createSlack(
+        `[${options.codechain.networkId}][indexer-cccchanges-checker]`,
+        process.env.SLACK
+    );
+
     if (prevBlockInstance) {
         lastCheckedBlockNumber = prevBlockInstance.get({ plain: true }).number;
     } else {
@@ -29,7 +44,7 @@ export async function run(sdk: SDK) {
         const checkFrom = lastCheckedBlockNumber + 1;
         const checkTo = latestBlockNumber - 1;
         if (checkTo > checkFrom) {
-            await checkBlocks(checkFrom, checkTo, sdk);
+            await checkBlocks(checkFrom, checkTo, sdk, email, slack);
             lastCheckedBlockNumber = checkTo;
         } else {
             continue;
@@ -40,7 +55,9 @@ export async function run(sdk: SDK) {
 async function checkBlocks(
     fromBlockNumber: number,
     toBlockNumber: number,
-    sdk: SDK
+    sdk: SDK,
+    email: Email,
+    slack: Slack
 ) {
     if (fromBlockNumber >= toBlockNumber) {
         throw new Error(
@@ -95,18 +112,17 @@ async function checkBlocks(
                 const actual = change;
 
                 if (actual !== expected) {
-                    /// TODO Send an email.
-                    console.group("Mismatch found");
-                    console.error(`Address: ${address}`);
-                    console.error(
-                        `Balance at ${beforeBlockNumber}: ${beforeBalance}`
-                    );
-                    console.error(
-                        `Balance at ${afterBlockNumber}: ${afterBalance}`
-                    );
-                    console.error(`Actual CCCChanges: ${actual}`);
-                    console.error(`Exepcted CCCChanges: ${expected}`);
-                    console.groupEnd();
+                    sendAlarm({
+                        address,
+                        beforeBlockNumber,
+                        afterBlockNumber,
+                        beforeBalance,
+                        afterBalance,
+                        actual,
+                        expected,
+                        email,
+                        slack
+                    });
                 }
             }
         );
@@ -118,4 +134,51 @@ async function checkBlocks(
         beforeBlockNumber += 1;
         afterBlockNumber += 1;
     }
+}
+
+function sendAlarm({
+    address,
+    beforeBlockNumber,
+    afterBlockNumber,
+    actual,
+    expected,
+    beforeBalance,
+    afterBalance,
+    email,
+    slack
+}: {
+    address: string;
+    beforeBlockNumber: number;
+    afterBlockNumber: number;
+    actual: number;
+    expected: number;
+    beforeBalance: number;
+    afterBalance: number;
+    email: Email;
+    slack: Slack;
+}) {
+    /// TODO Send an email.
+    const firstLine = "Mismatch found";
+    console.group(firstLine);
+
+    const lines = [
+        `Address: ${address}`,
+        `Balance at ${beforeBlockNumber}: ${beforeBalance}`,
+        `Balance at ${afterBlockNumber}: ${afterBalance}`,
+        `Actual CCCChanges: ${actual}`,
+        `Exepcted CCCChanges: ${expected}`
+    ];
+    lines.forEach(line => {
+        console.error(line);
+    });
+    console.groupEnd();
+
+    email.sendError(`
+    <p>${firstLine}</p>
+    <ul>
+    ${lines.map(line => `<li>${line}</li>`).join("\n")}
+    </ul>
+    `);
+
+    slack.sendError([firstLine, ...lines].join("\n"));
 }

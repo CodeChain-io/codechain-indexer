@@ -41,7 +41,7 @@ async function runServer() {
     context.worker.run();
 
     if (process.env.ENABLE_CCC_CHANGES_CHECK) {
-        runChecker(context.sdk).catch(console.error);
+        runChecker(context.sdk, context.options).catch(console.error);
     }
 }
 
