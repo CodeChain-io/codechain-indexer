@@ -1041,19 +1041,19 @@ codechain-primitives@^1.0.0:
     rlp "^2.1.0"
 
 codechain-primitives@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-1.0.1.tgz#86b397ec379f52ae01daeaf74e29712083a48a87"
-  integrity sha512-XKgGwB9JzE3/43IEgroRHIjESJ4NiFc1Ee7qucqSuDhUx5DQtm4uQJreJvy5/rBcQMaDPTYcfx6UiavCfhx3+g==
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-1.0.2.tgz#2e44c7ba776dbe9d3473bf68c817572e0185a8a3"
+  integrity sha512-PSnXHIoR6EOhoMk4hjPttWGovcJXPYIgUj5De78Q3f5+yah6OPbJR4v82L+MCYOmD5+LvDF50mUzyOAAq+JNcg==
   dependencies:
     bignumber.js "^7.2.1"
     blakejs "^1.1.0"
     bn.js "^4.11.8"
     buffer "^5.2.1"
+    crypto-js "^3.1.9-1"
     elliptic "^6.4.1"
     hmac-drbg "^1.0.1"
     lodash "^4.17.11"
     node-forge "^0.7.6"
-    ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
 codechain-sdk@^1.2.0:
@@ -1073,7 +1073,7 @@ codechain-sdk@^1.2.0:
 
 "codechain-stakeholder-sdk@https://github.com/majecty/codechain-stakeholder-sdk-js#dist":
   version "0.1.0"
-  resolved "https://github.com/majecty/codechain-stakeholder-sdk-js#625a96fea22363e6179e968fe963bbeac2ccd52f"
+  resolved "https://github.com/majecty/codechain-stakeholder-sdk-js#b55c5ed82672c023bcd60b6412281d450ac222db"
   dependencies:
     cli-table3 "^0.5.1"
     codechain-primitives "^1.0.1"
@@ -1251,6 +1251,11 @@ cross-spawn@^6.0.0:
     semver "^5.5.0"
     shebang-command "^1.2.0"
     which "^1.2.9"
+
+crypto-js@^3.1.9-1:
+  version "3.1.9-1"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-3.1.9-1.tgz#fda19e761fc077e01ffbfdc6e9fdfc59e8806cd8"
+  integrity sha1-/aGedh/Ad+Af+/3G6f38WeiAbNg=
 
 cycle@1.0.x:
   version "1.0.3"
