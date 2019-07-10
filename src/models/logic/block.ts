@@ -327,6 +327,13 @@ async function parseSigners({
         [parentBlockNumber]
     );
 
+    // PoW or Solo consensus
+    if (validatorAddresses === null) {
+        return {
+            missedSigners: []
+        };
+    }
+
     const missedValidatorIndices: number[] = unsetBitIndices(
         precommitBitset,
         validatorAddresses.length
