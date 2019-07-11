@@ -1,5 +1,6 @@
 import * as express from "express";
 import * as Joi from "joi";
+import { defaultAllReasons } from "../models/cccChanges";
 
 const expressValidation = require("express-validation");
 
@@ -43,9 +44,6 @@ const ADDRESS_TYPES = [
     "Approver",
     "Registrar"
 ];
-
-const REASON_TYPES = ["fee", "author", "stake", "tx", "initial_distribution"];
-
 const LOG_FILTER = ["block", "tx", ...TYPES];
 
 // FIXME:
@@ -61,7 +59,9 @@ const type = Joi.string().regex(
     new RegExp(`^(${TYPES.join("|")})(,(${TYPES.join("|")}))*$`)
 );
 const reasonFilter = Joi.string().regex(
-    new RegExp(`^(${REASON_TYPES.join("|")})(,(${REASON_TYPES.join("|")}))*$`)
+    new RegExp(
+        `^(${defaultAllReasons.join("|")})(,(${defaultAllReasons.join("|")}))*$`
+    )
 );
 const shardId = Joi.number();
 const onlyConfirmed = Joi.boolean();
