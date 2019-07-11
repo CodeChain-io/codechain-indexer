@@ -79,6 +79,13 @@ yarn run start
 # You can change the host of CodeChain and DB host on the config/dev.json
 ```
 
+### Check CCCChanges
+
+If you run the Indexer with the environment `ENABLE_CCC_CHANGES_CHECK` variable,
+the Indexer checks to see if CCCChanges is well calculated.
+If you want to receive an email when an error is found, please set the `SENDGRID_API_KEY` and `SENDGRID_TO` variables.
+If you want to receive a slack notification, please set the `SLACK_WEBHOOK` variable.
+
 ## Run (for production)
 
 ```
