@@ -18,7 +18,7 @@ export async function run(sdk: SDK, options: IndexerConfig) {
 
     const slack = createSlack(
         `[${options.codechain.networkId}][indexer-cccchanges-checker]`,
-        process.env.SLACK
+        process.env.SLACK_WEBHOOK
     );
 
     if (prevBlockInstance) {
