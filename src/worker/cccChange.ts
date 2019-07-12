@@ -25,7 +25,14 @@ export async function updateCCCChange(
         block.number - 1
     );
 
-    if (commonParams.termSeconds === null) {
+    // When a block closes a term, the current term from "chain_getTermMetadata" is changed to the next term.
+    // To get the "real" current term of the block, we use the parent block number.
+    const [, currentTerm] = await sdk.rpc.sendRpcRequest(
+        "chain_getTermMetadata",
+        [block.number - 1]
+    );
+
+    if (currentTerm === 0) {
         const queries = [];
         queries.push(
             staticFeeDistribution.distributeFee(
