@@ -306,13 +306,13 @@ export async function applyPenalty({
 
     for (const validator of validators) {
         const reward = authorRewards.get(validator) || new U64(0);
-        const reduced = calculatePunishment(
+        const penaltiedReward = rewardAfterPenalty(
             notVoted[validator] || 0,
             termEndBlockNumber - termStartBlockNumber + 1,
             reward
         );
-        authorRewards.set(validator, reward.minus(reduced));
-        penaltyAmount = penaltyAmount.plus(reduced);
+        authorRewards.set(validator, penaltiedReward);
+        penaltyAmount = penaltyAmount.plus(reward).minus(penaltiedReward);
     }
 
     return {
@@ -321,29 +321,32 @@ export async function applyPenalty({
     };
 }
 
-function calculatePunishment(
-    notVotedCnt: number,
+function rewardAfterPenalty(
+    missedCnt: number,
     totalCnt: number,
-    reward: U64
-) {
-    const x = reward.times(notVotedCnt);
-    if (notVotedCnt * 3 <= totalCnt) {
-        // 0.3 * x
-        return x.times(3).idiv(10 * totalCnt);
-    } else if (notVotedCnt * 2 <= totalCnt) {
-        // 4.8 * x - 1.5
-        return x
-            .times(48)
-            .minus(reward.times(15 * totalCnt))
+    authorReward: U64
+): U64 {
+    const x = authorReward.times(missedCnt);
+    if (missedCnt * 3 <= totalCnt) {
+        // 1 - 0.3 * x
+        return authorReward
+            .times(10 * totalCnt)
+            .minus(x.times(3))
             .idiv(10 * totalCnt);
-    } else if (notVotedCnt * 3 <= 2 * totalCnt) {
-        // 0.6 * x + 0.6
-        return x
-            .times(6)
-            .plus(reward.times(6 * totalCnt))
+    } else if (missedCnt * 2 <= totalCnt) {
+        // 2.5 - 4.8 * x
+        return authorReward
+            .times(25 * totalCnt)
+            .minus(x.times(48))
+            .idiv(10 * totalCnt);
+    } else if (missedCnt * 3 <= 2 * totalCnt) {
+        // 0.4 - 0.6 * x
+        return authorReward
+            .times(4 * totalCnt)
+            .minus(x.times(6))
             .idiv(10 * totalCnt);
     } else {
-        return reward;
+        return new U64(0);
     }
 }
 
