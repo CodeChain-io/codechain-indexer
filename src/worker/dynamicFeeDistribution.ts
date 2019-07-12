@@ -596,7 +596,7 @@ function calculateProposed(termBlocks: BlockAttribute[]) {
         if (result[block.author]) {
             result[block.author] += 1;
         } else {
-            result[block.author] = 0;
+            result[block.author] = 1;
         }
     }
     return result;
