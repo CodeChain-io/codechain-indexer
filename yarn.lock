@@ -745,22 +745,6 @@ codechain-primitives@^0.3.0:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-codechain-primitives@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-0.5.0.tgz#dd8fe3bfe4a9972300e6972a06d6aee594b38732"
-  integrity sha512-wN3uwZ9Bb5XNF5po2YVMtfJ2DJ7ds6dllq2IZpkjqSoXADvDG5qU9nxTocueo7m1l7IMkq4F510F9ViKaTbkKA==
-  dependencies:
-    bignumber.js "^7.2.1"
-    blakejs "^1.1.0"
-    bn.js "^4.11.8"
-    buffer "^5.2.1"
-    elliptic "^6.4.1"
-    hmac-drbg "^1.0.1"
-    lodash "^4.17.11"
-    node-forge "^0.7.6"
-    ripemd160 "^2.0.2"
-    rlp "^2.1.0"
-
 codechain-primitives@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/codechain-primitives/-/codechain-primitives-1.0.0.tgz#adb8d5e2270a2be2054f2f3d89dd75779de45b04"
@@ -777,27 +761,26 @@ codechain-primitives@^1.0.0:
     ripemd160 "^2.0.2"
     rlp "^2.1.0"
 
-codechain-sdk@^1.1.0, codechain-sdk@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/codechain-sdk/-/codechain-sdk-1.2.0.tgz#10ce7dd3536c9b3549dec604f07060ecee9412f1"
-  integrity sha512-2CoO/9xSQY34YaSAkf3DEMVY0hmM1pZYDbcXl9euS49Rds/5QsRuLs+u78EPrruB5DWltb7J+OCDJIQfBdhIXQ==
+codechain-sdk@^2.0.0-alpha.2:
+  version "2.0.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/codechain-sdk/-/codechain-sdk-2.0.0-alpha.2.tgz#6aeeff24aacfa3c83535faddf6072270b6f7cdef"
+  integrity sha512-p/6kFpq/pMtN79PgpjgKI132Q8ACk97z7PVyR+cc88Luh3FBMwdG16Q9anyV0jpV0kfLV6/V2tHUmPpwJqYfEQ==
   dependencies:
     buffer "5.1.0"
     codechain-keystore "^0.6.0"
     codechain-primitives "^1.0.0"
     jayson "^2.0.6"
-    lodash "^4.17.10"
+    lodash "^4.17.14"
     node-fetch "^2.1.2"
     request "^2.88.0"
     request-promise "^4.2.2"
     rlp "^2.0.0"
 
-"codechain-stakeholder-sdk@https://github.com/sgkim126/codechain-stakeholder-sdk-js.git#upgrade":
-  version "0.1.0"
-  resolved "https://github.com/sgkim126/codechain-stakeholder-sdk-js.git#9b5f51e4b9042fbd033c6326aeb19ec40ee13884"
+codechain-stakeholder-sdk@^2.0.0-alpha.3:
+  version "2.0.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/codechain-stakeholder-sdk/-/codechain-stakeholder-sdk-2.0.0-alpha.3.tgz#5b1a5b054135802b6e07fb5f56833b65be372643"
+  integrity sha512-Su7z8eZgvUYQtIkThAdoI10gRM3yUdRyw1lvBjswY4noHyCUfGr/haX7Hx6p32ZWJyejJKR8HywjGD84WnxbsA==
   dependencies:
-    codechain-primitives "^0.5.0"
-    codechain-sdk "^1.1.0"
     rlp "^2.2.2"
 
 color-convert@^1.9.0, color-convert@^1.9.1:
@@ -1912,6 +1895,11 @@ lodash@=4.17.11:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
+
+lodash@^4.17.14:
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
 log-symbols@2.2.0:
   version "2.2.0"

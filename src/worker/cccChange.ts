@@ -7,8 +7,9 @@ import {
     U64,
     UnwrapCCC
 } from "codechain-sdk/lib/core/classes";
-import { getCCSBalance, getCCSHolders } from "codechain-stakeholder-sdk";
+import { getCCSHolders, getUndelegatedCCS } from "codechain-stakeholder-sdk";
 import { Transaction } from "sequelize";
+
 import { CCCChangeInstance } from "../models/cccChanges";
 import * as CCCChangeModel from "../models/logic/cccChange";
 import * as TransactionModel from "../models/logic/transaction";
@@ -91,7 +92,7 @@ async function distributeFee(
                         blockNumber
                     )).reduce(
                         U64.plus,
-                        await getCCSBalance(sdk as any, holder, blockNumber)
+                        await getUndelegatedCCS(sdk as any, holder, blockNumber)
                     )
                 ] as [PlatformAddress, U64]
         )
