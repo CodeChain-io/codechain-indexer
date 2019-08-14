@@ -196,8 +196,13 @@ export async function createTransferAsset(
                                 strip0xPrefix(p)
                             )
                         },
-                        inputIndices: o.inputIndices,
-                        outputIndices: o.outputIndices
+                        inputFromIndices: o.inputFromIndices,
+                        inputFeeIndices: o.inputFeeIndices,
+                        outputFromIndices: o.outputFromIndices,
+                        outputToIndices: o.outputToIndices,
+                        outputOwnedFeeIndices: o.outputOwnedFeeIndices,
+                        outputTransferredFeeIndices:
+                            o.outputTransferredFeeIndices
                     };
                 })
             )

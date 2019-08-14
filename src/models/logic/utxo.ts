@@ -539,8 +539,11 @@ export async function transferUTXO(
                 const lockScriptHash = new H160(output.lockScriptHash);
                 const parameters = output.parameters;
                 const quantity = new U64(output.quantity);
-                const orderOnTransfer = orders.find(o =>
-                    o.outputIndices.includes(output.index)
+                const orderOnTransfer = orders.find(
+                    o =>
+                        o.outputFromIndices.includes(output.index) ||
+                        o.outputOwnedFeeIndices.includes(output.index) ||
+                        o.outputToIndices.includes(output.index)
                 );
                 const order = orderOnTransfer && orderOnTransfer.order;
                 const orderHash = order && new H256(order.orderHash);
