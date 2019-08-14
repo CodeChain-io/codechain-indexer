@@ -76,7 +76,7 @@
     "chai-as-promised": "^7.1.1",
     "mocha": "^6.1.4",
     "prettier": "^1.14.2",
-    "sequelize-cli": "^5.4.0",
+    "sequelize-cli": "^5.4.1",
     "supertest": "^3.4.2",
     "swagger-jsdoc": "^3.2.9",
     "swagger-ui-express": "^4.0.2",
