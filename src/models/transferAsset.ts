@@ -64,8 +64,12 @@ export interface OrderOnTransfer {
     index: number;
     order: Order;
     spentQuantity: string;
-    inputIndices: number[];
-    outputIndices: number[];
+    inputFromIndices: number[];
+    inputFeeIndices: number[];
+    outputFromIndices: number[];
+    outputToIndices: number[];
+    outputOwnedFeeIndices: number[];
+    outputTransferredFeeIndices: number[];
 }
 
 export interface TransferAssetAttribute {

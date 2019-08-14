@@ -12,9 +12,9 @@ export async function createCustom(
     } = {}
 ): Promise<CustomInstance> {
     const transactionHash = transaction.hash().value;
-    const { handlerId, buffer } = transaction.toJSON()
+    const { handlerId, bytes } = transaction.toJSON()
         .action as CustomActionJSON;
-    const content = Buffer.from(buffer).toString("hex");
+    const content = Buffer.from(bytes).toString("hex");
     return await models.Custom.create(
         {
             transactionHash: strip0xPrefix(transactionHash),
