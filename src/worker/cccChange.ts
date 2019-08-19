@@ -108,12 +108,15 @@ export async function updateCCCChange(
             return;
         }
 
-        const [prevTermEndBlockNumber] = await sdk.rpc.sendRpcRequest(
-            "chain_getTermMetadata",
-            [block.number - 1]
-        );
+        const [
+            prevTermEndBlockNumber,
+            currentTermID
+        ] = await sdk.rpc.sendRpcRequest("chain_getTermMetadata", [
+            block.number - 1
+        ]);
 
-        if (prevTermEndBlockNumber === 0) {
+        // If the `block` is the closing block of the term 0, currentTermID is 1.
+        if (currentTermID <= 1) {
             await Promise.all(queries);
             return;
         }
