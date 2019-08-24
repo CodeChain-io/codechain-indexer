@@ -52,11 +52,11 @@ export async function createAssetScheme(
             //
         }
         if (metadataObj && metadataObj.icon_url) {
-            await AssetImageModel.createAssetImage(
+            // NOTE: No await here because the URL might be unreachable or slow
+            AssetImageModel.createAssetImage(
                 transactionHash,
                 assetType,
-                metadataObj.icon_url,
-                options
+                metadataObj.icon_url
             );
         }
     } catch (err) {

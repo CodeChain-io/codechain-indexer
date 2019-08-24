@@ -51,11 +51,11 @@ export async function createChangeAssetScheme(
         // The metadata can be non-JSON.
     }
     if (metadataObj && metadataObj.icon_url) {
-        await AssetImageModel.createAssetImage(
+        // NOTE: No await here because the URL might be unreachable or slow
+        AssetImageModel.createAssetImage(
             transactionHash,
             strip0xPrefix(assetType),
-            metadataObj.icon_url,
-            options
+            metadataObj.icon_url
         );
     }
     await createAssetTypeLog(transaction, assetType, options);
