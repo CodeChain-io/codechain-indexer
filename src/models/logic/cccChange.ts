@@ -183,6 +183,27 @@ export async function stakeDeposit(
     );
 }
 
+export async function reportDoubleVote(
+    params: {
+        address: string;
+        change: U64;
+        blockNumber: number;
+        transactionHash: string;
+    },
+    options: {
+        transaction?: Transaction;
+    } = {}
+): Promise<CCCChangeInstance> {
+    return createCCCChange(
+        {
+            ...params,
+            reason: "report",
+            isNegative: false
+        },
+        options
+    );
+}
+
 export async function getByAddress(
     address: string,
     option: {
