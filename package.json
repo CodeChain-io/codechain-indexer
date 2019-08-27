@@ -16,7 +16,7 @@
     "bignumber.js": "^7.2.1",
     "buffer": "^5.2.1",
     "codechain-sdk": "^2.0.0-alpha.2",
-    "codechain-stakeholder-sdk": "^2.0.0-alpha.3",
+    "codechain-stakeholder-sdk": "^2.0.0-alpha.6",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",

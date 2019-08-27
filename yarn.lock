@@ -917,10 +917,10 @@ codechain-sdk@^2.0.0-alpha.2:
     request-promise "^4.2.2"
     rlp "^2.0.0"
 
-codechain-stakeholder-sdk@^2.0.0-alpha.3:
-  version "2.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/codechain-stakeholder-sdk/-/codechain-stakeholder-sdk-2.0.0-alpha.3.tgz#5b1a5b054135802b6e07fb5f56833b65be372643"
-  integrity sha512-Su7z8eZgvUYQtIkThAdoI10gRM3yUdRyw1lvBjswY4noHyCUfGr/haX7Hx6p32ZWJyejJKR8HywjGD84WnxbsA==
+codechain-stakeholder-sdk@^2.0.0-alpha.6:
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/codechain-stakeholder-sdk/-/codechain-stakeholder-sdk-2.0.0-alpha.6.tgz#bb1c417aaecc86c11c7e520b527e0c899c250563"
+  integrity sha512-Th+UWGgFj40I2L1nN0NIjjhnorYyAd7uL8rMAn7vmURcvTTzfHzC9wKbLK/+QSYJ57So8Z17HD6pl2orKu9ufQ==
   dependencies:
     rlp "^2.2.2"
 
