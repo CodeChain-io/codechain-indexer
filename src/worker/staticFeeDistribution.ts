@@ -4,6 +4,7 @@ import { SignedTransaction, UnwrapCCC } from "codechain-sdk/lib/core/classes";
 import { Custom } from "codechain-sdk/lib/core/transaction/Custom";
 import {
     actionFromCustom as stakeActionFromCustom,
+    getCandidates,
     getCCSHolders,
     getUndelegatedCCS
 } from "codechain-stakeholder-sdk";
@@ -179,6 +180,41 @@ export async function payFee(
     return Promise.all(queries);
 }
 
+async function getDeposit(
+    sdk: SDK,
+    blockNumber: number,
+    pubkey: H512,
+    transaction: Transaction
+): Promise<U64> {
+    // Get the deposit at the previous block
+    const candidates = await getCandidates(sdk, blockNumber - 1);
+    const target = candidates.find(c => c.pubkey.isEqualTo(pubkey));
+    let deposit = new U64(0);
+    if (target != null) {
+        deposit = target.deposit;
+    }
+
+    // Get the accumulated self nomination transactions
+    const address = PlatformAddress.fromPublic(pubkey, {
+        networkId: sdk.networkId
+    });
+    const nominations = await CCCChangeModel.getNominations(
+        address.toString(),
+        blockNumber,
+        transaction
+    );
+    for (const n of nominations) {
+        const change: string = n.get("change");
+        if (!change.startsWith("-")) {
+            throw new Error(
+                'CCCChange with reason "deposit" must have negative change'
+            );
+        }
+        deposit = deposit.plus(change.slice(1));
+    }
+    return deposit;
+}
+
 export async function trackBalanceChangeByTx(
     sdk: SDK,
     blockNumber: number,
@@ -280,23 +316,58 @@ export async function trackBalanceChangeByTx(
                     sdk,
                     tx.unsigned as Custom
                 );
-                if (stakeAction && stakeAction.type === "selfNominate") {
-                    const signer = tx.getSignerAddress({
-                        networkId: sdk.networkId
-                    });
-                    const deposit = stakeAction.deposit;
-                    queries.push(
-                        CCCChangeModel.stakeDeposit(
-                            {
-                                address: signer.value,
-                                change: deposit,
-                                isNegative: true,
-                                blockNumber,
-                                transactionHash
-                            },
-                            { transaction }
-                        )
-                    );
+                if (stakeAction === null) {
+                    break;
+                }
+                switch (stakeAction.type) {
+                    case "selfNominate": {
+                        const signer = tx.getSignerAddress({
+                            networkId: sdk.networkId
+                        });
+                        const deposit = stakeAction.deposit;
+                        queries.push(
+                            CCCChangeModel.stakeDeposit(
+                                {
+                                    address: signer.value,
+                                    change: deposit,
+                                    isNegative: true,
+                                    blockNumber,
+                                    transactionHash
+                                },
+                                { transaction }
+                            )
+                        );
+                        break;
+                    }
+                    case "reportDoubleVote": {
+                        const signer = tx.getSignerAddress({
+                            networkId: sdk.networkId
+                        });
+                        const criminal = stakeAction.criminal();
+                        const deposit = await getDeposit(
+                            sdk,
+                            blockNumber,
+                            criminal,
+                            transaction
+                        );
+                        if (deposit.isGreaterThan(0)) {
+                            queries.push(
+                                CCCChangeModel.reportDoubleVote(
+                                    {
+                                        address: signer.value,
+                                        change: deposit,
+                                        blockNumber,
+                                        transactionHash
+                                    },
+                                    { transaction }
+                                )
+                            );
+                        }
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
                 }
             }
             default:
