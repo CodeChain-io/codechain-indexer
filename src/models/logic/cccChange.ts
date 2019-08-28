@@ -288,3 +288,24 @@ export async function getByBlockNumber(
         throw Exception.DBError();
     }
 }
+
+export async function getNominations(
+    address: string,
+    blockNumber: number,
+    transaction?: Transaction
+): Promise<CCCChangeInstance[]> {
+    try {
+        return await models.CCCChange.findAll({
+            attributes: ["change"],
+            where: {
+                address,
+                blockNumber,
+                reason: "deposit"
+            },
+            transaction
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
