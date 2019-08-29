@@ -80,6 +80,7 @@ export function createSlack(
         return new SlackWebhook(tag, slackWebhookUrl);
     } else {
         console.log("Slack not connected");
+        console.log("You can set SLACK_WEBHOOK env variable to connect Slack");
         return new NullSlack();
     }
 }

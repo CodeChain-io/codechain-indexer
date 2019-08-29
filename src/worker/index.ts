@@ -3,6 +3,7 @@ import { SDK } from "codechain-sdk";
 import { Block } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import { Job, scheduleJob } from "node-schedule";
+import { Slack } from "../checker/slack";
 import { InvalidBlockNumber } from "../exception";
 import models from "../models";
 import { BlockAttribute } from "../models/block";
@@ -16,6 +17,7 @@ const ASYNC_LOCK_KEY = "worker";
 
 export interface WorkerContext {
     sdk: SDK;
+    slack: Slack;
 }
 
 export interface WorkerConfig {
@@ -58,6 +60,7 @@ export default class Worker {
                 }
                 lastError = err;
                 console.error("sync error: ", err);
+                this.context.slack.sendError(err && err.message);
             }
         });
         this.watchJob.invoke();
