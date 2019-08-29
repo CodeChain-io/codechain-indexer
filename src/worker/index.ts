@@ -40,19 +40,24 @@ export default class Worker {
     }
 
     public run = async () => {
+        let lastError: Error | null = null;
         this.watchJob = scheduleJob(this.config.watchSchedule, async () => {
             try {
                 if (this.lock.isBusy(ASYNC_LOCK_KEY) === false) {
                     await this.sync();
                 }
+                lastError = null;
             } catch (err) {
-                const error = err as Error;
-                if (error.message.search(/ECONNRESET|ECONNREFUSED/) >= 0) {
-                    console.error("RPC Error");
-                } else {
-                    console.error(error);
-                    this.watchJob.cancel(false);
+                if (
+                    lastError &&
+                    err &&
+                    lastError.name === err.name &&
+                    lastError.message === err.message
+                ) {
+                    return;
                 }
+                lastError = err;
+                console.error("sync error: ", err);
             }
         });
         this.watchJob.invoke();
