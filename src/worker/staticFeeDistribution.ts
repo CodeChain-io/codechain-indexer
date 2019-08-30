@@ -325,18 +325,20 @@ export async function trackBalanceChangeByTx(
                             networkId: sdk.networkId
                         });
                         const deposit = stakeAction.deposit;
-                        queries.push(
-                            CCCChangeModel.stakeDeposit(
-                                {
-                                    address: signer.value,
-                                    change: deposit,
-                                    isNegative: true,
-                                    blockNumber,
-                                    transactionHash
-                                },
-                                { transaction }
-                            )
-                        );
+                        if (deposit.isGreaterThan(0)) {
+                            queries.push(
+                                CCCChangeModel.stakeDeposit(
+                                    {
+                                        address: signer.value,
+                                        change: deposit,
+                                        isNegative: true,
+                                        blockNumber,
+                                        transactionHash
+                                    },
+                                    { transaction }
+                                )
+                            );
+                        }
                         break;
                     }
                     case "reportDoubleVote": {
