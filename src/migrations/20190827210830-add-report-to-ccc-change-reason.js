@@ -146,7 +146,7 @@ module.exports = {
                             "author",
                             "stake",
                             "initial_distribution",
-                            "deposit"
+                            "validator"
                         ]
                     }
                 }
