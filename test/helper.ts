@@ -3,6 +3,7 @@ import { SDK } from "codechain-sdk";
 import { Block, H256, Transaction, U64 } from "codechain-sdk/lib/core/classes";
 import { readFileSync, writeFile } from "fs";
 import * as path from "path";
+import { NullSlack } from "../src/checker/slack";
 import { IndexerConfig } from "../src/config";
 import * as BlockModel from "../src/models/logic/block";
 import Worker from "../src/worker";
@@ -22,7 +23,10 @@ export const sdk = new SDK({
     networkId: CODECHAIN_NETWORK_ID
 });
 
-export const worker = new Worker({ sdk }, options.worker);
+export const worker = new Worker(
+    { sdk, slack: new NullSlack() },
+    options.worker
+);
 
 export const ACCOUNT_SECRET =
     process.env.ACCOUNT_SECRET ||
