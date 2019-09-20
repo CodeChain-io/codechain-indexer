@@ -45,23 +45,6 @@ export function getOwnerFromTransaction(
             outputIndex
         ];
         return { lockScriptHash, parameters, owner };
-    } else if (tx.composeAsset && outputIndex === 0) {
-        const { lockScriptHash, parameters, recipient } = tx.composeAsset;
-        return {
-            lockScriptHash,
-            parameters,
-            owner: recipient
-        };
-    } else if (
-        tx.decomposeAsset &&
-        outputIndex < tx.decomposeAsset.outputs!.length
-    ) {
-        const {
-            lockScriptHash,
-            parameters,
-            owner
-        } = tx.decomposeAsset.outputs![outputIndex];
-        return { lockScriptHash, parameters, owner };
     } else if (tx.increaseAssetSupply) {
         const {
             lockScriptHash,

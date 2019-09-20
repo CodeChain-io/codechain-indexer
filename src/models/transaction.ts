@@ -3,13 +3,8 @@ import {
     ChangeAssetSchemeAttribute,
     ChangeAssetSchemeInstance
 } from "./changeAssetScheme";
-import { ComposeAssetAttribute, ComposeAssetInstance } from "./composeAsset";
 import { CreateShardAttribute, CreateShardInstance } from "./createShard";
 import { CustomAttribute, CustomInstance } from "./custom";
-import {
-    DecomposeAssetAttribute,
-    DecomposeAssetInstance
-} from "./decomposeAsset";
 import {
     IncreaseAssetSupplyAttribute,
     IncreaseAssetSupplyInstance
@@ -38,8 +33,6 @@ export interface TransactionAttribute {
     pay?: PayAttribute;
     mintAsset?: MintAssetAttribute;
     transferAsset?: TransferAssetAttribute;
-    composeAsset?: ComposeAssetAttribute;
-    decomposeAsset?: DecomposeAssetAttribute;
     changeAssetScheme?: ChangeAssetSchemeAttribute;
     increaseAssetSupply?: IncreaseAssetSupplyAttribute;
     wrapCCC?: WrapCCCAttribute;
@@ -67,10 +60,6 @@ export interface TransactionInstance
     getMintAsset: Sequelize.HasOneGetAssociationMixin<MintAssetInstance>;
     getTransferAsset: Sequelize.HasOneGetAssociationMixin<
         TransferAssetInstance
-    >;
-    getComposeAsset: Sequelize.HasOneGetAssociationMixin<ComposeAssetInstance>;
-    getDecomposeAsset: Sequelize.HasOneGetAssociationMixin<
-        DecomposeAssetInstance
     >;
     getChangeAssetScheme: Sequelize.HasOneGetAssociationMixin<
         ChangeAssetSchemeInstance
@@ -197,16 +186,6 @@ export default (
         Transaction.hasOne(models.TransferAsset, {
             foreignKey: "transactionHash",
             as: "transferAsset",
-            onDelete: "CASCADE"
-        });
-        Transaction.hasOne(models.ComposeAsset, {
-            foreignKey: "transactionHash",
-            as: "composeAsset",
-            onDelete: "CASCADE"
-        });
-        Transaction.hasOne(models.DecomposeAsset, {
-            foreignKey: "transactionHash",
-            as: "decomposeAsset",
             onDelete: "CASCADE"
         });
         Transaction.hasOne(models.ChangeAssetScheme, {

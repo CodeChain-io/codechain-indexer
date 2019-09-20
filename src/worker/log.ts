@@ -52,14 +52,6 @@ export async function indexLog(
                         aggTxLogType = LogType.TRANSFER_ASSET_COUNT;
                         break;
                     }
-                    case "composeAsset": {
-                        aggTxLogType = LogType.COMPOSE_ASSET_COUNT;
-                        break;
-                    }
-                    case "decomposeAsset": {
-                        aggTxLogType = LogType.DECOMPOSE_ASSET_COUNT;
-                        break;
-                    }
                     case "setRegularKey": {
                         aggTxLogType = LogType.SET_REGULAR_KEY_COUNT;
                         break;

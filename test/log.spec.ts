@@ -85,14 +85,6 @@ describe("log", function() {
         // TODO
     });
 
-    it.skip("Check log compose transaction count", function() {
-        // TODO
-    });
-
-    it.skip("Check log decompose transaction count", function() {
-        // TODO
-    });
-
     it.skip("Check log change assetScheme transaction count", function() {
         // TODO
     });

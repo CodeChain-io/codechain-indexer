@@ -13,16 +13,6 @@ export const includeArray = [
     },
     {
         attributes: [],
-        as: "composeAsset",
-        model: models.ComposeAsset
-    },
-    {
-        attributes: [],
-        as: "decomposeAsset",
-        model: models.DecomposeAsset
-    },
-    {
-        attributes: [],
         as: "changeAssetScheme",
         model: models.ChangeAssetScheme
     },
@@ -91,14 +81,6 @@ export const fullIncludeArray = [
     {
         as: "transferAsset",
         model: models.TransferAsset
-    },
-    {
-        as: "composeAsset",
-        model: models.ComposeAsset
-    },
-    {
-        as: "decomposeAsset",
-        model: models.DecomposeAsset
     },
     {
         as: "changeAssetScheme",
