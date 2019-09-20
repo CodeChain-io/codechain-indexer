@@ -19,7 +19,7 @@ export function handle(_C: IndexerContext, router: Router) {
      *     tags: [Log]
      *     parameters:
      *       - name: filter
-     *         description: block, tx, pay, setRegularKey, setShardOwner, setShardUser, createShard, mintAsset, transferAsset, composeAsset, decomposeAsset, changeAssetScheme, store, remove, custom, wrapCCC, unwrapCCC
+     *         description: block, tx, pay, setRegularKey, setShardOwner, setShardUser, createShard, mintAsset, transferAsset, changeAssetScheme, store, remove, custom, wrapCCC, unwrapCCC
      *         in: query
      *         required: true
      *         type: string
@@ -117,10 +117,6 @@ const getLogTypeFromFilter = (filter: string): LogType => {
             return LogType.MINT_ASSET_COUNT;
         case "transferAsset".toLowerCase():
             return LogType.TRANSFER_ASSET_COUNT;
-        case "composeAsset".toLowerCase():
-            return LogType.COMPOSE_ASSET_COUNT;
-        case "decomposeAsset".toLowerCase():
-            return LogType.DECOMPOSE_ASSET_COUNT;
         case "changeAssetScheme".toLowerCase():
             return LogType.CHANGE_ASSET_SCHEME_COUNT;
         case "increaseAssetSupply".toLowerCase():

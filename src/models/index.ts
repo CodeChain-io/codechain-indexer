@@ -18,13 +18,8 @@ import {
     ChangeAssetSchemeAttribute,
     ChangeAssetSchemeInstance
 } from "./changeAssetScheme";
-import { ComposeAssetAttribute, ComposeAssetInstance } from "./composeAsset";
 import { CreateShardAttribute, CreateShardInstance } from "./createShard";
 import { CustomAttribute, CustomInstance } from "./custom";
-import {
-    DecomposeAssetAttribute,
-    DecomposeAssetInstance
-} from "./decomposeAsset";
 import {
     IncreaseAssetSupplyAttribute,
     IncreaseAssetSupplyInstance
@@ -91,11 +86,6 @@ interface DB {
     TransferAsset: Sequelize.Model<
         TransferAssetInstance,
         TransferAssetAttribute
-    >;
-    ComposeAsset: Sequelize.Model<ComposeAssetInstance, ComposeAssetAttribute>;
-    DecomposeAsset: Sequelize.Model<
-        DecomposeAssetInstance,
-        DecomposeAssetAttribute
     >;
     ChangeAssetScheme: Sequelize.Model<
         ChangeAssetSchemeInstance,

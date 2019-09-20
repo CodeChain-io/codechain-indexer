@@ -10,10 +10,8 @@ import { TransactionAttribute, TransactionInstance } from "../transaction";
 import { createAddressLog } from "./addressLog";
 import { updateAssetScheme } from "./assetscheme";
 import { createChangeAssetScheme } from "./changeAssetScheme";
-import { createComposeAsset } from "./composeAsset";
 import { createCreateShard, updateShardId } from "./createShard";
 import { createCustom } from "./custom";
-import { createDecomposeAsset } from "./decomposeAsset";
 import { createIncreaseAssetSupply } from "./increaseassetsupply";
 import { createMintAsset } from "./mintAsset";
 import { createPay } from "./pay";
@@ -140,14 +138,6 @@ async function createTransactionAction(
         }
         case "transferAsset": {
             await createTransferAsset(tx, options);
-            break;
-        }
-        case "composeAsset": {
-            await createComposeAsset(tx, options);
-            break;
-        }
-        case "decomposeAsset": {
-            await createDecomposeAsset(tx, options);
             break;
         }
         case "wrapCCC": {
