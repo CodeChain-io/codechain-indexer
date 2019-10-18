@@ -40,7 +40,8 @@ export const getSigners = async (
     options: { transaction?: Sequelize.Transaction; threshold?: number } = {}
 ): Promise<string[]> => {
     const threshold = options.threshold == null ? 400 : options.threshold;
-    if (txs.length < threshold) {
+    // FIXME: disabled due to https://github.com/CodeChain-io/codechain-indexer/issues/300
+    if (!!true || txs.length < threshold) {
         // NOTE: Don't create workerpool when there is a small number of transactions.
         return Promise.all(
             txs.map(async tx => {
