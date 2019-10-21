@@ -7,7 +7,7 @@ export interface Slack {
     sendInfo(title: string, text: string): void;
 }
 
-class NullSlack implements Slack {
+export class NullSlack implements Slack {
     public sendError(__: string) {
         // empty
     }

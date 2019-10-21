@@ -21,8 +21,6 @@ export const validate: (params: {
 const TYPES = [
     "mintAsset",
     "transferAsset",
-    "composeAsset",
-    "decomposeAsset",
     "changeAssetScheme",
     "increaseAssetSupply",
     "wrapCCC",

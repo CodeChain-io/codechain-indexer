@@ -1,33 +1,17 @@
-import * as Sequelize from "sequelize";
-import { AssetTransferInput, AssetTransferOutput } from "./transferAsset";
+"use strict";
+const tableName = "DecomposeAssets";
+module.exports = {
+    up: (queryInterface, Sequelize) => {
+        return queryInterface.dropTable(tableName, { force: true });
+    },
 
-export interface DecomposeAssetAttribute {
-    transactionHash: string;
-    networkId: string;
-    approvals: string[];
-    input: AssetTransferInput;
-    outputs: AssetTransferOutput[];
-}
-
-export type DecomposeAssetInstance = Sequelize.Instance<
-    DecomposeAssetAttribute
->;
-
-export default (
-    sequelize: Sequelize.Sequelize,
-    DataTypes: Sequelize.DataTypes
-) => {
-    const Action = sequelize.define(
-        "DecomposeAsset",
-        {
+    down: (queryInterface, DataTypes) => {
+        return queryInterface.createTable(tableName, {
             transactionHash: {
                 allowNull: false,
                 primaryKey: true,
                 type: DataTypes.STRING,
                 onDelete: "CASCADE",
-                validate: {
-                    is: ["^[a-f0-9]{40}$"]
-                },
                 references: {
                     model: "Transactions",
                     key: "hash"
@@ -59,11 +43,6 @@ export default (
                 allowNull: false,
                 type: DataTypes.DATE
             }
-        },
-        {}
-    );
-    Action.associate = () => {
-        // associations can be defined here
-    };
-    return Action;
+        });
+    }
 };
