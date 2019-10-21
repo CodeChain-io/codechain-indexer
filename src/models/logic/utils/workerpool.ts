@@ -31,7 +31,9 @@ const getSignersFromPubKeyAndRegularKeyOwner = (
             return regularKeyOwner;
         }
 
-        return PlatformAddress.fromPublic(signerPubKey, networkId);
+        return PlatformAddress.fromPublic(signerPubKey, {
+            networkId
+        }).toString();
     });
 };
 
