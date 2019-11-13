@@ -202,28 +202,4 @@ export function handle(_C: IndexerContext, router: Router) {
             }
         }
     );
-
-    router.get(
-        "/account/:address/balance-history/count",
-        validate({
-            params: { address: platformAddressSchema },
-            query: { ...reasonFilterSchema }
-        }),
-        async (req, res, next) => {
-            try {
-                const reasonFilter = req.query.reasonFilter;
-                const address = req.params.address;
-                res.json(
-                    await CCCChangeModel.getCountByAddress(address, {
-                        reasonFilter:
-                            typeof reasonFilter === "string"
-                                ? reasonFilter.split(",")
-                                : undefined
-                    })
-                );
-            } catch (e) {
-                next(e);
-            }
-        }
-    );
 }
