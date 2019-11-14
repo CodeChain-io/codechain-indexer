@@ -24,6 +24,7 @@ export async function createUTXO(
         transactionHash: H256;
         transactionTracker: H256;
         transactionOutputIndex: number;
+        transactionIndex: number | null;
     },
     blockNumber: number,
     options: { transaction?: Sequelize.Transaction } = {}
@@ -48,7 +49,8 @@ export async function createUTXO(
                 ),
                 transactionOutputIndex: utxo.transactionOutputIndex,
                 assetScheme,
-                blockNumber
+                blockNumber,
+                transactionIndex: utxo.transactionIndex
             },
             {
                 transaction: options.transaction
@@ -76,6 +78,29 @@ export async function setUsed(
             {
                 where: {
                     id
+                },
+                transaction: options.transaction
+            }
+        );
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+export async function setUTXOTransactionIndex(
+    transactionHash: string,
+    transactionIndex: number,
+    options: { transaction?: Sequelize.Transaction } = {}
+) {
+    try {
+        return await models.UTXO.update(
+            {
+                transactionIndex
+            },
+            {
+                where: {
+                    transactionHash
                 },
                 transaction: options.transaction
             }
@@ -477,6 +502,7 @@ export async function transferUTXO(
         const shardId = mintAsset.shardId;
         const quantity = new U64(mintAsset.supply);
         const transactionOutputIndex = 0;
+        const transactionIndex = tx.transactionIndex || null;
         return await createUTXO(
             recipient,
             {
@@ -487,7 +513,8 @@ export async function transferUTXO(
                 quantity,
                 transactionHash,
                 transactionTracker,
-                transactionOutputIndex
+                transactionOutputIndex,
+                transactionIndex
             },
             blockNumber,
             options
@@ -516,6 +543,7 @@ export async function transferUTXO(
                 );
                 const order = orderOnTransfer && orderOnTransfer.order;
                 const orderHash = order && new H256(order.orderHash);
+                const transactionIndex = tx.transactionIndex || null;
                 return createUTXO(
                     recipient,
                     {
@@ -527,7 +555,8 @@ export async function transferUTXO(
                         orderHash,
                         transactionHash,
                         transactionTracker,
-                        transactionOutputIndex: output.index
+                        transactionOutputIndex: output.index,
+                        transactionIndex
                     },
                     blockNumber,
                     options
@@ -602,6 +631,7 @@ export async function transferUTXO(
         const lockScriptHash = new H160(incAssetSupply.lockScriptHash);
         const quantity = new U64(incAssetSupply.supply);
         const transactionOutputIndex = 0;
+        const transactionIndex = tx.transactionIndex || null;
 
         const recipient = getOwner(
             new H160(incAssetSupply.lockScriptHash),
@@ -619,7 +649,8 @@ export async function transferUTXO(
                 quantity,
                 transactionHash,
                 transactionTracker,
-                transactionOutputIndex
+                transactionOutputIndex,
+                transactionIndex
             },
             blockNumber,
             options
@@ -640,6 +671,7 @@ export async function transferUTXO(
         const parameters = wrapCCC.parameters;
         const quantity = new U64(wrapCCC.quantity);
         const transactionOutputIndex = 0;
+        const transactionIndex = tx.transactionIndex || null;
         return createUTXO(
             recipient,
             {
@@ -650,7 +682,8 @@ export async function transferUTXO(
                 quantity,
                 transactionHash,
                 transactionTracker,
-                transactionOutputIndex
+                transactionOutputIndex,
+                transactionIndex
             },
             blockNumber,
             options

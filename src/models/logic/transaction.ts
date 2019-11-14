@@ -26,7 +26,7 @@ import { strip0xPrefix } from "./utils/format";
 import { fullIncludeArray } from "./utils/includeArray";
 import { getTracker, isAssetTransactionType } from "./utils/transaction";
 import { getApprovers, getSigners } from "./utils/workerpool";
-import { transferUTXO } from "./utxo";
+import { setUTXOTransactionIndex, transferUTXO } from "./utxo";
 import { createWrapCCC } from "./wrapCCC";
 
 export async function tryUpdateTransaction(
@@ -42,6 +42,13 @@ export async function tryUpdateTransaction(
         if (instance == null) {
             return null;
         }
+
+        await setUTXOTransactionIndex(
+            tx.hash().toString(),
+            tx.transactionIndex!,
+            options
+        );
+
         return instance.update(
             {
                 blockNumber: tx.blockNumber,
