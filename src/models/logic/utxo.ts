@@ -262,7 +262,11 @@ export async function getUTXO(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [["id", "DESC"]],
+            order: [
+                ["blockNumber", "DESC"],
+                ["transactionIndex", "DESC"],
+                ["transactionOutputIndex", "DESC"]
+            ],
             limit: itemsPerPage!,
             offset: (page! - 1) * itemsPerPage!,
             include: includeArray
