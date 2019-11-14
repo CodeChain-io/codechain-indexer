@@ -17,6 +17,7 @@ export interface UTXOAttribute {
     usedBlockNumber?: number | null;
     assetScheme: AssetSchemeAttribute;
     blockNumber: number;
+    transactionIndex: number | null;
 }
 
 export interface UTXOInstance extends Sequelize.Instance<UTXOAttribute> {}
@@ -104,6 +105,10 @@ export default (
             },
             blockNumber: {
                 allowNull: false,
+                type: DataTypes.INTEGER
+            },
+            transactionIndex: {
+                allowNull: true,
                 type: DataTypes.INTEGER
             },
             usedBlockNumber: {
