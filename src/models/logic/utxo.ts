@@ -426,23 +426,6 @@ export async function getByTxHashIndex(
     }
 }
 
-export async function getByTxTrackerIndex(
-    transactionTracker: H256,
-    outputIndex: number
-) {
-    try {
-        return await models.UTXO.findOne({
-            where: {
-                transactionTracker: strip0xPrefix(transactionTracker.value),
-                transactionOutputIndex: outputIndex
-            }
-        });
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
-
 export async function getSnapshot(assetType: H256, blockNumber: number) {
     try {
         return models.UTXO.findAll({
