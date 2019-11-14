@@ -116,20 +116,6 @@ export async function getByAddress(address: string): Promise<UTXOInstance[]> {
     }
 }
 
-export async function getByAssetType(assetType: H160) {
-    try {
-        return await models.UTXO.findAll({
-            where: {
-                assetType: strip0xPrefix(assetType.value),
-                usedTransactionHash: null
-            }
-        });
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
-
 async function getUTXOQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
