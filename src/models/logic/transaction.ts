@@ -239,20 +239,12 @@ export async function applyTransaction(
 
 export async function getPendingTransactions(params: {
     address?: string | null;
-    addressFilter?: string[] | null;
     assetType?: H160 | null;
     type?: string[] | null;
     page: number;
     itemsPerPage: number;
 }) {
-    const {
-        address,
-        addressFilter,
-        assetType,
-        type,
-        page,
-        itemsPerPage
-    } = params;
+    const { address, assetType, type, page, itemsPerPage } = params;
     const query = {
         isPending: true,
         ...(type == null
@@ -271,7 +263,7 @@ export async function getPendingTransactions(params: {
             offset: (page - 1) * itemsPerPage,
             include: [
                 ...fullIncludeArray,
-                ...buildIncludeArray({ address, addressFilter, assetType })
+                ...buildIncludeArray({ address, assetType })
             ]
         });
     } catch (err) {
@@ -396,7 +388,6 @@ export async function removeOutdatedPendings(
 
 async function getTransactionHashes(params: {
     address?: string | null;
-    addressFilter?: string[] | null;
     assetType?: H160 | null;
     page: number;
     itemsPerPage: number;
@@ -426,7 +417,7 @@ async function getTransactionHashes(params: {
     if (params.includePending !== true) {
         where.isPending = false;
     }
-    const { page, itemsPerPage, address, addressFilter, assetType } = params;
+    const { page, itemsPerPage, address, assetType } = params;
     try {
         return await models.Transaction.findAll({
             subQuery: false,
@@ -444,7 +435,6 @@ async function getTransactionHashes(params: {
                       ],
                       include: buildIncludeArray({
                           address,
-                          addressFilter,
                           assetType
                       })
                   }
@@ -458,7 +448,6 @@ async function getTransactionHashes(params: {
 
 export async function getTransactions(params: {
     address?: string | null;
-    addressFilter?: string[] | null;
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
@@ -471,7 +460,7 @@ export async function getTransactions(params: {
     onlySuccessful?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, addressFilter, assetType, itemsPerPage } = params;
+    const { address, assetType, itemsPerPage } = params;
     try {
         // TODO: Querying twice will waste IO bandwidth and take longer time as long as the response time
         //       Find a way to merge these queries.
@@ -490,7 +479,7 @@ export async function getTransactions(params: {
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
             include: [
                 ...fullIncludeArray,
-                ...buildIncludeArray({ address, addressFilter, assetType })
+                ...buildIncludeArray({ address, assetType })
             ]
         });
     } catch (err) {
@@ -580,10 +569,9 @@ export async function getSuccessfulByTracker(
 
 function buildIncludeArray(params: {
     address?: string | null;
-    addressFilter?: string[] | null;
     assetType?: H160 | null;
 }): Sequelize.IncludeOptions[] {
-    const { address, addressFilter, assetType } = params;
+    const { address, assetType } = params;
     return [
         ...(address == null
             ? []
@@ -592,16 +580,7 @@ function buildIncludeArray(params: {
                       model: models.AddressLog,
                       as: "addressLogs",
                       attributes: [],
-                      where: {
-                          address,
-                          ...(addressFilter == null
-                              ? {}
-                              : {
-                                    type: {
-                                        [Sequelize.Op.in]: addressFilter
-                                    }
-                                })
-                      },
+                      where: { address },
                       required: true
                   }
               ]),

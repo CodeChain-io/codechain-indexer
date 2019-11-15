@@ -17,6 +17,7 @@ export interface AddressLogAttribute {
     success?: boolean | null;
     isPending: boolean;
     address: string;
+    // NOTE: It can be removed it's not used for the API.
     type: AddressLogType;
 }
 
