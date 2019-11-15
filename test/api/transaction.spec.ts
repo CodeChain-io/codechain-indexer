@@ -9,7 +9,6 @@ import { AssetAddress, H256 } from "codechain-primitives/lib";
 import { MintAsset } from "codechain-sdk/lib/core/classes";
 
 import { IndexerContext } from "../../src/context";
-import { getNumberOfTransactions } from "../../src/models/logic/transaction";
 import { createServer } from "../../src/server";
 import * as Helper from "../helper";
 
@@ -19,7 +18,6 @@ describe("transaction-api", function() {
     let mintRubyTx: MintAsset;
     let mintEmeraldTx: MintAsset;
     let transferTxHash: H256;
-    let initialTxCount: number;
 
     let context: IndexerContext;
     let app: express.Express;
@@ -29,7 +27,6 @@ describe("transaction-api", function() {
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
 
-        initialTxCount = await getNumberOfTransactions({});
         const shardId = 0;
         aliceAddress = await Helper.sdk.key.createAssetAddress();
         bobAddress = "tcaqyqckq0zgdxgpck6tjdg4qmp52p2vx3qaexqnegylk";
@@ -155,25 +152,6 @@ describe("transaction-api", function() {
             );
     });
 
-    it("api /tx/count", async function() {
-        await request(app)
-            .get("/api/tx/count")
-            .expect(200)
-            .expect(res => expect(Number(res.text)).equal(initialTxCount + 2));
-    });
-
-    it("api /tx/count with args", async function() {
-        const assetType = mintRubyTx.getMintedAsset().assetType;
-        const tracker = mintRubyTx.tracker().value;
-
-        await request(app)
-            .get(
-                `/api/tx/count?assetType=${assetType}&tracker=${tracker}&type=mintAsset`
-            )
-            .expect(200)
-            .expect(res => expect(res.text).equal("1"));
-    });
-
     it("api /tx/{hash}", async function() {
         await request(app)
             .get(`/api/tx/${transferTxHash}`)
@@ -194,23 +172,5 @@ describe("transaction-api", function() {
                 `/api/pending-tx?address=${address}&assetType=${assetType}&type=mintAsset`
             )
             .expect(200);
-    });
-
-    it("api /pending-tx/count", async function() {
-        await request(app)
-            .get(`/api/pending-tx/count`)
-            .expect(200)
-            .expect(res => expect(res.text).equal("1"));
-    });
-
-    it.skip("api /pending-tx/count with args", async function() {
-        const address = aliceAddress.value;
-        const assetType = mintEmeraldTx.getMintedAsset().assetType;
-        await request(app)
-            .get(
-                `/api/pending-tx/count?address=${address}&assetType=${assetType}&type=mintAsset`
-            )
-            .expect(200)
-            .expect(res => expect(res.text).equal("1"));
     });
 });

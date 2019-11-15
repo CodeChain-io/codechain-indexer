@@ -288,36 +288,6 @@ export async function getAllPendingTransactionHashes() {
     }
 }
 
-export async function getNumberOfPendingTransactions(params: {
-    address?: string | null;
-    addressFilter?: string[] | null;
-    assetType?: H160 | null;
-    type?: string[] | null;
-}) {
-    const { address, addressFilter, assetType, type } = params;
-    const query = {
-        isPending: true,
-        ...(type == null
-            ? {}
-            : {
-                  [Sequelize.Op.in]: type
-              })
-    };
-    try {
-        return models.Transaction.count({
-            where: query,
-            include: [
-                ...buildIncludeArray({ address, addressFilter, assetType })
-            ],
-            distinct: true,
-            col: "hash"
-        });
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
-
 export async function getByHash(
     hash: H256,
     options: { transaction?: Sequelize.Transaction } = {}
@@ -537,45 +507,6 @@ export async function getNumberOfEachTransactionType(
             group: ["type"],
             attributes: ["type", [Sequelize.fn("COUNT", "type"), "count"]],
             transaction
-        });
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
-
-export async function getNumberOfTransactions(params: {
-    address?: string | null;
-    addressFilter?: string[] | null;
-    assetType?: H160 | null;
-    type?: string[] | null;
-    tracker?: H256 | null;
-    blockNumber?: number | null;
-    blockHash?: H256 | null;
-    includePending?: boolean | null;
-    onlyConfirmed?: boolean | null;
-    onlySuccessful?: boolean | null;
-    confirmThreshold?: number | null;
-}) {
-    const { address, addressFilter, assetType } = params;
-    try {
-        return models.Transaction.count({
-            where: {
-                ...buildQueryForTransactions(params)
-            },
-            ...(address || assetType
-                ? {
-                      include: [
-                          ...buildIncludeArray({
-                              address,
-                              addressFilter,
-                              assetType
-                          })
-                      ],
-                      distinct: true,
-                      col: "hash"
-                  }
-                : {})
         });
     } catch (err) {
         console.error(err);
