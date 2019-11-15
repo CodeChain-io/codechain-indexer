@@ -35,22 +35,12 @@ const TYPES = [
     "custom"
 ];
 
-const ADDRESS_TYPES = [
-    "TransactionSigner",
-    "TransactionApprover",
-    "AssetOwner",
-    "Approver",
-    "Registrar"
-];
 const LOG_FILTER = ["block", "tx", ...TYPES];
 
 // FIXME:
 export const platformAddressSchema = Joi.string();
 // FIXME: PlatformAddress or AssetAddress
 const address = Joi.string();
-const addressFilter = Joi.string().regex(
-    new RegExp(`^(${ADDRESS_TYPES.join("|")})(,(${ADDRESS_TYPES.join("|")}))*$`)
-);
 export const assetTypeSchema = Joi.string().regex(/^(0x)?[0-9a-f]{40}$/);
 const tracker = Joi.string().regex(/^(0x)?[0-9a-f]{64}$/);
 const type = Joi.string().regex(
@@ -83,7 +73,6 @@ export const paginationSchema = {
 
 export const txSchema = {
     address,
-    addressFilter,
     assetType: assetTypeSchema,
     tracker,
     type,
