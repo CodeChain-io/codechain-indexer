@@ -115,11 +115,13 @@ describe("mint-transfer-synchronized", function() {
         expect(mintBlockInst.get({ plain: true }).hash).equal(
             mintBlock.hash.value
         );
-        const mintBlockTransactions = await TransactionModel.getTransactions({
-            blockNumber: bestBlockNumber - 1,
-            page: 1,
-            itemsPerPage: 15
-        }).then(txs => txs.map(tx => tx.get({ plain: true })));
+        const mintBlockTransactions = await TransactionModel.getTransactionsOfBlock(
+            {
+                blockNumber: bestBlockNumber - 1,
+                page: 1,
+                itemsPerPage: 15
+            }
+        ).then(txs => txs.map(tx => tx.get({ plain: true })));
         expect(mintBlockTransactions[0].hash).equal(
             mintBlock.transactions[0].hash().value
         );
@@ -132,7 +134,7 @@ describe("mint-transfer-synchronized", function() {
         expect(transferBlockInst.get({ plain: true }).hash).equal(
             transferBlock.hash.value
         );
-        const transferBlockTransactions = await TransactionModel.getTransactions(
+        const transferBlockTransactions = await TransactionModel.getTransactionsOfBlock(
             {
                 blockNumber: bestBlockNumber,
                 page: 1,

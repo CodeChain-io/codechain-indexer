@@ -392,27 +392,12 @@ async function getTransactionHashes(params: {
     page: number;
     itemsPerPage: number;
     type?: string[] | null;
-    tracker?: H256 | null;
-    blockNumber?: number | null;
-    blockHash?: H256 | null;
     includePending?: boolean | null;
     onlySuccessful?: boolean | null;
 }): Promise<string[]> {
     const where: Sequelize.WhereOptions<TransactionAttribute> = {};
     if (params.type != null) {
         where.type = { [Sequelize.Op.in]: params.type };
-    }
-    if (params.tracker != null) {
-        where.tracker = params.tracker.value;
-    }
-    if (params.blockNumber != null) {
-        where.blockNumber = params.blockNumber;
-    }
-    if (params.blockHash != null) {
-        where.blockHash = params.blockHash.value;
-    }
-    if (params.onlySuccessful) {
-        where.errorHint = null;
     }
     if (params.includePending !== true) {
         where.isPending = false;
@@ -451,8 +436,6 @@ export async function getTransactions(params: {
     assetType?: H160 | null;
     type?: string[] | null;
     tracker?: H256 | null;
-    blockNumber?: number | null;
-    blockHash?: H256 | null;
     page: number;
     itemsPerPage: number;
     includePending?: boolean | null;
@@ -488,6 +471,27 @@ export async function getTransactions(params: {
     }
 }
 
+export async function getTransactionsOfBlock(params: {
+    page: number;
+    itemsPerPage: number;
+    blockNumber: number;
+}) {
+    try {
+        const { page, itemsPerPage, blockNumber } = params;
+
+        return models.Transaction.findAll({
+            where: { blockNumber },
+            order: [["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage,
+            include: [...fullIncludeArray]
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
 export async function getNumberOfEachTransactionType(
     params: {
         blockNumber: number;
@@ -513,22 +517,12 @@ export async function getNumberOfEachTransactionType(
 function buildQueryForTransactions(params: {
     type?: string[] | null;
     tracker?: H256 | null;
-    blockNumber?: number | null;
-    blockHash?: H256 | null;
     includePending?: boolean | null;
     onlySuccessful?: boolean | null;
 }) {
     return {
         ...(params.type ? { type: { [Sequelize.Op.in]: params.type } } : {}),
         ...(params.tracker ? { tracker: params.tracker.value } : {}),
-        ...(params.blockNumber != null
-            ? { blockNumber: params.blockNumber }
-            : {}),
-        ...(params.blockHash
-            ? {
-                  blockHash: params.blockHash.value
-              }
-            : {}),
         ...(params.onlySuccessful ? { errorHint: null } : {}),
         ...(params.includePending !== true ? { isPending: false } : {})
         /* FIXME: onlyConfirmed, confirmThreshold */

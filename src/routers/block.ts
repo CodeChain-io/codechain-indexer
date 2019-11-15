@@ -215,6 +215,7 @@ export function handle(context: IndexerContext, router: Router) {
     router.get(
         "/block/:hashOrNumber/tx",
         validate({
+            // FIXME: Throw an error if hashOrNumber is not hash or number
             query: {
                 ...paginationSchema
             }
@@ -226,23 +227,15 @@ export function handle(context: IndexerContext, router: Router) {
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
                 15;
-            let hashValue;
-            let numberValue;
-            // FIXME: Throw an error if hashOrNumber is not hash or number
+
             try {
-                hashValue = new H256(hashOrNumber);
-            } catch (e) {
-                if (!isNaN(hashOrNumber)) {
-                    numberValue = parseInt(hashOrNumber, 10);
-                }
-            }
-            try {
-                const txs = await TransactionModel.getTransactions({
+                const block =
+                    H256.check(hashOrNumber) &&
+                    (await BlockModel.getByHash(new H256(hashOrNumber)));
+                const txs = await TransactionModel.getTransactionsOfBlock({
                     page,
                     itemsPerPage,
-                    ...(hashValue
-                        ? { blockHash: hashValue }
-                        : { blockNumber: numberValue })
+                    blockNumber: block ? block.get().number : hashOrNumber
                 });
                 res.json(txs.map(tx => tx.get({ plain: true })));
             } catch (e) {
