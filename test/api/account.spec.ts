@@ -99,12 +99,6 @@ describe("account-api", function() {
             );
     });
 
-    it("api /account/count", async function() {
-        await request(app)
-            .get("/api/account/count")
-            .expect(200);
-    });
-
     it("api /account/{address}", async function() {
         const address = "tccqyqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqungah99";
         await request(app)

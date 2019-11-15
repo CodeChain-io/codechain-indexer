@@ -72,27 +72,6 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /account/count:
-     *   get:
-     *     summary: Returns total counts of the accounts
-     *     tags: [Account]
-     *     responses:
-     *       200:
-     *         description: account
-     *         schema:
-     *           type: number
-     *           example: 12
-     */
-    router.get("/account/count", async (_, res, next) => {
-        try {
-            const count = await AccountModel.getCountOfAccounts();
-            res.json(count);
-        } catch (e) {
-            next(e);
-        }
-    });
-    /**
-     * @swagger
      * /account/{address}:
      *   get:
      *     summary: Returns account of the specific address
