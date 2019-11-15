@@ -15,7 +15,12 @@ module.exports = {
             },
             assetType: {
                 allowNull: false,
-                type: Sequelize.STRING
+                type: Sequelize.STRING,
+                onDelete: "CASCADE",
+                references: {
+                    model: "AssetSchemes",
+                    key: "assetType"
+                }
             },
             totalAssetQuantity: {
                 allowNull: false,
@@ -39,6 +44,11 @@ module.exports = {
 
         await queryInterface.addIndex("AggsUTXOs", {
             fields: ["address", "assetType"],
+            unique: true
+        });
+
+        await queryInterface.addIndex("AggsUTXOs", {
+            fields: ["assetType", "address"],
             unique: true
         });
 

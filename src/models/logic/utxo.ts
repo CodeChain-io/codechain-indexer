@@ -6,6 +6,7 @@ import { AssetSchemeAttribute } from "../assetscheme";
 import { TransactionInstance } from "../transaction";
 import { AssetTransferOutput } from "../transferAsset";
 import { UTXOInstance } from "../utxo";
+import * as AggsUTXOModel from "./aggsUTXO";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
 import { getSuccessfulByTracker } from "./transaction";
@@ -286,77 +287,26 @@ export async function getAggsUTXO(params: {
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const {
-        address,
-        assetType,
-        shardId,
-        page = 1,
-        itemsPerPage = 15,
-        onlyConfirmed = false,
-        confirmThreshold = 0
-    } = params;
-    const query: any = await getUTXOQuery({
-        address,
-        assetType,
-        shardId,
-        onlyConfirmed,
-        confirmThreshold
-    });
-    let includeArray: any = [
-        {
-            as: "assetScheme",
-            model: models.AssetScheme
-        }
-    ];
-    if (onlyConfirmed) {
-        const latestBlockInst = await BlockModel.getLatestBlock();
-        const latestBlockNumber = latestBlockInst
-            ? latestBlockInst.get().number
-            : 0;
-        includeArray = [
-            {
-                as: "usedTransaction",
-                model: models.Transaction,
-                required: false,
-                where: {
-                    blockNumber: {
-                        [Sequelize.Op.lte]:
-                            latestBlockNumber - confirmThreshold!
-                    }
-                },
-                attributes: []
-            },
-            {
-                as: "assetScheme",
-                model: models.AssetScheme
-            }
-        ];
-    }
+    const { address, assetType, page = 1, itemsPerPage = 15 } = params;
+
     try {
-        return await models.UTXO.findAll({
-            where: {
-                [Sequelize.Op.and]: query
-            },
-            attributes: [
-                [
-                    Sequelize.fn("SUM", Sequelize.col("quantity")),
-                    "totalAssetQuantity"
-                ],
-                "address",
-                "assetType",
-                [
-                    Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
-                    "utxoQuantity"
-                ]
-            ],
-            order: Sequelize.literal(
-                `"totalAssetQuantity" DESC, "assetType" DESC`
-            ),
-            limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
-            include: includeArray,
-            group: ["UTXO.address", "UTXO.assetType", "assetScheme.assetType"]
-        });
+        if (address) {
+            return await AggsUTXOModel.getByAddress({
+                address,
+                assetType,
+                page,
+                itemsPerPage
+            });
+        } else if (assetType) {
+            return await AggsUTXOModel.getByAssetType({
+                address,
+                assetType,
+                page,
+                itemsPerPage
+            });
+        } else {
+            throw new Error("address == aggs == null");
+        }
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
