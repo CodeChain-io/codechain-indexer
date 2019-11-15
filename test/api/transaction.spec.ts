@@ -141,11 +141,8 @@ describe("transaction-api", function() {
 
     it("api /tx with args", async function() {
         const assetType = mintRubyTx.getMintedAsset().assetType;
-        const tracker = mintRubyTx.tracker().value;
         await request(app)
-            .get(
-                `/api/tx?assetType=${assetType}&tracker=${tracker}&type=mintAsset`
-            )
+            .get(`/api/tx?assetType=${assetType}&type=mintAsset`)
             .expect(200)
             .expect(res =>
                 expect(Object.keys(JSON.parse(res.text)).length).equal(1)

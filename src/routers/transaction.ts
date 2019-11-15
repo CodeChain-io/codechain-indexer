@@ -47,11 +47,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
-     *       - name: tracker
-     *         description: filter by tracker
-     *         in: query
-     *         required: false
-     *         type: string
      *       - name: type
      *         description: filter by type such as mintAsset, transferAsset, etc. Multiple types can be given by comma separating.
      *         in: query
@@ -113,7 +108,6 @@ export function handle(context: IndexerContext, router: Router) {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
-            const trackerString = req.query.tracker;
             const page = (req.query.page && parseInt(req.query.page, 10)) || 1;
             const itemsPerPage =
                 (req.query.itemsPerPage &&
@@ -126,20 +120,15 @@ export function handle(context: IndexerContext, router: Router) {
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
             let assetType;
-            let tracker;
             try {
                 if (assetTypeString) {
                     assetType = new H160(assetTypeString);
-                }
-                if (trackerString) {
-                    tracker = new H256(trackerString);
                 }
                 const txInsts = await TxModel.getTransactions({
                     address,
                     assetType,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
-                    tracker,
                     page,
                     itemsPerPage,
                     includePending,

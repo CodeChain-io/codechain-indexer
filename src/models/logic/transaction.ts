@@ -399,6 +399,9 @@ async function getTransactionHashes(params: {
     if (params.type != null) {
         where.type = { [Sequelize.Op.in]: params.type };
     }
+    if (params.onlySuccessful) {
+        where.errorHint = null;
+    }
     if (params.includePending !== true) {
         where.isPending = false;
     }
@@ -435,7 +438,6 @@ export async function getTransactions(params: {
     address?: string | null;
     assetType?: H160 | null;
     type?: string[] | null;
-    tracker?: H256 | null;
     page: number;
     itemsPerPage: number;
     includePending?: boolean | null;
@@ -516,13 +518,11 @@ export async function getNumberOfEachTransactionType(
 
 function buildQueryForTransactions(params: {
     type?: string[] | null;
-    tracker?: H256 | null;
     includePending?: boolean | null;
     onlySuccessful?: boolean | null;
 }) {
     return {
         ...(params.type ? { type: { [Sequelize.Op.in]: params.type } } : {}),
-        ...(params.tracker ? { tracker: params.tracker.value } : {}),
         ...(params.onlySuccessful ? { errorHint: null } : {}),
         ...(params.includePending !== true ? { isPending: false } : {})
         /* FIXME: onlyConfirmed, confirmThreshold */

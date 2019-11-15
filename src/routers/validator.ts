@@ -42,7 +42,6 @@ export const platformAddressSchema = Joi.string();
 // FIXME: PlatformAddress or AssetAddress
 const address = Joi.string();
 export const assetTypeSchema = Joi.string().regex(/^(0x)?[0-9a-f]{40}$/);
-const tracker = Joi.string().regex(/^(0x)?[0-9a-f]{64}$/);
 const type = Joi.string().regex(
     new RegExp(`^(${TYPES.join("|")})(,(${TYPES.join("|")}))*$`)
 );
@@ -74,7 +73,6 @@ export const paginationSchema = {
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
-    tracker,
     type,
     includePending,
     onlySuccessful,
