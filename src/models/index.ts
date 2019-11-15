@@ -5,6 +5,7 @@ import * as Sequelize from "sequelize";
 import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
 import { AddressLogAttribute, AddressLogInstance } from "./addressLog";
+import { AggsUTXOAttribute, AggsUTXOInstance } from "./aggsUTXO";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import {
@@ -80,6 +81,7 @@ models.Sequelize = sequelize;
 interface DB {
     sequelize: Sequelize.Sequelize;
     Sequelize: Sequelize.SequelizeStatic;
+    AggsUTXO: Sequelize.Model<AggsUTXOInstance, AggsUTXOAttribute>;
     Block: Sequelize.Model<BlockInstance, BlockAttribute>;
     Transaction: Sequelize.Model<TransactionInstance, TransactionAttribute>;
     MintAsset: Sequelize.Model<MintAssetInstance, MintAssetAttribute>;
