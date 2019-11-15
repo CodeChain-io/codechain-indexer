@@ -52,7 +52,6 @@ const reasonFilter = Joi.string().regex(
 );
 const shardId = Joi.number();
 const onlyConfirmed = Joi.boolean();
-const onlySuccessful = Joi.boolean();
 const sync = Joi.boolean();
 const confirmThreshold = Joi.number()
     .min(0)
@@ -75,7 +74,6 @@ export const txSchema = {
     assetType: assetTypeSchema,
     type,
     includePending,
-    onlySuccessful,
     onlyConfirmed,
     confirmThreshold,
     sync

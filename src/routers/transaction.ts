@@ -72,11 +72,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: boolean
-     *       - name: onlySuccessful
-     *         description: returns only successful transactions
-     *         in: query
-     *         required: false
-     *         type: boolean
      *       - name: confirmThreshold
      *         description: confirm threshold
      *         in: query
@@ -115,7 +110,6 @@ export function handle(context: IndexerContext, router: Router) {
                 15;
             const includePending = req.query.includePending;
             const onlyConfirmed = req.query.onlyConfirmed;
-            const onlySuccessful = req.query.onlySuccessful;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
@@ -133,7 +127,6 @@ export function handle(context: IndexerContext, router: Router) {
                     itemsPerPage,
                     includePending,
                     onlyConfirmed,
-                    onlySuccessful,
                     confirmThreshold
                 });
                 const txs = txInsts.map(tx => tx.get({ plain: true }));
