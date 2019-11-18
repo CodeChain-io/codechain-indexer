@@ -1,4 +1,5 @@
 "use strict";
+const networkId = require("config").get("codechain.networkId");
 const tableName = "AssetAddressLogs";
 module.exports = {
     up: (queryInterface, DataTypes) => {
@@ -90,7 +91,39 @@ module.exports = {
                     ["transactionHash", "address", "assetType"],
                     { type: "unique" }
                 )
-            );
+            )
+            .then(() => {
+                return queryInterface.sequelize.query(`
+                  INSERT INTO "${tableName}"
+                    (
+                      "transactionHash",
+                      "transactionTracker",
+                      "transactionType",
+                      "blockNumber",
+                      "transactionIndex",
+                      "isPending",
+                      "address",
+                      "assetType",
+                      "createdAt",
+                      "updatedAt"
+                    )
+                    SELECT
+                      "A"."transactionHash",
+                      "A"."transactionTracker",
+                      "A"."transactionType",
+                      "A"."blockNumber",
+                      "A"."transactionIndex",
+                      "A"."isPending",
+                      "address",
+                      "assetType",
+                      "A"."createdAt",
+                      "A"."updatedAt"
+                    FROM
+                      "AddressLogs" as "A" INNER JOIN "AssetTypeLogs" as "B"
+                        ON "A"."transactionHash" = "B"."transactionHash"
+                    WHERE address LIKE '${networkId}a%'
+                `);
+            });
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable(tableName, { force: true });
