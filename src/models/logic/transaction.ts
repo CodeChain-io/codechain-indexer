@@ -1,12 +1,17 @@
 import * as assert from "assert";
 import { SDK } from "codechain-sdk";
-import { H160, H256, SignedTransaction } from "codechain-sdk/lib/core/classes";
+import {
+    AssetAddress,
+    H256,
+    PlatformAddress,
+    SignedTransaction
+} from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
-import { Transaction } from "sequelize";
 import * as Sequelize from "sequelize";
+import { Transaction } from "sequelize";
 import * as Exception from "../../exception";
 import models from "../index";
-import { TransactionAttribute, TransactionInstance } from "../transaction";
+import { TransactionInstance } from "../transaction";
 import { createAddressLog } from "./addressLog";
 import { updateAssetScheme } from "./assetscheme";
 import { createChangeAssetScheme } from "./changeAssetScheme";
@@ -239,7 +244,7 @@ export async function applyTransaction(
 
 export async function getPendingTransactions(params: {
     address?: string | null;
-    assetType?: H160 | null;
+    assetType?: string | null;
     type?: string[] | null;
     page: number;
     itemsPerPage: number;
@@ -386,53 +391,117 @@ export async function removeOutdatedPendings(
     }
 }
 
-async function getTransactionHashes(params: {
+async function getHashesByPlatformAddress(params: {
+    address: string;
+    page: number;
+    itemsPerPage: number;
+}): Promise<string[]> {
+    const { address, page, itemsPerPage } = params;
+    try {
+        return models.AddressLog.findAll({
+            attributes: ["transactionHash"],
+            where: {
+                address
+            },
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage
+        }).map(r => r.get("transactionHash"));
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+async function getHashesByAssetAddress(params: {
+    address: string;
+    assetType?: string | null;
+    page: number;
+    itemsPerPage: number;
+}): Promise<string[]> {
+    const { address, assetType, page, itemsPerPage } = params;
+    try {
+        return models.AssetAddressLog.findAll({
+            attributes: ["transactionHash"],
+            where: {
+                address,
+                ...(assetType && { assetType })
+            },
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage
+        }).map(r => r.get("transactionHash"));
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+async function getHashesByAssetType(params: {
+    assetType: string;
+    page: number;
+    itemsPerPage: number;
+}): Promise<string[]> {
+    const { assetType, page, itemsPerPage } = params;
+    try {
+        return models.AssetTypeLog.findAll({
+            attributes: ["transactionHash"],
+            where: {
+                assetType
+            },
+            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+            limit: itemsPerPage,
+            offset: (page - 1) * itemsPerPage
+        }).map(r => r.get("transactionHash"));
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+async function getHashes(params: {
     address?: string | null;
-    assetType?: H160 | null;
+    assetType?: string | null;
     page: number;
     itemsPerPage: number;
     type?: string[] | null;
     includePending?: boolean | null;
 }): Promise<string[]> {
-    const where: Sequelize.WhereOptions<TransactionAttribute> = {};
-    if (params.type != null) {
-        where.type = { [Sequelize.Op.in]: params.type };
+    const { address, assetType, page, itemsPerPage } = params;
+    if (address != null && assetType != null) {
+        return getHashesByAssetAddress({
+            address,
+            assetType,
+            page,
+            itemsPerPage
+        });
+    } else if (address != null) {
+        if (AssetAddress.check(address)) {
+            return getHashesByAssetAddress({ address, page, itemsPerPage });
+        } else if (PlatformAddress.check(address)) {
+            return getHashesByPlatformAddress({ address, page, itemsPerPage });
+        }
+        throw Error(`Invalid address: ${address}`);
+    } else if (assetType != null) {
+        return getHashesByAssetType({ assetType, page, itemsPerPage });
     }
-    if (params.includePending !== true) {
-        where.isPending = false;
-    }
-    const { page, itemsPerPage, address, assetType } = params;
-    try {
-        return await models.Transaction.findAll({
-            subQuery: false,
-            attributes: ["hash"],
-            where,
-            order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
-            limit: itemsPerPage,
-            offset: (page - 1) * itemsPerPage,
-            ...(address || assetType
-                ? {
-                      group: [
-                          "Transaction.hash",
-                          "Transaction.blockNumber",
-                          "Transaction.transactionIndex"
-                      ],
-                      include: buildIncludeArray({
-                          address,
-                          assetType
-                      })
-                  }
-                : {})
-        }).map(result => result.get("hash"));
-    } catch (err) {
-        console.error(err);
-        return [];
-    }
+    return models.Transaction.findAll({
+        attributes: ["hash"],
+        where: {
+            ...(params.type != null
+                ? { type: { [Sequelize.Op.in]: params.type } }
+                : {}),
+            ...(params.includePending !== true ? { isPending: false } : {})
+        },
+        order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+        limit: itemsPerPage,
+        offset: (page - 1) * itemsPerPage
+    }).map(result => result.get("hash"));
 }
 
 export async function getTransactions(params: {
     address?: string | null;
-    assetType?: H160 | null;
+    assetType?: string | null;
     type?: string[] | null;
     page: number;
     itemsPerPage: number;
@@ -440,11 +509,11 @@ export async function getTransactions(params: {
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, assetType, itemsPerPage } = params;
+    const { itemsPerPage } = params;
     try {
         // TODO: Querying twice will waste IO bandwidth and take longer time as long as the response time
         //       Find a way to merge these queries.
-        const hashes = await getTransactionHashes(params);
+        const hashes = await getHashes(params);
         assert(
             hashes.length <= itemsPerPage,
             `The number of hashes(${
@@ -453,14 +522,10 @@ export async function getTransactions(params: {
         );
         return models.Transaction.findAll({
             where: {
-                hash: hashes,
-                ...buildQueryForTransactions(params)
+                hash: hashes
             },
             order: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
-            include: [
-                ...fullIncludeArray,
-                ...buildIncludeArray({ address, assetType })
-            ]
+            include: [...fullIncludeArray]
         });
     } catch (err) {
         console.error(err);
@@ -511,17 +576,6 @@ export async function getNumberOfEachTransactionType(
     }
 }
 
-function buildQueryForTransactions(params: {
-    type?: string[] | null;
-    includePending?: boolean | null;
-}) {
-    return {
-        ...(params.type ? { type: { [Sequelize.Op.in]: params.type } } : {}),
-        ...(params.includePending !== true ? { isPending: false } : {})
-        /* FIXME: onlyConfirmed, confirmThreshold */
-    };
-}
-
 // @ts-ignore
 export async function deleteByHash(hash: H256) {
     try {
@@ -556,7 +610,7 @@ export async function getSuccessfulByTracker(
 
 function buildIncludeArray(params: {
     address?: string | null;
-    assetType?: H160 | null;
+    assetType?: string | null;
 }): Sequelize.IncludeOptions[] {
     const { address, assetType } = params;
     return [
@@ -578,9 +632,7 @@ function buildIncludeArray(params: {
                       model: models.AssetTypeLog,
                       as: "assetTypeLogs",
                       attributes: [],
-                      where: {
-                          assetType: assetType.value
-                      },
+                      where: { assetType },
                       required: true
                   }
               ])

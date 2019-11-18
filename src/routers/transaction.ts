@@ -113,14 +113,11 @@ export function handle(context: IndexerContext, router: Router) {
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
-            let assetType;
             try {
-                if (assetTypeString) {
-                    assetType = new H160(assetTypeString);
-                }
                 const txInsts = await TxModel.getTransactions({
                     address,
-                    assetType,
+                    assetType:
+                        assetTypeString && H160.ensure(assetTypeString).value,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
                     page,
@@ -280,13 +277,10 @@ export function handle(context: IndexerContext, router: Router) {
             const page = req.query.page || 1;
             const itemsPerPage = req.query.itemsPerPage || 15;
             try {
-                let assetType;
-                if (assetTypeString) {
-                    assetType = new H160(assetTypeString);
-                }
                 const pendingTxInsts = await TxModel.getPendingTransactions({
                     address,
-                    assetType,
+                    assetType:
+                        assetTypeString && H160.ensure(assetTypeString).value,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
                     page,
