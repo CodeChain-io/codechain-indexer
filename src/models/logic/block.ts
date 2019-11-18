@@ -6,6 +6,7 @@ import * as Exception from "../../exception";
 import { BlockInstance } from "../block";
 import models from "../index";
 import * as AddressLogModel from "./addressLog";
+import * as AssetAddressLogModel from "./assetAddressLog";
 import * as AssetTypeLogModel from "./assetTypeLog";
 import * as TxModel from "./transaction";
 import { strip0xPrefix } from "./utils/format";
@@ -65,6 +66,7 @@ export async function createBlock(
             } else {
                 await AddressLogModel.updateAddressLog(tx, options);
                 await AssetTypeLogModel.updateAssetTypeLog(tx, options);
+                await AssetAddressLogModel.updateAssetAddressLog(tx, options);
             }
         }
         await TxModel.createTransactions(

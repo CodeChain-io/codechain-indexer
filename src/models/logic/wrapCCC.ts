@@ -12,6 +12,7 @@ import { Transaction } from "sequelize";
 import models from "../index";
 import { WrapCCCInstance } from "../wrapCCC";
 import { createAddressLog } from "./addressLog";
+import { createAssetAddressLog } from "./assetAddressLog";
 import { createAssetSchemeOfWCCC } from "./assetscheme";
 import { createAssetTransferOutput } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
@@ -74,13 +75,10 @@ export async function createWrapCCC(
         options
     );
     await createAddressLog(transaction, payer, "AssetOwner", options);
+    const assetType = "0000000000000000000000000000000000000000";
     if (recipient) {
-        await createAddressLog(transaction, recipient, "AssetOwner", options);
+        await createAssetAddressLog(transaction, recipient, assetType, options);
     }
-    await createAssetTypeLog(
-        transaction,
-        "0000000000000000000000000000000000000000",
-        options
-    );
+    await createAssetTypeLog(transaction, assetType, options);
     return result;
 }

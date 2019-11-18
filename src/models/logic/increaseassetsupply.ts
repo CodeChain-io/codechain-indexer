@@ -11,7 +11,7 @@ import {
 import { Transaction } from "sequelize";
 import { IncreaseAssetSupplyInstance } from "../increaseAssetSupply";
 import models from "../index";
-import { createAddressLog } from "./addressLog";
+import { createAssetAddressLog } from "./assetAddressLog";
 import { createAssetTransferOutput } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { getOwner } from "./utils/address";
@@ -66,7 +66,7 @@ export async function createIncreaseAssetSupply(
         options
     );
     if (recipient) {
-        await createAddressLog(transaction, recipient, "AssetOwner", options);
+        await createAssetAddressLog(transaction, recipient, assetType, options);
     }
     await createAssetTypeLog(transaction, assetType, options);
     return inst;

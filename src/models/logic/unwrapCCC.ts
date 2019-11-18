@@ -7,6 +7,7 @@ import { Transaction } from "sequelize";
 import models from "../index";
 import { UnwrapCCCInstance } from "../unwrapCCC";
 import { createAddressLog } from "./addressLog";
+import { createAssetAddressLog } from "./assetAddressLog";
 import { getOutputOwner } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { strip0xPrefix } from "./utils/format";
@@ -49,14 +50,11 @@ export async function createUnwrapCCC(
         },
         { transaction: options.transaction }
     );
+    const assetType = "0000000000000000000000000000000000000000";
     if (owner) {
-        await createAddressLog(transaction, owner, "AssetOwner", options);
+        await createAssetAddressLog(transaction, owner, assetType, options);
     }
     await createAddressLog(transaction, receiver, "AssetOwner", options);
-    await createAssetTypeLog(
-        transaction,
-        "0000000000000000000000000000000000000000",
-        options
-    );
+    await createAssetTypeLog(transaction, assetType, options);
     return instance;
 }
