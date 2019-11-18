@@ -6,6 +6,10 @@ import { IndexerConfig } from "../config";
 import { AccountAttribtue, AccountInstance } from "./account";
 import { AddressLogAttribute, AddressLogInstance } from "./addressLog";
 import { AggsUTXOAttribute, AggsUTXOInstance } from "./aggsUTXO";
+import {
+    AssetAddressLogAttribute,
+    AssetAddressLogInstance
+} from "./assetAddressLog";
 import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import {
@@ -126,6 +130,10 @@ interface DB {
     AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
     Log: Sequelize.Model<LogInstance, LogAttribute>;
     AddressLog: Sequelize.Model<AddressLogInstance, AddressLogAttribute>;
+    AssetAddressLog: Sequelize.Model<
+        AssetAddressLogInstance,
+        AssetAddressLogAttribute
+    >;
     AssetTypeLog: Sequelize.Model<AssetTypeLogInstance, AssetTypeLogAttribute>;
     CCCChange: Sequelize.Model<CCCChangeInstance, CCCChangeAttribute>;
 }
