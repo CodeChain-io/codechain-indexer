@@ -9,6 +9,7 @@ import { Transaction } from "sequelize";
 import models from "../index";
 import { MintAssetInstance } from "../mintAsset";
 import { createAddressLog } from "./addressLog";
+import { createAssetAddressLog } from "./assetAddressLog";
 import { createAssetScheme } from "./assetscheme";
 import { createAssetTransferOutput } from "./assettransferoutput";
 import { createAssetTypeLog } from "./assetTypeLog";
@@ -102,7 +103,7 @@ export async function createMintAsset(
         { networkId },
         options
     );
-    await Promise.all([
+    await Promise.all<any>([
         approver != null
             ? createAddressLog(transaction, approver, "Approver", options)
             : Promise.resolve(null),
@@ -110,7 +111,7 @@ export async function createMintAsset(
             ? createAddressLog(transaction, registrar, "Registrar", options)
             : Promise.resolve(null),
         recipient != null
-            ? createAddressLog(transaction, recipient, "AssetOwner", options)
+            ? createAssetAddressLog(transaction, recipient, assetType, options)
             : Promise.resolve(null),
         createAssetTypeLog(transaction, assetType, options)
     ]);
