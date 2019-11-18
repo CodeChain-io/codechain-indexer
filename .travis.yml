@@ -31,5 +31,5 @@ services:
   - docker
   - postgresql
 addons:
-  postgresql: "9.4"
+  postgresql: "9.5"
 cache: yarn
