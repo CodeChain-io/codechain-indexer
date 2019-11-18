@@ -139,13 +139,32 @@ describe("transaction-api", function() {
         getBestBlockNumberStub.restore();
     });
 
-    it("api /tx with args", async function() {
+    it("api /tx with assetType filter", async function() {
         const assetType = mintRubyTx.getMintedAsset().assetType;
         await request(app)
-            .get(`/api/tx?assetType=${assetType}&type=mintAsset`)
+            .get(`/api/tx?assetType=${assetType}`)
             .expect(200)
             .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).equal(1)
+                expect(Object.keys(JSON.parse(res.text)).length).gte(1)
+            );
+    });
+
+    it("api /tx with address filter", async function() {
+        await request(app)
+            .get(`/api/tx?address=${aliceAddress.value}`)
+            .expect(200)
+            .expect(res =>
+                expect(Object.keys(JSON.parse(res.text)).length).gte(1)
+            );
+    });
+
+    it("api /tx with both assetType and address filters", async function() {
+        const assetType = mintRubyTx.getMintedAsset().assetType;
+        await request(app)
+            .get(`/api/tx?address=${aliceAddress.value}&assetType=${assetType}`)
+            .expect(200)
+            .expect(res =>
+                expect(Object.keys(JSON.parse(res.text)).length).gte(1)
             );
     });
 
