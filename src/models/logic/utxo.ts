@@ -25,7 +25,7 @@ export async function createUTXO(
         transactionHash: H256;
         transactionTracker: H256;
         transactionOutputIndex: number;
-        transactionIndex: number | null;
+        transactionIndex: number;
     },
     blockNumber: number,
     options: { transaction?: Sequelize.Transaction } = {}
@@ -456,7 +456,7 @@ export async function transferUTXO(
         const shardId = mintAsset.shardId;
         const quantity = new U64(mintAsset.supply);
         const transactionOutputIndex = 0;
-        const transactionIndex = tx.transactionIndex || null;
+        const transactionIndex = tx.transactionIndex!;
         return await createUTXO(
             recipient,
             {
@@ -497,7 +497,7 @@ export async function transferUTXO(
                 );
                 const order = orderOnTransfer && orderOnTransfer.order;
                 const orderHash = order && new H256(order.orderHash);
-                const transactionIndex = tx.transactionIndex || null;
+                const transactionIndex = tx.transactionIndex!;
                 return createUTXO(
                     recipient,
                     {
@@ -585,7 +585,7 @@ export async function transferUTXO(
         const lockScriptHash = new H160(incAssetSupply.lockScriptHash);
         const quantity = new U64(incAssetSupply.supply);
         const transactionOutputIndex = 0;
-        const transactionIndex = tx.transactionIndex || null;
+        const transactionIndex = tx.transactionIndex!;
 
         const recipient = getOwner(
             new H160(incAssetSupply.lockScriptHash),
@@ -625,7 +625,7 @@ export async function transferUTXO(
         const parameters = wrapCCC.parameters;
         const quantity = new U64(wrapCCC.quantity);
         const transactionOutputIndex = 0;
-        const transactionIndex = tx.transactionIndex || null;
+        const transactionIndex = tx.transactionIndex!;
         return createUTXO(
             recipient,
             {
