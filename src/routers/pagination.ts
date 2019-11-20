@@ -24,7 +24,7 @@ export function createPaginationResult<Row>(params: {
         if (order === "forward") {
             rows.pop();
         } else if (order === "reverse") {
-            rows.unshift();
+            rows.shift();
         }
     }
 
