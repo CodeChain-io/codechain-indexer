@@ -8,13 +8,11 @@ module.exports = {
             "blockNumber",
             "transactionIndex"
         ]);
-        await queryInterface.removeIndex(tableName, ["blockNumber"]);
         await queryInterface.removeIndex(tableName, ["address"]);
     },
 
     down: async (queryInterface, Sequelize) => {
         await queryInterface.addIndex(tableName, ["address"]);
-        await queryInterface.addIndex(tableName, ["blockNumber"]);
         await queryInterface.removeIndex(tableName, [
             "address",
             "blockNumber",
