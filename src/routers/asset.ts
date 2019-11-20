@@ -7,10 +7,11 @@ import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
 import * as BlockModel from "../models/logic/block";
 import {
-    parseLastEvaluatedKey,
+    parseEvaluatedKey,
     syncIfNeeded
 } from "../models/logic/utils/middleware";
 import * as UTXOModel from "../models/logic/utxo";
+import { createPaginationResult } from "./pagination";
 import {
     assetTypeSchema,
     paginationSchema,
@@ -88,6 +89,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: lastEvaluatedKey
      *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
      *         in: query
@@ -123,7 +129,7 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/utxo",
-        parseLastEvaluatedKey,
+        parseEvaluatedKey,
         validate({
             query: {
                 ...utxoSchema,
@@ -147,6 +153,7 @@ export function handle(context: IndexerContext, router: Router) {
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
             const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
 
             let assetType;
             try {
@@ -159,28 +166,33 @@ export function handle(context: IndexerContext, router: Router) {
                     shardId,
                     page,
                     itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
                     lastEvaluatedKey,
                     onlyConfirmed,
                     confirmThreshold
                 });
                 const utxo = utxoInsts.map(inst => inst.get({ plain: true }));
-                const hasNextPage = utxo.length === itemsPerPage + 1;
-                if (hasNextPage) {
-                    utxo.pop();
-                }
+                const firstItem = utxo[0];
                 const lastItem = utxo[utxo.length - 1];
 
-                res.json({
-                    data: utxo,
-                    lastEvaluatedKey: lastItem
-                        ? JSON.stringify([
-                              lastItem.blockNumber,
-                              lastItem.transactionIndex,
-                              lastItem.transactionOutputIndex
-                          ])
-                        : null,
-                    hasNextPage
-                });
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        result: {
+                            data: utxo,
+                            firstEvaluatedKey: firstItem
+                                ? UTXOModel.createUTXOEvaluatedKey(firstItem)
+                                : null,
+                            lastEvaluatedKey: lastItem
+                                ? UTXOModel.createUTXOEvaluatedKey(lastItem)
+                                : null
+                        },
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }

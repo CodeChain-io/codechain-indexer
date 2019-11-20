@@ -2,10 +2,11 @@ import { H160, H256, U64 } from "codechain-sdk/lib/core/classes";
 import * as Sequelize from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
+import { utxoPagination } from "../../routers/pagination";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { TransactionInstance } from "../transaction";
 import { AssetTransferOutput } from "../transferAsset";
-import { UTXOInstance } from "../utxo";
+import { UTXOAttribute, UTXOInstance } from "../utxo";
 import * as AggsUTXOModel from "./aggsUTXO";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
@@ -148,6 +149,7 @@ async function getUTXOQuery(params: {
     shardId?: number | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
+    firstEvaluatedKey?: number[] | null;
     lastEvaluatedKey?: number[] | null;
 }) {
     const {
@@ -156,6 +158,7 @@ async function getUTXOQuery(params: {
         onlyConfirmed,
         confirmThreshold,
         assetType,
+        firstEvaluatedKey,
         lastEvaluatedKey
     } = params;
     const query = [];
@@ -200,14 +203,12 @@ async function getUTXOQuery(params: {
         });
     }
 
-    if (lastEvaluatedKey) {
-        const lastBlockNumber = lastEvaluatedKey[0];
-        const lastTransactionIndex = lastEvaluatedKey[1];
-        const lastTransactionOutputIndex = lastEvaluatedKey[2];
+    if (firstEvaluatedKey || lastEvaluatedKey) {
         query.push(
-            Sequelize.literal(
-                `("UTXO"."blockNumber", "UTXO"."transactionIndex", "UTXO"."transactionOutputIndex")<(${lastBlockNumber}, ${lastTransactionIndex}, ${lastTransactionOutputIndex})`
-            )
+            utxoPagination.where({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            })
         );
     }
 
@@ -220,6 +221,7 @@ export async function getUTXO(params: {
     shardId?: number | null;
     page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: number[] | null;
     lastEvaluatedKey?: number[] | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
@@ -230,6 +232,7 @@ export async function getUTXO(params: {
         shardId,
         page = 1,
         itemsPerPage = 15,
+        firstEvaluatedKey,
         lastEvaluatedKey,
         onlyConfirmed = false,
         confirmThreshold = 0
@@ -240,6 +243,7 @@ export async function getUTXO(params: {
         shardId,
         onlyConfirmed,
         confirmThreshold,
+        firstEvaluatedKey,
         lastEvaluatedKey
     });
     let includeArray: any = [
@@ -280,11 +284,10 @@ export async function getUTXO(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [
-                ["blockNumber", "DESC"],
-                ["transactionIndex", "DESC"],
-                ["transactionOutputIndex", "DESC"]
-            ],
+            order: utxoPagination.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage!,
             offset: lastEvaluatedKey ? 0 : (page! - 1) * itemsPerPage!,
             include: includeArray
@@ -293,6 +296,14 @@ export async function getUTXO(params: {
         console.error(err);
         throw Exception.DBError();
     }
+}
+
+export function createUTXOEvaluatedKey(utxo: UTXOAttribute): string {
+    return JSON.stringify([
+        utxo.blockNumber,
+        utxo.transactionIndex,
+        utxo.transactionOutputIndex
+    ]);
 }
 
 export async function getAggsUTXO(params: {

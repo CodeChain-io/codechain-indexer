@@ -20,14 +20,22 @@ export function syncIfNeeded(context: IndexerContext): RequestHandler {
     };
 }
 
-export function parseLastEvaluatedKey(
+export function parseEvaluatedKey(
     req: Request,
     _: Response,
     next: NextFunction
 ): any {
     try {
+        if (req.query.firstEvaluatedKey) {
+            req.query.firstEvaluatedKey = JSON.parse(
+                req.query.firstEvaluatedKey
+            );
+        }
         if (req.query.lastEvaluatedKey) {
             req.query.lastEvaluatedKey = JSON.parse(req.query.lastEvaluatedKey);
+        }
+        if (req.query.lastEvaluatedKey && req.query.firstEvaluatedKey) {
+            throw new Error("Conflict lastEvaluatedKey and firstEvaluatedKey");
         }
         next();
     } catch (e) {
