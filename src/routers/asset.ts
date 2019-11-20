@@ -6,12 +6,16 @@ import * as Exception from "../exception";
 import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
 import * as BlockModel from "../models/logic/block";
-import { syncIfNeeded } from "../models/logic/utils/middleware";
+import {
+    parseLastEvaluatedKey,
+    syncIfNeeded
+} from "../models/logic/utils/middleware";
 import * as UTXOModel from "../models/logic/utxo";
 import {
     assetTypeSchema,
     paginationSchema,
     snapshotSchema,
+    utxoPaginationSchema,
     utxoSchema,
     validate
 } from "./validator";
@@ -84,6 +88,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
@@ -114,10 +123,12 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/utxo",
+        parseLastEvaluatedKey,
         validate({
             query: {
                 ...utxoSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...utxoPaginationSchema
             }
         }),
         syncIfNeeded(context),
@@ -128,11 +139,15 @@ export function handle(context: IndexerContext, router: Router) {
                 req.query.shardId && parseInt(req.query.shardId, 10);
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             const onlyConfirmed = req.query.onlyConfirmed;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+
             let assetType;
             try {
                 if (assetTypeString) {
@@ -143,12 +158,29 @@ export function handle(context: IndexerContext, router: Router) {
                     assetType,
                     shardId,
                     page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
+                    lastEvaluatedKey,
                     onlyConfirmed,
                     confirmThreshold
                 });
                 const utxo = utxoInsts.map(inst => inst.get({ plain: true }));
-                res.json(utxo);
+                const hasNextPage = utxo.length === itemsPerPage + 1;
+                if (hasNextPage) {
+                    utxo.pop();
+                }
+                const lastItem = utxo[utxo.length - 1];
+
+                res.json({
+                    data: utxo,
+                    lastEvaluatedKey: lastItem
+                        ? JSON.stringify([
+                              lastItem.blockNumber,
+                              lastItem.transactionIndex,
+                              lastItem.transactionOutputIndex
+                          ])
+                        : null,
+                    hasNextPage
+                });
             } catch (e) {
                 next(e);
             }

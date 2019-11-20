@@ -69,6 +69,14 @@ export const paginationSchema = {
         .max(100)
 };
 
+export const utxoPaginationSchema = {
+    lastEvaluatedKey: Joi.array().items(
+        Joi.number(),
+        Joi.number(),
+        Joi.number()
+    )
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
