@@ -98,6 +98,11 @@ export const txPaginationSchema = {
     lastEvaluatedKey: Joi.array().items(Joi.number(), Joi.number())
 };
 
+export const pendingTxPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number()),
+    lastEvaluatedKey: Joi.array().items(Joi.number())
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
@@ -110,7 +115,6 @@ export const txSchema = {
 
 export const pendingTxSchema = {
     address,
-    assetType: assetTypeSchema,
     type,
     sync
 };

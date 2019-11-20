@@ -10,7 +10,12 @@ import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import { Transaction } from "sequelize";
 import * as Exception from "../../exception";
-import { txPagination } from "../../routers/pagination";
+import {
+    addressLogPagination,
+    pendingTxPagination,
+    txPagination
+} from "../../routers/pagination";
+import { AddressLogType } from "../addressLog";
 import models from "../index";
 import { TransactionAttribute, TransactionInstance } from "../transaction";
 import { createAddressLog } from "./addressLog";
@@ -245,33 +250,150 @@ export async function applyTransaction(
 
 export async function getPendingTransactions(params: {
     address?: string | null;
-    assetType?: string | null;
-    type?: string[] | null;
     page: number;
     itemsPerPage: number;
+    firstEvaluatedKey: [number, number] | null;
+    lastEvaluatedKey: [number, number] | null;
 }) {
-    const { address, assetType, type, page, itemsPerPage } = params;
-    const query = {
-        isPending: true,
-        ...(type == null
-            ? {}
-            : {
-                  [Sequelize.Op.in]: type
-              })
-    };
+    const { address } = params;
+
+    if (address) {
+        return getPendingTransactionsByAddress({
+            ...params,
+            ...{
+                address
+            }
+        });
+    } else {
+        return getAnyPendingTransactions(params);
+    }
+}
+
+async function getAnyPendingTransactions(params: {
+    page: number;
+    itemsPerPage: number;
+    firstEvaluatedKey: [number, number] | null;
+    lastEvaluatedKey: [number, number] | null;
+}) {
+    const { page, itemsPerPage, firstEvaluatedKey, lastEvaluatedKey } = params;
+    const query: any[] = [
+        {
+            isPending: true
+        }
+    ];
+
+    if (firstEvaluatedKey || lastEvaluatedKey) {
+        query.push(
+            pendingTxPagination.where({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            })
+        );
+    }
+
     try {
         return models.Transaction.findAll({
             where: {
-                ...query
+                [Sequelize.Op.and]: query
             },
-            order: [["pendingTimestamp", "DESC"]],
+            order: pendingTxPagination.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage,
-            offset: (page - 1) * itemsPerPage,
-            include: [
-                ...fullIncludeArray,
-                ...buildIncludeArray({ address, assetType })
-            ]
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page - 1) * itemsPerPage,
+            include: [...fullIncludeArray]
         });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+async function getPendingTransactionsByAddress(params: {
+    address: string;
+    page: number;
+    itemsPerPage: number;
+    firstEvaluatedKey: [number, number] | null;
+    lastEvaluatedKey: [number, number] | null;
+}) {
+    const { itemsPerPage, firstEvaluatedKey, lastEvaluatedKey } = params;
+
+    const hashes = await getPendingHashesByPlatformAddress(params);
+    assert(
+        hashes.length <= itemsPerPage,
+        `The number of hashes(${
+            hashes.length
+        })  must not be greater than itemsPerPage(${itemsPerPage})`
+    );
+    try {
+        return models.Transaction.findAll({
+            where: {
+                hash: hashes
+            },
+            order: addressLogPagination.bySeq.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
+            limit: itemsPerPage,
+            include: [...fullIncludeArray]
+        });
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+async function getPendingHashesByPlatformAddress(params: {
+    address: string;
+    page: number;
+    itemsPerPage: number;
+    firstEvaluatedKey: [number, number] | null;
+    lastEvaluatedKey: [number, number] | null;
+}): Promise<string[]> {
+    const {
+        address,
+        page,
+        itemsPerPage,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = params;
+
+    const addressLogType: AddressLogType = "TransactionSigner";
+    const whereCond: any[] = [
+        {
+            address,
+            isPending: true,
+            type: addressLogType
+        }
+    ];
+    if (firstEvaluatedKey || lastEvaluatedKey) {
+        whereCond.push(
+            addressLogPagination.bySeq.where({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            })
+        );
+    }
+    try {
+        return models.AddressLog.findAll({
+            attributes: ["transactionHash"],
+            where: {
+                [Sequelize.Op.and]: whereCond
+            },
+            order: addressLogPagination.bySeq.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
+            limit: itemsPerPage,
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page - 1) * itemsPerPage
+        }).map(r => r.get("transactionHash"));
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -760,37 +882,6 @@ export async function getSuccessfulByTracker(
     }
 }
 
-function buildIncludeArray(params: {
-    address?: string | null;
-    assetType?: string | null;
-}): Sequelize.IncludeOptions[] {
-    const { address, assetType } = params;
-    return [
-        ...(address == null
-            ? []
-            : [
-                  {
-                      model: models.AddressLog,
-                      as: "addressLogs",
-                      attributes: [],
-                      where: { address },
-                      required: true
-                  }
-              ]),
-        ...(assetType == null
-            ? []
-            : [
-                  {
-                      model: models.AssetTypeLog,
-                      as: "assetTypeLogs",
-                      attributes: [],
-                      where: { assetType },
-                      required: true
-                  }
-              ])
-    ];
-}
-
 export async function getRegularKeyOwnerByPublicKey(
     pubkey: string,
     options: { transaction?: Transaction; blockNumber?: number }
@@ -825,4 +916,8 @@ export async function getRegularKeyOwnerByPublicKey(
 
 export function createTxEvaluatedKey(tx: TransactionAttribute) {
     return JSON.stringify([tx.blockNumber, tx.transactionIndex]);
+}
+
+export function createPendingTxEvaluatedKey(tx: TransactionAttribute) {
+    return JSON.stringify([tx.pendingTimestamp]);
 }
