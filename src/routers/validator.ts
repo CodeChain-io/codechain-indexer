@@ -70,6 +70,11 @@ export const paginationSchema = {
 };
 
 export const utxoPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(
+        Joi.number(),
+        Joi.number(),
+        Joi.number()
+    ),
     lastEvaluatedKey: Joi.array().items(
         Joi.number(),
         Joi.number(),
