@@ -220,3 +220,39 @@ export const aggsUTXOPagination = {
         }
     }
 };
+
+export const txPagination = {
+    forwardOrder: [["blockNumber", "DESC"], ["transactionIndex", "DESC"]],
+    reverseOrder: [["blockNumber", "ASC"], ["transactionIndex", "ASC"]],
+    orderby: (params: {
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
+    }) => {
+        const order = queryOrder(params);
+        if (order === "forward") {
+            return txPagination.forwardOrder;
+        } else if (order === "reverse") {
+            return txPagination.reverseOrder;
+        }
+    },
+    where: (params: {
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
+    }) => {
+        const order = queryOrder(params);
+        const { firstEvaluatedKey, lastEvaluatedKey } = params;
+        if (order === "forward") {
+            const blockNumber = lastEvaluatedKey![0];
+            const transactionIndex = lastEvaluatedKey![1];
+            return Sequelize.literal(
+                `("blockNumber", "transactionIndex")<(${blockNumber}, ${transactionIndex})`
+            );
+        } else if (order === "reverse") {
+            const blockNumber = firstEvaluatedKey![0];
+            const transactionIndex = firstEvaluatedKey![1];
+            return Sequelize.literal(
+                `("blockNumber", "transactionIndex")>(${blockNumber}, ${transactionIndex})`
+            );
+        }
+    }
+};

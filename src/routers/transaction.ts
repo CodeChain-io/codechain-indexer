@@ -3,10 +3,15 @@ import { Router } from "express";
 import * as Joi from "joi";
 import { IndexerContext } from "../context";
 import * as TxModel from "../models/logic/transaction";
-import { syncIfNeeded } from "../models/logic/utils/middleware";
+import {
+    parseEvaluatedKey,
+    syncIfNeeded
+} from "../models/logic/utils/middleware";
+import { createPaginationResult } from "./pagination";
 import {
     paginationSchema,
     pendingTxSchema,
+    txPaginationSchema,
     txSchema,
     validate
 } from "./validator";
@@ -62,6 +67,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: includePending
      *         description: If true, the results include pending transactions. Pending transactions are ahead of confirmed transactions in terms of order.
      *         in: query
@@ -92,10 +107,12 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/tx",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...txSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...txPaginationSchema
             }
         }),
         syncIfNeeded(context),
@@ -113,6 +130,8 @@ export function handle(context: IndexerContext, router: Router) {
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
             try {
                 const txInsts = await TxModel.getTransactions({
                     address,
@@ -121,13 +140,25 @@ export function handle(context: IndexerContext, router: Router) {
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
                     page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey,
                     includePending,
                     onlyConfirmed,
                     confirmThreshold
                 });
                 const txs = txInsts.map(tx => tx.get({ plain: true }));
-                res.json(txs);
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: txs,
+                        getEvaluatedKey: TxModel.createTxEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }
@@ -156,12 +187,16 @@ export function handle(context: IndexerContext, router: Router) {
             const payFees = await TxModel.getTransactions({
                 type: ["pay"],
                 page: 1,
-                itemsPerPage: samples
+                itemsPerPage: samples,
+                firstEvaluatedKey: null,
+                lastEvaluatedKey: null
             }).then(txs => txs.map(tx => tx.get().fee));
             const transferAssetFees = await TxModel.getTransactions({
                 type: ["transferAsset"],
                 page: 1,
-                itemsPerPage: samples
+                itemsPerPage: samples,
+                firstEvaluatedKey: null,
+                lastEvaluatedKey: null
             }).then(txs => txs.map(tx => tx.get().fee));
             res.json({
                 pay: payFees,
