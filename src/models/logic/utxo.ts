@@ -289,7 +289,10 @@ export async function getUTXO(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage!,
-            offset: (lastEvaluatedKey || firstEvaluatedKey) ? 0 : (page! - 1) * itemsPerPage!,
+            offset:
+                lastEvaluatedKey || firstEvaluatedKey
+                    ? 0
+                    : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
