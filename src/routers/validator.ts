@@ -82,6 +82,12 @@ export const utxoPaginationSchema = {
     )
 };
 
+const blockEvaluationKey = Joi.array().items(Joi.number());
+export const blockPaginationSchema = {
+    lastEvaluatedKey: blockEvaluationKey,
+    firstEvaluatedKey: blockEvaluationKey
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
