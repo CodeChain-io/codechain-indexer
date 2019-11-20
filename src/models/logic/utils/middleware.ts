@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import { SERVICE_UNAVAILABLE } from "http-status-codes";
 import { IndexerContext } from "../../../context";
 
@@ -18,4 +18,19 @@ export function syncIfNeeded(context: IndexerContext): RequestHandler {
         }
         next();
     };
+}
+
+export function parseLastEvaluatedKey(
+    req: Request,
+    _: Response,
+    next: NextFunction
+): any {
+    try {
+        if (req.query.lastEvaluatedKey) {
+            req.query.lastEvaluatedKey = JSON.parse(req.query.lastEvaluatedKey);
+        }
+        next();
+    } catch (e) {
+        next(e);
+    }
 }

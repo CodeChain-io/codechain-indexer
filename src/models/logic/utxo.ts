@@ -148,13 +148,15 @@ async function getUTXOQuery(params: {
     shardId?: number | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
+    lastEvaluatedKey?: number[] | null;
 }) {
     const {
         address,
         shardId,
         onlyConfirmed,
         confirmThreshold,
-        assetType
+        assetType,
+        lastEvaluatedKey
     } = params;
     const query = [];
     if (address) {
@@ -197,6 +199,18 @@ async function getUTXOQuery(params: {
             usedTransactionHash: null
         });
     }
+
+    if (lastEvaluatedKey) {
+        const lastBlockNumber = lastEvaluatedKey[0];
+        const lastTransactionIndex = lastEvaluatedKey[1];
+        const lastTransactionOutputIndex = lastEvaluatedKey[2];
+        query.push(
+            Sequelize.literal(
+                `("UTXO"."blockNumber", "UTXO"."transactionIndex", "UTXO"."transactionOutputIndex")<(${lastBlockNumber}, ${lastTransactionIndex}, ${lastTransactionOutputIndex})`
+            )
+        );
+    }
+
     return query;
 }
 
@@ -206,6 +220,7 @@ export async function getUTXO(params: {
     shardId?: number | null;
     page?: number | null;
     itemsPerPage?: number | null;
+    lastEvaluatedKey?: number[] | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
@@ -215,6 +230,7 @@ export async function getUTXO(params: {
         shardId,
         page = 1,
         itemsPerPage = 15,
+        lastEvaluatedKey,
         onlyConfirmed = false,
         confirmThreshold = 0
     } = params;
@@ -223,7 +239,8 @@ export async function getUTXO(params: {
         assetType,
         shardId,
         onlyConfirmed,
-        confirmThreshold
+        confirmThreshold,
+        lastEvaluatedKey
     });
     let includeArray: any = [
         {
@@ -269,7 +286,7 @@ export async function getUTXO(params: {
                 ["transactionOutputIndex", "DESC"]
             ],
             limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
+            offset: lastEvaluatedKey ? 0 : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
