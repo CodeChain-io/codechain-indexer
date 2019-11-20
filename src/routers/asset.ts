@@ -172,8 +172,6 @@ export function handle(context: IndexerContext, router: Router) {
                     confirmThreshold
                 });
                 const utxo = utxoInsts.map(inst => inst.get({ plain: true }));
-                const firstItem = utxo[0];
-                const lastItem = utxo[utxo.length - 1];
 
                 res.json(
                     createPaginationResult({
@@ -181,15 +179,8 @@ export function handle(context: IndexerContext, router: Router) {
                             firstEvaluatedKey,
                             lastEvaluatedKey
                         },
-                        result: {
-                            data: utxo,
-                            firstEvaluatedKey: firstItem
-                                ? UTXOModel.createUTXOEvaluatedKey(firstItem)
-                                : null,
-                            lastEvaluatedKey: lastItem
-                                ? UTXOModel.createUTXOEvaluatedKey(lastItem)
-                                : null
-                        },
+                        rows: utxo,
+                        getEvaluatedKey: UTXOModel.createUTXOEvaluatedKey,
                         itemsPerPage
                     })
                 );

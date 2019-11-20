@@ -1,32 +1,30 @@
 import * as Sequelize from "sequelize";
 
-export function createPaginationResult(params: {
+export function createPaginationResult<Row>(params: {
     query: {
         firstEvaluatedKey?: any[] | null;
         lastEvaluatedKey?: any[] | null;
     };
-    result: {
-        data: any[];
-        firstEvaluatedKey: string | null;
-        lastEvaluatedKey: string | null;
-    };
+    rows: Row[];
+    getEvaluatedKey: (row: Row) => string;
     itemsPerPage: number;
 }) {
-    const { query, result, itemsPerPage } = params;
+    const { query, itemsPerPage, getEvaluatedKey } = params;
+    let { rows } = params;
 
     const firstQuery = !query.firstEvaluatedKey && !query.lastEvaluatedKey;
     const order: "forward" | "reverse" = queryOrder(query);
 
     if (order === "reverse") {
-        result.data = result.data.reverse();
+        rows = rows.reverse();
     }
 
-    const hasMorePage = result.data.length > itemsPerPage;
+    const hasMorePage = rows.length > itemsPerPage;
     if (hasMorePage) {
         if (order === "forward") {
-            result.data.pop();
+            rows.pop();
         } else if (order === "reverse") {
-            result.data.unshift();
+            rows.unshift();
         }
     }
 
@@ -44,12 +42,15 @@ export function createPaginationResult(params: {
     } else {
         throw new Error("Unreachable");
     }
+
+    const firstRow = rows[0];
+    const lastRow = rows[rows.length - 1];
     return {
-        data: result.data,
+        data: rows,
         hasNextPage,
         hasPreviousPage,
-        firstEvaluatedKey: result.firstEvaluatedKey,
-        lastEvaluatedKey: result.lastEvaluatedKey
+        firstEvaluatedKey: firstRow ? getEvaluatedKey(firstRow) : null,
+        lastEvaluatedKey: lastRow ? getEvaluatedKey(lastRow) : null
     };
 }
 
