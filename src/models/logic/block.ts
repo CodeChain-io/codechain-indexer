@@ -3,7 +3,8 @@ import { Block, H256, U64 } from "codechain-sdk/lib/core/classes";
 import * as _ from "lodash";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
-import { BlockInstance } from "../block";
+import { blockPagination } from "../../routers/pagination";
+import { BlockAttribute, BlockInstance } from "../block";
 import models from "../index";
 import * as AddressLogModel from "./addressLog";
 import * as AssetAddressLogModel from "./assetAddressLog";
@@ -127,25 +128,44 @@ export async function getBlocks(params: {
     address?: string;
     page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: [number] | null;
+    lastEvaluatedKey?: [number] | null;
 }) {
-    const { page = 1, itemsPerPage = 15, address } = params;
-    let query = {};
-    if (address) {
-        query = {
-            author: address
-        };
-    }
+    const {
+        address,
+        page = 1,
+        itemsPerPage = 15,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = params;
     try {
         return await models.Block.findAll({
-            order: [["number", "DESC"]],
+            order: blockPagination.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
-            where: query
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page! - 1) * itemsPerPage!,
+            where: {
+                ...(address && { author: address }),
+                ...((firstEvaluatedKey || lastEvaluatedKey) &&
+                    blockPagination.where({
+                        firstEvaluatedKey,
+                        lastEvaluatedKey
+                    }))
+            }
         });
     } catch (err) {
         console.log(err);
         throw Exception.DBError();
     }
+}
+
+export function createBlockEvaluatedKey(block: BlockAttribute): string {
+    return JSON.stringify([block.number]);
 }
 
 export async function getNumberOfBlocks(params: { address?: string }) {

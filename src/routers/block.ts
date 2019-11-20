@@ -4,8 +4,13 @@ import * as _ from "lodash";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
 import * as TransactionModel from "../models/logic/transaction";
-import { syncIfNeeded } from "../models/logic/utils/middleware";
 import {
+    parseEvaluatedKey,
+    syncIfNeeded
+} from "../models/logic/utils/middleware";
+import { createPaginationResult } from "./pagination";
+import {
+    blockPaginationSchema,
     blockSchema,
     paginationSchema,
     syncSchema,
@@ -304,6 +309,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
@@ -324,10 +339,12 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/block",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...blockSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...blockPaginationSchema
             }
         }),
         syncIfNeeded(context),
@@ -335,18 +352,31 @@ export function handle(context: IndexerContext, router: Router) {
             const address = req.query.address;
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
-
+                req.query.itemsPerPage &&
+                parseInt(req.query.itemsPerPage, 10) + 1;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
             try {
-                const blockInsts = await BlockModel.getBlocks({
+                const blocks = await BlockModel.getBlocks({
                     address,
                     page,
-                    itemsPerPage
-                });
-                const blocks = blockInsts.map(blockInst =>
-                    blockInst.get({ plain: true })
+                    itemsPerPage,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
+                }).then(instances =>
+                    instances.map(i => i.get({ plain: true }))
                 );
-                res.json(blocks);
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: blocks,
+                        getEvaluatedKey: BlockModel.createBlockEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }

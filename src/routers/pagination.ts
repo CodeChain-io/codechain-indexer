@@ -109,3 +109,37 @@ export const utxoPagination = {
         }
     }
 };
+
+type BlockEvaluationKey = [number];
+export const blockPagination = {
+    orderby: (params: {
+        firstEvaluatedKey?: BlockEvaluationKey | null;
+        lastEvaluatedKey?: BlockEvaluationKey | null;
+    }) => {
+        switch (queryOrder(params)) {
+            case "forward":
+                return [["number", "DESC"]];
+            case "reverse":
+                return [["number", "ASC"]];
+            default:
+                throw Error("Unreachable");
+        }
+    },
+    where: (params: {
+        firstEvaluatedKey?: BlockEvaluationKey | null;
+        lastEvaluatedKey?: BlockEvaluationKey | null;
+    }) => {
+        switch (queryOrder(params)) {
+            case "forward": {
+                const [blockNumber] = params.lastEvaluatedKey!;
+                return { number: { [Sequelize.Op.lt]: blockNumber } };
+            }
+            case "reverse": {
+                const [blockNumber] = params.firstEvaluatedKey!;
+                return { number: { [Sequelize.Op.gt]: blockNumber } };
+            }
+            default:
+                throw Error("Unreachable");
+        }
+    }
+};
