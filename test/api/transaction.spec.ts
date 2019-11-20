@@ -248,18 +248,33 @@ describe("transaction-api", function() {
     });
 
     it("api /pending-tx", async function() {
-        await request(app)
-            .get(`/api/pending-tx`)
-            .expect(200);
-    });
-
-    it.skip("api /pending-tx with args", async function() {
-        const address = aliceAddress.value;
         const assetType = mintEmeraldTx.getMintedAsset().assetType;
         await request(app)
-            .get(
-                `/api/pending-tx?address=${address}&assetType=${assetType}&type=mintAsset`
-            )
-            .expect(200);
+            .get(`/api/pending-tx`)
+            .expect(200)
+            .expect(res => {
+                const txs = JSON.parse(res.text).data;
+                expect(txs.length).equals(1);
+
+                const mintAsset = txs[0].mintAsset;
+                expect(mintAsset.recipient).equals(aliceAddress.toString());
+                expect(mintAsset.assetType).equals(assetType.toString());
+            });
+    });
+
+    it("api /pending-tx with args", async function() {
+        const address = Helper.ACCOUNT_ADDRESS;
+        const assetType = mintEmeraldTx.getMintedAsset().assetType;
+        await request(app)
+            .get(`/api/pending-tx?address=${address}`)
+            .expect(200)
+            .expect(res => {
+                const txs = JSON.parse(res.text).data;
+                expect(txs.length).equals(1);
+
+                const mintAsset = txs[0].mintAsset;
+                expect(mintAsset.recipient).equals(aliceAddress.toString());
+                expect(mintAsset.assetType).equals(assetType.toString());
+            });
     });
 });

@@ -10,6 +10,7 @@ import {
 import { createPaginationResult } from "./pagination";
 import {
     paginationSchema,
+    pendingTxPaginationSchema,
     pendingTxSchema,
     txPaginationSchema,
     txSchema,
@@ -263,16 +264,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
-     *       - name: assetType
-     *         description: filter by assetType
-     *         in: query
-     *         required: false
-     *         type: string
-     *       - name: type
-     *         description: filter by type such as mintAsset, transferAsset, etc. Multiple types can be given by comma separating.
-     *         in: query
-     *         required: false
-     *         type: string
      *       - name: page
      *         description: page for the pagination
      *         in: query
@@ -283,6 +274,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: sync
      *         description: wait for sync
      *         in: query
@@ -298,33 +299,47 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/pending-tx",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...pendingTxSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...pendingTxPaginationSchema
             }
         }),
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
-            const assetTypeString = req.query.assetType;
-            const type = req.query.type;
             const page = req.query.page || 1;
-            const itemsPerPage = req.query.itemsPerPage || 15;
+            const itemsPerPage =
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+
             try {
                 const pendingTxInsts = await TxModel.getPendingTransactions({
                     address,
-                    assetType:
-                        assetTypeString && H160.ensure(assetTypeString).value,
-                    type:
-                        typeof type === "string" ? type.split(",") : undefined,
                     page,
-                    itemsPerPage
+                    itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
                 });
                 const pendingTxs = pendingTxInsts.map(tx =>
                     tx.get({ plain: true })
                 );
-                res.json(pendingTxs);
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: pendingTxs,
+                        getEvaluatedKey: TxModel.createPendingTxEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }

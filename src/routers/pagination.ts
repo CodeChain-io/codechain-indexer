@@ -256,3 +256,81 @@ export const txPagination = {
         }
     }
 };
+
+export const addressLogPagination = {
+    bySeq: {
+        forwardOrder: [["seq", "ASC"]],
+        reverseOrder: [["seq", "DESC"]],
+        orderby: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            if (order === "forward") {
+                return addressLogPagination.bySeq.forwardOrder;
+            } else if (order === "reverse") {
+                return addressLogPagination.bySeq.reverseOrder;
+            }
+        },
+        where: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            const { firstEvaluatedKey, lastEvaluatedKey } = params;
+            if (order === "forward") {
+                const [seq] = lastEvaluatedKey!;
+                return {
+                    seq: {
+                        [Sequelize.Op.gt]: seq
+                    }
+                };
+            } else if (order === "reverse") {
+                const [seq] = firstEvaluatedKey!;
+                return {
+                    seq: {
+                        [Sequelize.Op.lt]: seq
+                    }
+                };
+            }
+        }
+    }
+};
+
+export const pendingTxPagination = {
+    forwardOrder: [["pendingTimestamp", "DESC"]],
+    reverseOrder: [["pendingTimestamp", "ASC"]],
+    orderby: (params: {
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
+    }) => {
+        const order = queryOrder(params);
+        if (order === "forward") {
+            return pendingTxPagination.forwardOrder;
+        } else if (order === "reverse") {
+            return pendingTxPagination.reverseOrder;
+        }
+    },
+    where: (params: {
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
+    }) => {
+        const order = queryOrder(params);
+        const { firstEvaluatedKey, lastEvaluatedKey } = params;
+        if (order === "forward") {
+            const [pendingTimestamp] = lastEvaluatedKey!;
+            return {
+                pendingTimestamp: {
+                    [Sequelize.Op.lt]: pendingTimestamp
+                }
+            };
+        } else if (order === "reverse") {
+            const [pendingTimestamp] = firstEvaluatedKey!;
+            return {
+                pendingTimestamp: {
+                    [Sequelize.Op.gt]: pendingTimestamp
+                }
+            };
+        }
+    }
+};
