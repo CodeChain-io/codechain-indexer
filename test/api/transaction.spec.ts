@@ -4,6 +4,7 @@ import * as express from "express";
 import "mocha";
 import * as sinon from "sinon";
 import * as request from "supertest";
+import * as _ from "lodash";
 
 import { AssetAddress, H256 } from "codechain-primitives/lib";
 import { MintAsset } from "codechain-sdk/lib/core/classes";
@@ -144,18 +145,58 @@ describe("transaction-api", function() {
         await request(app)
             .get(`/api/tx?assetType=${assetType}`)
             .expect(200)
-            .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).gte(1)
-            );
+            .expect(res => {
+                const txs = JSON.parse(res.text).data;
+                expect(txs.length).equal(2);
+
+                const mintTx: any = _.filter(txs, tx => tx.mintAsset)[0];
+                expect(mintTx.mintAsset.assetType).equals(assetType.toString());
+
+                const transferTx: any = _.filter(
+                    txs,
+                    tx => tx.transferAsset
+                )[0];
+                expect(transferTx.transferAsset.inputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[1].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].assetType).equals(
+                    assetType.toString()
+                );
+            });
     });
 
     it("api /tx with address filter", async function() {
         await request(app)
             .get(`/api/tx?address=${aliceAddress.value}`)
             .expect(200)
-            .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).gte(1)
-            );
+            .expect(res => {
+                expect(Object.keys(JSON.parse(res.text).data).length).gte(2);
+                const txs = JSON.parse(res.text).data;
+
+                expect(txs.length).equals(2);
+
+                const mintTx: any = _.filter(txs, tx => tx.mintAsset)[0];
+                expect(mintTx.mintAsset.recipient).equals(
+                    aliceAddress.toString()
+                );
+
+                const transferTx: any = _.filter(
+                    txs,
+                    tx => tx.transferAsset
+                )[0];
+                expect(transferTx.transferAsset.inputs[0].owner).equals(
+                    aliceAddress.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].owner).equals(
+                    aliceAddress.toString()
+                );
+            });
     });
 
     it("api /tx with both assetType and address filters", async function() {
@@ -163,9 +204,41 @@ describe("transaction-api", function() {
         await request(app)
             .get(`/api/tx?address=${aliceAddress.value}&assetType=${assetType}`)
             .expect(200)
-            .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).gte(1)
-            );
+            .expect(res => {
+                expect(Object.keys(JSON.parse(res.text).data).length).gte(2);
+                const txs = JSON.parse(res.text).data;
+
+                expect(txs.length).equals(2);
+
+                const mintTx: any = _.filter(txs, tx => tx.mintAsset)[0];
+                expect(mintTx.mintAsset.recipient).equals(
+                    aliceAddress.toString()
+                );
+                expect(mintTx.mintAsset.assetType).equals(assetType.toString());
+
+                const transferTx: any = _.filter(
+                    txs,
+                    tx => tx.transferAsset
+                )[0];
+                expect(transferTx.transferAsset.inputs[0].owner).equals(
+                    aliceAddress.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].owner).equals(
+                    aliceAddress.toString()
+                );
+                expect(transferTx.transferAsset.inputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[1].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].assetType).equals(
+                    assetType.toString()
+                );
+            });
     });
 
     it("api /tx/{hash}", async function() {

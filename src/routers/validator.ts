@@ -93,6 +93,11 @@ export const aggsUTXOPaginationSchema = {
     lastEvaluatedKey: Joi.array().items(Joi.string())
 };
 
+export const txPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number(), Joi.number()),
+    lastEvaluatedKey: Joi.array().items(Joi.number(), Joi.number())
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
