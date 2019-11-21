@@ -268,7 +268,10 @@ export async function getByAddress(
                 firstEvaluatedKey || lastEvaluatedKey
                     ? 0
                     : (page - 1) * itemsPerPage,
-            order: [["blockNumber", "DESC"], ["id", "DESC"]],
+            order: cccChangesPagination.byAccount.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             logging: console.log
         });
     } catch (err) {
