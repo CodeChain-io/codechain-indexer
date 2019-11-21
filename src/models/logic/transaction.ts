@@ -398,6 +398,7 @@ async function getHashesByPlatformAddress(params: {
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
+    includePending: boolean | null;
 }): Promise<string[]> {
     const {
         address,
@@ -409,7 +410,8 @@ async function getHashesByPlatformAddress(params: {
 
     const whereCond: any[] = [
         {
-            address
+            address,
+            ...(params.includePending !== true ? { isPending: false } : {})
         }
     ];
     if (firstEvaluatedKey || lastEvaluatedKey) {
@@ -449,6 +451,7 @@ async function getHashesByAssetAddress(params: {
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
+    includePending: boolean | null;
 }): Promise<string[]> {
     const {
         address,
@@ -462,7 +465,8 @@ async function getHashesByAssetAddress(params: {
     const whereCond: any[] = [
         {
             address,
-            ...(assetType && { assetType })
+            ...(assetType && { assetType }),
+            ...(params.includePending !== true ? { isPending: false } : {})
         }
     ];
     if (firstEvaluatedKey || lastEvaluatedKey) {
@@ -502,6 +506,7 @@ async function getHashesByAssetType(params: {
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
+    includePending: boolean | null;
 }): Promise<string[]> {
     const {
         assetType,
@@ -513,7 +518,8 @@ async function getHashesByAssetType(params: {
 
     const whereCond: any[] = [
         {
-            assetType
+            assetType,
+            ...(params.includePending !== true ? { isPending: false } : {})
         }
     ];
     if (firstEvaluatedKey || lastEvaluatedKey) {
@@ -563,7 +569,8 @@ async function getHashes(params: {
         page,
         itemsPerPage,
         firstEvaluatedKey,
-        lastEvaluatedKey
+        lastEvaluatedKey,
+        includePending = null
     } = params;
     if (address != null && assetType != null) {
         return getHashesByAssetAddress({
@@ -572,7 +579,8 @@ async function getHashes(params: {
             page,
             itemsPerPage,
             firstEvaluatedKey,
-            lastEvaluatedKey
+            lastEvaluatedKey,
+            includePending
         });
     } else if (address != null) {
         if (AssetAddress.check(address)) {
@@ -581,7 +589,8 @@ async function getHashes(params: {
                 page,
                 itemsPerPage,
                 firstEvaluatedKey,
-                lastEvaluatedKey
+                lastEvaluatedKey,
+                includePending
             });
         } else if (PlatformAddress.check(address)) {
             return getHashesByPlatformAddress({
@@ -589,7 +598,8 @@ async function getHashes(params: {
                 page,
                 itemsPerPage,
                 firstEvaluatedKey,
-                lastEvaluatedKey
+                lastEvaluatedKey,
+                includePending
             });
         }
         throw Error(`Invalid address: ${address}`);
@@ -599,7 +609,8 @@ async function getHashes(params: {
             page,
             itemsPerPage,
             firstEvaluatedKey,
-            lastEvaluatedKey
+            lastEvaluatedKey,
+            includePending
         });
     }
     const whereCond: any[] = [
