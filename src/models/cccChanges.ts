@@ -22,6 +22,7 @@ export const defaultAllReasons = [
 ];
 
 export interface CCCChangeAttribute {
+    id?: string;
     address: string;
     change: string;
     blockNumber: number;

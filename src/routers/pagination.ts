@@ -297,6 +297,42 @@ export const addressLogPagination = {
     }
 };
 
+export const cccChangesPagination = {
+    byAccount: {
+        forwardOrder: [["blockNumber", "DESC"], ["id", "DESC"]],
+        reverseOrder: [["blockNumber", "ASC"], ["id", "ASC"]],
+        orderby: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            if (order === "forward") {
+                return cccChangesPagination.byAccount.forwardOrder;
+            } else if (order === "reverse") {
+                return cccChangesPagination.byAccount.reverseOrder;
+            }
+        },
+        where: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            const { firstEvaluatedKey, lastEvaluatedKey } = params;
+            if (order === "forward") {
+                const [blockNumber, id] = lastEvaluatedKey!;
+                return Sequelize.literal(
+                    `("CCCChange"."blockNumber", "id")<(${blockNumber}, ${id})`
+                );
+            } else if (order === "reverse") {
+                const [blockNumber, id] = firstEvaluatedKey!;
+                return Sequelize.literal(
+                    `("CCCChange"."blockNumber", "id")>(${blockNumber}, ${id})`
+                );
+            }
+        }
+    }
+};
+
 export const pendingTxPagination = {
     forwardOrder: [["pendingTimestamp", "DESC"]],
     reverseOrder: [["pendingTimestamp", "ASC"]],
