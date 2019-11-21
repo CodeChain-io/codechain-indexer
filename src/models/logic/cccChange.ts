@@ -2,7 +2,13 @@ import { U64 } from "codechain-sdk/lib/core/classes";
 import { Transaction } from "sequelize";
 import * as Sequelize from "sequelize";
 import * as Exception from "../../exception";
-import { CCCChangeInstance, defaultAllReasons, Reason } from "../cccChanges";
+import { cccChangesPagination } from "../../routers/pagination";
+import {
+    CCCChangeAttribute,
+    CCCChangeInstance,
+    defaultAllReasons,
+    Reason
+} from "../cccChanges";
 import models from "../index";
 
 async function createCCCChange(
@@ -210,12 +216,37 @@ export async function getByAddress(
         page: number;
         itemsPerPage: number;
         reasonFilter?: string[];
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
     }
 ): Promise<CCCChangeInstance[]> {
-    const { page, itemsPerPage, reasonFilter = defaultAllReasons } = option;
+    const {
+        page,
+        itemsPerPage,
+        reasonFilter = defaultAllReasons,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = option;
     try {
+        const whereCond: any[] = [
+            {
+                address,
+                reason: {
+                    [Sequelize.Op.in]: reasonFilter
+                }
+            }
+        ];
+        if (firstEvaluatedKey || lastEvaluatedKey) {
+            whereCond.push(
+                cccChangesPagination.byAccount.where({
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
+                })
+            );
+        }
         return await models.CCCChange.findAll({
             attributes: [
+                "id",
                 "address",
                 "change",
                 "blockNumber",
@@ -223,10 +254,7 @@ export async function getByAddress(
                 "transactionHash"
             ],
             where: {
-                address,
-                reason: {
-                    [Sequelize.Op.in]: reasonFilter
-                }
+                [Sequelize.Op.and]: whereCond
             },
             include: [
                 {
@@ -236,13 +264,21 @@ export async function getByAddress(
                 }
             ],
             limit: itemsPerPage,
-            offset: (page - 1) * itemsPerPage,
-            order: [["blockNumber", "DESC"], ["id", "DESC"]]
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page - 1) * itemsPerPage,
+            order: [["blockNumber", "DESC"], ["id", "DESC"]],
+            logging: console.log
         });
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
     }
+}
+
+export function createCCCChangesEvaluatedKey(cccChange: CCCChangeAttribute) {
+    return JSON.stringify([cccChange.blockNumber, cccChange.id]);
 }
 
 export async function getCountByAddress(

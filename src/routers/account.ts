@@ -2,7 +2,10 @@ import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as AccountModel from "../models/logic/account";
 import * as CCCChangeModel from "../models/logic/cccChange";
+import { parseEvaluatedKey } from "../models/logic/utils/middleware";
+import { createPaginationResult } from "./pagination";
 import {
+    accountBalanceHistoryPaginationSchema,
     paginationSchema,
     platformAddressSchema,
     reasonFilterSchema,
@@ -131,6 +134,16 @@ export function handle(_C: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: account
@@ -155,9 +168,14 @@ export function handle(_C: IndexerContext, router: Router) {
      */
     router.get(
         "/account/:address/balance-history",
+        parseEvaluatedKey,
         validate({
             params: { address: platformAddressSchema },
-            query: { ...reasonFilterSchema, ...paginationSchema }
+            query: {
+                ...reasonFilterSchema,
+                ...paginationSchema,
+                ...accountBalanceHistoryPaginationSchema
+            }
         }),
         async (req, res, next) => {
             const reasonFilter = req.query.reasonFilter;
@@ -166,16 +184,37 @@ export function handle(_C: IndexerContext, router: Router) {
             const itemsPerPage = req.query.itemsPerPage
                 ? parseInt(req.query.itemsPerPage, 10)
                 : 15;
+
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+
             try {
                 const accounts = await CCCChangeModel.getByAddress(address, {
                     page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
                     reasonFilter:
                         typeof reasonFilter === "string"
                             ? reasonFilter.split(",")
-                            : undefined
+                            : undefined,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
                 });
-                res.json(accounts.map(account => account.get({ plain: true })));
+
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: accounts.map(account =>
+                            account.get({ plain: true })
+                        ),
+                        getEvaluatedKey:
+                            CCCChangeModel.createCCCChangesEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
+                res.json();
             } catch (e) {
                 next(e);
             }

@@ -116,6 +116,11 @@ export const snapshotPaginationSchema = {
     )
 };
 
+export const accountBalanceHistoryPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number(), Joi.string()),
+    lastEvaluatedKey: Joi.array().items(Joi.number(), Joi.string())
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
