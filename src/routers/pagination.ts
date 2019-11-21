@@ -144,6 +144,44 @@ export const blockPagination = {
     }
 };
 
+export const blockTxPagination = {
+    forwardOrder: [["transactionIndex", "DESC"]],
+    reverseOrder: [["transactionIndex", "ASC"]],
+    orderby: (params: {
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
+    }) => {
+        const order = queryOrder(params);
+        if (order === "forward") {
+            return blockTxPagination.forwardOrder;
+        } else if (order === "reverse") {
+            return blockTxPagination.reverseOrder;
+        }
+    },
+    where: (params: {
+        firstEvaluatedKey?: number[] | null;
+        lastEvaluatedKey?: number[] | null;
+    }) => {
+        const order = queryOrder(params);
+        const { firstEvaluatedKey, lastEvaluatedKey } = params;
+        if (order === "forward") {
+            const transactionIndex = lastEvaluatedKey![0];
+            return {
+                transactionIndex: {
+                    [Sequelize.Op.lt]: transactionIndex
+                }
+            };
+        } else if (order === "reverse") {
+            const transactionIndex = firstEvaluatedKey![0];
+            return {
+                transactionIndex: {
+                    [Sequelize.Op.gt]: transactionIndex
+                }
+            };
+        }
+    }
+};
+
 export const aggsUTXOPagination = {
     byAssetType: {
         forwardOrder: [["assetType", "DESC"]],

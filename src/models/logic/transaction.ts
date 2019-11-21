@@ -15,6 +15,7 @@ import {
     pendingTxPagination,
     txPagination
 } from "../../routers/pagination";
+import { blockTxPagination } from "../../routers/pagination";
 import { AddressLogType } from "../addressLog";
 import models from "../index";
 import { TransactionAttribute, TransactionInstance } from "../transaction";
@@ -811,21 +812,51 @@ export async function getTransactionsOfBlock(params: {
     page: number;
     itemsPerPage: number;
     blockNumber: number;
+    firstEvaluatedKey?: number[] | null;
+    lastEvaluatedKey?: number[] | null;
 }) {
     try {
-        const { page, itemsPerPage, blockNumber } = params;
+        const {
+            page,
+            itemsPerPage,
+            blockNumber,
+            firstEvaluatedKey,
+            lastEvaluatedKey
+        } = params;
+
+        const whereCond: any[] = [{ blockNumber }];
+        if (firstEvaluatedKey || lastEvaluatedKey) {
+            whereCond.push(
+                blockTxPagination.where({
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
+                })
+            );
+        }
 
         return models.Transaction.findAll({
-            where: { blockNumber },
-            order: [["transactionIndex", "DESC"]],
+            where: {
+                [Sequelize.Op.and]: whereCond
+            },
+            order: blockTxPagination.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage,
-            offset: (page - 1) * itemsPerPage,
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page - 1) * itemsPerPage,
             include: [...fullIncludeArray]
         });
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
     }
+}
+
+export function createBlockTxEvaluatedKey(tx: TransactionAttribute) {
+    return JSON.stringify([tx.transactionIndex]);
 }
 
 export async function getNumberOfEachTransactionType(
