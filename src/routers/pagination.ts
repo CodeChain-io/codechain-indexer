@@ -143,3 +143,80 @@ export const blockPagination = {
         }
     }
 };
+
+export const aggsUTXOPagination = {
+    byAssetType: {
+        forwardOrder: [["assetType", "DESC"]],
+        reverseOrder: [["assetType", "ASC"]],
+        orderby: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            if (order === "forward") {
+                return aggsUTXOPagination.byAssetType.forwardOrder;
+            } else if (order === "reverse") {
+                return aggsUTXOPagination.byAssetType.reverseOrder;
+            }
+        },
+        where: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            const { firstEvaluatedKey, lastEvaluatedKey } = params;
+            if (order === "forward") {
+                const assetType = lastEvaluatedKey![0];
+                return {
+                    assetType: {
+                        [Sequelize.Op.lt]: assetType
+                    }
+                };
+            } else if (order === "reverse") {
+                const assetType = firstEvaluatedKey![0];
+                return {
+                    assetType: {
+                        [Sequelize.Op.gt]: assetType
+                    }
+                };
+            }
+        }
+    },
+    byAddress: {
+        forwardOrder: [["address", "DESC"]],
+        reverseOrder: [["address", "ASC"]],
+        orderby: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            if (order === "forward") {
+                return aggsUTXOPagination.byAddress.forwardOrder;
+            } else if (order === "reverse") {
+                return aggsUTXOPagination.byAddress.reverseOrder;
+            }
+        },
+        where: (params: {
+            firstEvaluatedKey?: number[] | null;
+            lastEvaluatedKey?: number[] | null;
+        }) => {
+            const order = queryOrder(params);
+            const { firstEvaluatedKey, lastEvaluatedKey } = params;
+            if (order === "forward") {
+                const address = lastEvaluatedKey![0];
+                return {
+                    address: {
+                        [Sequelize.Op.lt]: address
+                    }
+                };
+            } else if (order === "reverse") {
+                const address = firstEvaluatedKey![0];
+                return {
+                    address: {
+                        [Sequelize.Op.gt]: address
+                    }
+                };
+            }
+        }
+    }
+};

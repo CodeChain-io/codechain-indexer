@@ -2,17 +2,30 @@ import { H160 } from "codechain-primitives";
 import * as Sequelize from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
+import { aggsUTXOPagination } from "../../routers/pagination";
 
 export async function getByAddress(params: {
     address: string;
     assetType?: H160 | null;
     page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: [number] | null;
+    lastEvaluatedKey?: [number] | null;
 }) {
-    const { address, assetType, page = 1, itemsPerPage = 15 } = params;
+    const {
+        address,
+        assetType,
+        page = 1,
+        itemsPerPage = 15,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = params;
     const query: any = getAggsUTXOQuery({
         address,
-        assetType
+        assetType,
+        order: "assetType",
+        firstEvaluatedKey,
+        lastEvaluatedKey
     });
 
     const includeArray: any = [
@@ -27,9 +40,15 @@ export async function getByAddress(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [["address", "DESC"], ["assetType", "DESC"]],
+            order: aggsUTXOPagination.byAssetType.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
@@ -43,11 +62,23 @@ export async function getByAssetType(params: {
     address?: string | null;
     page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: [number] | null;
+    lastEvaluatedKey?: [number] | null;
 }) {
-    const { address, assetType, page = 1, itemsPerPage = 15 } = params;
+    const {
+        address,
+        assetType,
+        page = 1,
+        itemsPerPage = 15,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = params;
     const query: any = getAggsUTXOQuery({
         address,
-        assetType
+        assetType,
+        order: "address",
+        firstEvaluatedKey,
+        lastEvaluatedKey
     });
 
     const includeArray: any = [
@@ -62,9 +93,15 @@ export async function getByAssetType(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [["assetType", "DESC"], ["address", "DESC"]],
+            order: aggsUTXOPagination.byAddress.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
+            offset:
+                firstEvaluatedKey || lastEvaluatedKey
+                    ? 0
+                    : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
@@ -76,8 +113,17 @@ export async function getByAssetType(params: {
 function getAggsUTXOQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
+    order: "assetType" | "address";
+    firstEvaluatedKey?: [number] | null;
+    lastEvaluatedKey?: [number] | null;
 }) {
-    const { address, assetType } = params;
+    const {
+        order,
+        address,
+        assetType,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = params;
     const query = [];
     if (address) {
         query.push({
@@ -88,6 +134,24 @@ function getAggsUTXOQuery(params: {
         query.push({
             assetType: assetType.value
         });
+    }
+
+    if (firstEvaluatedKey || lastEvaluatedKey) {
+        if (order === "assetType") {
+            query.push(
+                aggsUTXOPagination.byAssetType.where({
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
+                })
+            );
+        } else if (order === "address") {
+            query.push(
+                aggsUTXOPagination.byAddress.where({
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
+                })
+            );
+        }
     }
 
     return query;

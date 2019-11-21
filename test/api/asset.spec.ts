@@ -132,7 +132,7 @@ describe("asset-api", function() {
             )
             .expect(200)
             .expect(res => {
-                const aggsUTXOs = JSON.parse(res.text);
+                const aggsUTXOs = JSON.parse(res.text).data;
                 expect(aggsUTXOs.length).equal(2);
                 const bobAggs = _.find(
                     aggsUTXOs,
@@ -157,7 +157,7 @@ describe("asset-api", function() {
             )
             .expect(200)
             .expect(res => {
-                const aggsUTXOs = JSON.parse(res.text);
+                const aggsUTXOs = JSON.parse(res.text).data;
                 const aggs = _.filter(
                     aggsUTXOs,
                     agg => agg.address === bobAddress
@@ -178,7 +178,7 @@ describe("asset-api", function() {
             )
             .expect(200)
             .expect(res => {
-                const aggsUTXOs = JSON.parse(res.text);
+                const aggsUTXOs = JSON.parse(res.text).data;
                 expect(aggsUTXOs.length).equal(1);
                 expect(aggsUTXOs[0].assetType).equal(assetType.toString());
                 expect(aggsUTXOs[0].address).equal(address);

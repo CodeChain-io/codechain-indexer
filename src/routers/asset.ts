@@ -13,6 +13,7 @@ import {
 import * as UTXOModel from "../models/logic/utxo";
 import { createPaginationResult } from "./pagination";
 import {
+    aggsUTXOPaginationSchema,
     assetTypeSchema,
     paginationSchema,
     snapshotSchema,
@@ -312,6 +313,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -336,10 +347,12 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/aggs-utxo",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...utxoSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...aggsUTXOPaginationSchema
             }
         }),
         syncIfNeeded(context),
@@ -350,27 +363,53 @@ export function handle(context: IndexerContext, router: Router) {
                 req.query.shardId && parseInt(req.query.shardId, 10);
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             const onlyConfirmed = req.query.onlyConfirmed;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
             let assetType;
+            let order: "assetType" | "address";
+            if (address) {
+                order = "assetType";
+            } else {
+                order = "address";
+            }
+
             try {
                 if (assetTypeString) {
                     assetType = new H160(assetTypeString);
                 }
                 const aggsInst = await UTXOModel.getAggsUTXO({
+                    order,
                     address,
                     assetType,
                     shardId,
                     page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey,
                     onlyConfirmed,
                     confirmThreshold
                 });
-                const utxo = aggsInst.map(inst => inst.get({ plain: true }));
-                res.json(utxo);
+                const aggs = aggsInst.map(inst => inst.get({ plain: true }));
+
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: aggs,
+                        getEvaluatedKey: row =>
+                            UTXOModel.createAggsUTXOEvaluatedKey(row, order),
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }

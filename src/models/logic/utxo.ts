@@ -3,6 +3,7 @@ import * as Sequelize from "sequelize";
 import models from "..";
 import * as Exception from "../../exception";
 import { utxoPagination } from "../../routers/pagination";
+import { AggsUTXOAttribute } from "../aggsUTXO";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { TransactionInstance } from "../transaction";
 import { AssetTransferOutput } from "../transferAsset";
@@ -309,31 +310,55 @@ export function createUTXOEvaluatedKey(utxo: UTXOAttribute): string {
     ]);
 }
 
+export function createAggsUTXOEvaluatedKey(
+    aggs: AggsUTXOAttribute,
+    order: "assetType" | "address"
+): string {
+    return JSON.stringify([
+        order === "assetType" ? aggs.assetType : aggs.address
+    ]);
+}
+
 export async function getAggsUTXO(params: {
+    order: "assetType" | "address";
     address?: string | null;
     assetType?: H160 | null;
     shardId?: number | null;
     page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: [number] | null;
+    lastEvaluatedKey?: [number] | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
-    const { address, assetType, page = 1, itemsPerPage = 15 } = params;
+    const {
+        order,
+        address,
+        assetType,
+        page = 1,
+        itemsPerPage = 15,
+        firstEvaluatedKey,
+        lastEvaluatedKey
+    } = params;
 
     try {
-        if (address) {
+        if (order === "assetType") {
             return await AggsUTXOModel.getByAddress({
-                address,
+                address: address!,
                 assetType,
                 page,
-                itemsPerPage
+                itemsPerPage,
+                firstEvaluatedKey,
+                lastEvaluatedKey
             });
-        } else if (assetType) {
+        } else if (order === "address") {
             return await AggsUTXOModel.getByAssetType({
                 address,
-                assetType,
+                assetType: assetType!,
                 page,
-                itemsPerPage
+                itemsPerPage,
+                firstEvaluatedKey,
+                lastEvaluatedKey
             });
         } else {
             throw new Error("address == aggs == null");
