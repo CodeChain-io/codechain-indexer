@@ -16,6 +16,7 @@ import {
     aggsUTXOPaginationSchema,
     assetTypeSchema,
     paginationSchema,
+    snapshotPaginationSchema,
     snapshotSchema,
     utxoPaginationSchema,
     utxoSchema,
@@ -513,6 +514,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: true
      *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: snapshot, return null if the block does not exist yet
@@ -523,21 +529,32 @@ export function handle(context: IndexerContext, router: Router) {
      *               type: integer
      *             blockHash:
      *               type: string
-     *             snapshot:
+     *             data:
      *               type: array
      *               items:
      *                 $ref: '#/definitions/UTXO'
+     *             hasNextPage:
+     *               type: string
+     *             hasPreviousPage:
+     *               type: string
+     *             firstEvaluatedKey:
+     *               type: string
+     *             lastEvaluatedKey:
+     *               type: string
      */
     router.get(
         "/snapshot",
+        parseEvaluatedKey,
         validate({
             query: {
-                ...snapshotSchema
+                ...snapshotSchema,
+                ...snapshotPaginationSchema
             }
         }),
         async (req, res, next) => {
             const assetTypeString = req.query.assetType;
             const date = req.query.date;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
             try {
                 const assetType = new H160(assetTypeString);
                 const snapshotTime = moment(date);
@@ -553,14 +570,15 @@ export function handle(context: IndexerContext, router: Router) {
                     return;
                 }
 
-                const snapshot = await UTXOModel.getSnapshot(
+                const snapshot = await UTXOModel.getSnapshot({
                     assetType,
-                    block.get("number")
-                );
+                    blockNumber: block.get("number"),
+                    lastEvaluatedKey
+                });
                 res.json({
                     blockHash: block.get("hash"),
                     blockNumber: block.get("number"),
-                    snapshot
+                    ...snapshot
                 });
             } catch (e) {
                 next(e);

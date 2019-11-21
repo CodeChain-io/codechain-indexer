@@ -1,5 +1,7 @@
 import { H160, H256, U64 } from "codechain-sdk/lib/core/classes";
+import * as _ from "lodash";
 import * as Sequelize from "sequelize";
+import sequelize = require("sequelize");
 import models from "..";
 import * as Exception from "../../exception";
 import { utxoPagination } from "../../routers/pagination";
@@ -447,48 +449,125 @@ export async function getByTxHashIndex(
     }
 }
 
-export async function getSnapshot(assetType: H256, blockNumber: number) {
+export async function getSnapshot(params: {
+    assetType: H256;
+    blockNumber: number;
+    lastEvaluatedKey?: number[] | null;
+}) {
+    const { assetType, blockNumber, lastEvaluatedKey } = params;
+    const transaction = await models.sequelize.transaction({
+        isolationLevel:
+            models.Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+        deferrable: models.Sequelize.Deferrable.SET_DEFERRED
+    });
     try {
-        return models.UTXO.findAll({
-            where: {
-                assetType: strip0xPrefix(assetType.value),
-                usedBlockNumber: {
-                    [Sequelize.Op.or]: [
-                        { [Sequelize.Op.gt]: blockNumber },
-                        { [Sequelize.Op.eq]: null }
-                    ]
+        const [
+            fromBlockNumber,
+            fromTransactionIndex,
+            fromTransactionOutputIndex
+        ] = lastEvaluatedKey || [Number.MAX_SAFE_INTEGER, 0, 0];
+        const itemsPerPage = 100;
+
+        const rows = await models.sequelize.query(
+            `SELECT SUM("UTXO"."quantity") AS "totalAssetQuantity", "UTXO"."address", "UTXO"."assetType",
+            COUNT("UTXO"."assetType") AS "utxoQuantity"
+            FROM (SELECT * FROM "UTXOs" WHERE ("blockNumber", "transactionIndex", "transactionOutputIndex")<(:fromBlockNumber, :fromTransactionIndex, :fromTransactionOutputIndex)
+              AND "assetType"=:assetType
+              ORDER BY "blockNumber" DESC, "transactionIndex" DESC, "transactionOutputIndex" DESC
+              LIMIT :itemsPerPage) "UTXO"
+            WHERE ("UTXO"."usedBlockNumber" > :blockNumber OR "UTXO"."usedBlockNumber" IS NULL)
+              AND "UTXO"."blockNumber" <= :blockNumber
+            GROUP BY "UTXO"."address", "UTXO"."assetType"
+        `,
+            {
+                replacements: {
+                    fromBlockNumber,
+                    fromTransactionIndex,
+                    fromTransactionOutputIndex,
+                    blockNumber,
+                    assetType: strip0xPrefix(assetType.toString()),
+                    itemsPerPage
                 },
-                blockNumber: {
-                    [Sequelize.Op.lte]: blockNumber
-                }
-            },
-            attributes: [
-                [
-                    Sequelize.fn("SUM", Sequelize.col("quantity")),
-                    "totalAssetQuantity"
-                ],
-                "address",
-                "assetType",
-                [
-                    Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
-                    "utxoQuantity"
-                ]
-            ],
-            order: Sequelize.literal(
-                `"totalAssetQuantity" DESC, "assetType" DESC`
-            ),
-            include: [
-                {
-                    as: "assetScheme",
-                    model: models.AssetScheme
-                }
-            ],
-            group: ["UTXO.address", "UTXO.assetType", "assetScheme.assetType"]
-        }).then(instances =>
-            instances.map(instance => instance.get({ plain: true }))
+                raw: true,
+                transaction,
+                type: sequelize.QueryTypes.SELECT
+            }
         );
+
+        // The SQL query is copied from the query above.
+        const hasNextPage =
+            (await models.sequelize.query(
+                `SELECT COUNT(*) as count
+                FROM (SELECT id FROM "UTXOs"
+                WHERE ("blockNumber", "transactionIndex", "transactionOutputIndex")<(:fromBlockNumber, :fromTransactionIndex, :fromTransactionOutputIndex)
+                    AND "assetType"=:assetType
+                ORDER BY "blockNumber" DESC, "transactionIndex" DESC, "transactionOutputIndex" DESC
+                LIMIT :itemsPerPage) "UTXO"`,
+                {
+                    replacements: {
+                        fromBlockNumber,
+                        fromTransactionIndex,
+                        fromTransactionOutputIndex,
+                        assetType: strip0xPrefix(assetType.toString()),
+                        itemsPerPage: itemsPerPage + 1
+                    },
+                    plain: true,
+                    raw: true,
+                    transaction,
+                    type: sequelize.QueryTypes.SELECT
+                }
+            )).count ===
+            itemsPerPage + 1;
+
+        // The SQL query is copied from the query above.
+        const lastRow = await models.sequelize.query(
+            `SELECT *
+            FROM (SELECT * FROM "UTXOs" WHERE ("blockNumber", "transactionIndex", "transactionOutputIndex")<(:fromBlockNumber, :fromTransactionIndex, :fromTransactionOutputIndex)
+                  AND "assetType"=:assetType
+                  ORDER BY "blockNumber" DESC, "transactionIndex" DESC, "transactionOutputIndex" DESC
+                  LIMIT :itemsPerPage) "UTXO"
+            ORDER BY "blockNumber" ASC, "transactionIndex" ASC, "transactionOutputIndex" ASC
+            LIMIT 1
+            `,
+            {
+                replacements: {
+                    fromBlockNumber,
+                    fromTransactionIndex,
+                    fromTransactionOutputIndex,
+                    assetType: strip0xPrefix(assetType.toString()),
+                    itemsPerPage
+                },
+                plain: true,
+                raw: true,
+                transaction,
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
+
+        const assetScheme = await AssetSchemeModel.getByAssetType(assetType, {
+            transaction
+        });
+        transaction.commit();
+        return {
+            data: _.map(rows, (row: any) => {
+                row.assetScheme =
+                    assetScheme && assetScheme.get({ plain: true });
+                return row;
+            }),
+            hasNextPage,
+            hasPreviousPage: null,
+            firstEvaluatedKey: null,
+            lastEvaluatedKey: lastRow
+                ? JSON.stringify([
+                      lastRow.blockNumber,
+                      lastRow.transactionIndex,
+                      lastRow.transactionOutputIndex
+                  ])
+                : null
+        };
     } catch (err) {
         console.error(err);
+        transaction.rollback();
         throw Exception.DBError();
     }
 }

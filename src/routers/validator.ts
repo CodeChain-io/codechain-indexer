@@ -103,6 +103,14 @@ export const pendingTxPaginationSchema = {
     lastEvaluatedKey: Joi.array().items(Joi.number())
 };
 
+export const snapshotPaginationSchema = {
+    lastEvaluatedKey: Joi.array().items(
+        Joi.number(),
+        Joi.number(),
+        Joi.number()
+    )
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
