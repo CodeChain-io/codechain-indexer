@@ -59,9 +59,6 @@ const confirmThreshold = Joi.number()
 const includePending = Joi.boolean();
 
 export const paginationSchema = {
-    page: Joi.number()
-        .positive()
-        .integer(),
     itemsPerPage: Joi.number()
         .positive()
         .integer()

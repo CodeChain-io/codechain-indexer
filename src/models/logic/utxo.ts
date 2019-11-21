@@ -222,7 +222,6 @@ export async function getUTXO(params: {
     address?: string | null;
     assetType?: H160 | null;
     shardId?: number | null;
-    page?: number | null;
     itemsPerPage?: number | null;
     firstEvaluatedKey?: number[] | null;
     lastEvaluatedKey?: number[] | null;
@@ -233,7 +232,6 @@ export async function getUTXO(params: {
         address,
         assetType,
         shardId,
-        page = 1,
         itemsPerPage = 15,
         firstEvaluatedKey,
         lastEvaluatedKey,
@@ -292,10 +290,6 @@ export async function getUTXO(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage!,
-            offset:
-                lastEvaluatedKey || firstEvaluatedKey
-                    ? 0
-                    : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
@@ -326,7 +320,6 @@ export async function getAggsUTXO(params: {
     address?: string | null;
     assetType?: H160 | null;
     shardId?: number | null;
-    page?: number | null;
     itemsPerPage?: number | null;
     firstEvaluatedKey?: [number] | null;
     lastEvaluatedKey?: [number] | null;
@@ -337,7 +330,6 @@ export async function getAggsUTXO(params: {
         order,
         address,
         assetType,
-        page = 1,
         itemsPerPage = 15,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -348,7 +340,6 @@ export async function getAggsUTXO(params: {
             return await AggsUTXOModel.getByAddress({
                 address: address!,
                 assetType,
-                page,
                 itemsPerPage,
                 firstEvaluatedKey,
                 lastEvaluatedKey
@@ -357,7 +348,6 @@ export async function getAggsUTXO(params: {
             return await AggsUTXOModel.getByAssetType({
                 address,
                 assetType: assetType!,
-                page,
                 itemsPerPage,
                 firstEvaluatedKey,
                 lastEvaluatedKey

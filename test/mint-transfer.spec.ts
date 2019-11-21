@@ -118,7 +118,6 @@ describe("mint-transfer-synchronized", function() {
         const mintBlockTransactions = await TransactionModel.getTransactionsOfBlock(
             {
                 blockNumber: bestBlockNumber - 1,
-                page: 1,
                 itemsPerPage: 15
             }
         ).then(txs => txs.map(tx => tx.get({ plain: true })));
@@ -137,7 +136,6 @@ describe("mint-transfer-synchronized", function() {
         const transferBlockTransactions = await TransactionModel.getTransactionsOfBlock(
             {
                 blockNumber: bestBlockNumber,
-                page: 1,
                 itemsPerPage: 15
             }
         ).then(txs => txs.map(tx => tx.get({ plain: true })));

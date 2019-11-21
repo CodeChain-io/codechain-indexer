@@ -58,11 +58,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
-     *       - name: page
-     *         description: page for the pagination
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination
      *         in: query
@@ -121,7 +116,6 @@ export function handle(context: IndexerContext, router: Router) {
             const address = req.query.address;
             const assetTypeString = req.query.assetType;
             const type = req.query.type;
-            const page = (req.query.page && parseInt(req.query.page, 10)) || 1;
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
@@ -140,7 +134,6 @@ export function handle(context: IndexerContext, router: Router) {
                         assetTypeString && H160.ensure(assetTypeString).value,
                     type:
                         typeof type === "string" ? type.split(",") : undefined,
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     firstEvaluatedKey,
                     lastEvaluatedKey,
@@ -187,14 +180,12 @@ export function handle(context: IndexerContext, router: Router) {
             const samples = 200;
             const payFees = await TxModel.getTransactions({
                 type: ["pay"],
-                page: 1,
                 itemsPerPage: samples,
                 firstEvaluatedKey: null,
                 lastEvaluatedKey: null
             }).then(txs => txs.map(tx => tx.get().fee));
             const transferAssetFees = await TxModel.getTransactions({
                 type: ["transferAsset"],
-                page: 1,
                 itemsPerPage: samples,
                 firstEvaluatedKey: null,
                 lastEvaluatedKey: null
@@ -264,11 +255,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
-     *       - name: page
-     *         description: page for the pagination
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination
      *         in: query
@@ -310,7 +296,6 @@ export function handle(context: IndexerContext, router: Router) {
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
-            const page = req.query.page || 1;
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
@@ -321,7 +306,6 @@ export function handle(context: IndexerContext, router: Router) {
             try {
                 const pendingTxInsts = await TxModel.getPendingTransactions({
                     address,
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     firstEvaluatedKey,
                     lastEvaluatedKey
