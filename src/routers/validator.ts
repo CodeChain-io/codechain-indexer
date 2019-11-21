@@ -88,6 +88,11 @@ export const blockPaginationSchema = {
     firstEvaluatedKey: blockEvaluationKey
 };
 
+export const aggsUTXOPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.string()),
+    lastEvaluatedKey: Joi.array().items(Joi.string())
+};
+
 export const txSchema = {
     address,
     assetType: assetTypeSchema,
