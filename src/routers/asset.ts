@@ -86,11 +86,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
-     *       - name: page
-     *         description: page for the pagination (default 1)
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: firstEvaluatedKey
      *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
      *         in: query
@@ -145,7 +140,6 @@ export function handle(context: IndexerContext, router: Router) {
             const assetTypeString = req.query.assetType;
             const shardId =
                 req.query.shardId && parseInt(req.query.shardId, 10);
-            const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
@@ -166,7 +160,6 @@ export function handle(context: IndexerContext, router: Router) {
                     address,
                     assetType,
                     shardId,
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     firstEvaluatedKey,
                     lastEvaluatedKey,
@@ -304,11 +297,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
-     *       - name: page
-     *         description: page for the pagination (default 1)
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
@@ -362,7 +350,6 @@ export function handle(context: IndexerContext, router: Router) {
             const assetTypeString = req.query.assetType;
             const shardId =
                 req.query.shardId && parseInt(req.query.shardId, 10);
-            const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
@@ -390,7 +377,6 @@ export function handle(context: IndexerContext, router: Router) {
                     address,
                     assetType,
                     shardId,
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     firstEvaluatedKey,
                     lastEvaluatedKey,

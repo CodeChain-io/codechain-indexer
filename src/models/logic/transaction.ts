@@ -251,7 +251,6 @@ export async function applyTransaction(
 
 export async function getPendingTransactions(params: {
     address?: string | null;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -271,12 +270,11 @@ export async function getPendingTransactions(params: {
 }
 
 async function getAnyPendingTransactions(params: {
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
 }) {
-    const { page, itemsPerPage, firstEvaluatedKey, lastEvaluatedKey } = params;
+    const { itemsPerPage, firstEvaluatedKey, lastEvaluatedKey } = params;
     const query: any[] = [
         {
             isPending: true
@@ -302,10 +300,6 @@ async function getAnyPendingTransactions(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage,
             include: [...fullIncludeArray]
         });
     } catch (err) {
@@ -316,7 +310,6 @@ async function getAnyPendingTransactions(params: {
 
 async function getPendingTransactionsByAddress(params: {
     address: string;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -350,14 +343,12 @@ async function getPendingTransactionsByAddress(params: {
 
 async function getPendingHashesByPlatformAddress(params: {
     address: string;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
 }): Promise<string[]> {
     const {
         address,
-        page,
         itemsPerPage,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -389,11 +380,7 @@ async function getPendingHashesByPlatformAddress(params: {
                 firstEvaluatedKey,
                 lastEvaluatedKey
             }),
-            limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage
+            limit: itemsPerPage
         }).map(r => r.get("transactionHash"));
     } catch (err) {
         console.error(err);
@@ -517,7 +504,6 @@ export async function removeOutdatedPendings(
 
 async function getHashesByPlatformAddress(params: {
     address: string;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -525,7 +511,6 @@ async function getHashesByPlatformAddress(params: {
 }): Promise<string[]> {
     const {
         address,
-        page,
         itemsPerPage,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -555,11 +540,7 @@ async function getHashesByPlatformAddress(params: {
                 firstEvaluatedKey,
                 lastEvaluatedKey
             }),
-            limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage
+            limit: itemsPerPage
         }).map(r => r.get("transactionHash"));
     } catch (err) {
         console.error(err);
@@ -570,7 +551,6 @@ async function getHashesByPlatformAddress(params: {
 async function getHashesByAssetAddress(params: {
     address: string;
     assetType?: string | null;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -579,7 +559,6 @@ async function getHashesByAssetAddress(params: {
     const {
         address,
         assetType,
-        page,
         itemsPerPage,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -611,11 +590,7 @@ async function getHashesByAssetAddress(params: {
                 firstEvaluatedKey,
                 lastEvaluatedKey
             }),
-            limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage
+            limit: itemsPerPage
         }).map(r => r.get("transactionHash"));
     } catch (err) {
         console.error(err);
@@ -625,7 +600,6 @@ async function getHashesByAssetAddress(params: {
 
 async function getHashesByAssetType(params: {
     assetType: string;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -633,7 +607,6 @@ async function getHashesByAssetType(params: {
 }): Promise<string[]> {
     const {
         assetType,
-        page,
         itemsPerPage,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -664,11 +637,7 @@ async function getHashesByAssetType(params: {
                 firstEvaluatedKey,
                 lastEvaluatedKey
             }),
-            limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage
+            limit: itemsPerPage
         }).map(r => r.get("transactionHash"));
     } catch (err) {
         console.error(err);
@@ -679,7 +648,6 @@ async function getHashesByAssetType(params: {
 async function getHashes(params: {
     address?: string | null;
     assetType?: string | null;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -689,7 +657,6 @@ async function getHashes(params: {
     const {
         address,
         assetType,
-        page,
         itemsPerPage,
         firstEvaluatedKey,
         lastEvaluatedKey,
@@ -699,7 +666,6 @@ async function getHashes(params: {
         return getHashesByAssetAddress({
             address,
             assetType,
-            page,
             itemsPerPage,
             firstEvaluatedKey,
             lastEvaluatedKey,
@@ -709,7 +675,6 @@ async function getHashes(params: {
         if (AssetAddress.check(address)) {
             return getHashesByAssetAddress({
                 address,
-                page,
                 itemsPerPage,
                 firstEvaluatedKey,
                 lastEvaluatedKey,
@@ -718,7 +683,6 @@ async function getHashes(params: {
         } else if (PlatformAddress.check(address)) {
             return getHashesByPlatformAddress({
                 address,
-                page,
                 itemsPerPage,
                 firstEvaluatedKey,
                 lastEvaluatedKey,
@@ -729,7 +693,6 @@ async function getHashes(params: {
     } else if (assetType != null) {
         return getHashesByAssetType({
             assetType,
-            page,
             itemsPerPage,
             firstEvaluatedKey,
             lastEvaluatedKey,
@@ -761,11 +724,7 @@ async function getHashes(params: {
             firstEvaluatedKey,
             lastEvaluatedKey
         }),
-        limit: itemsPerPage,
-        offset:
-            firstEvaluatedKey || lastEvaluatedKey
-                ? 0
-                : (page - 1) * itemsPerPage
+        limit: itemsPerPage
     }).map(result => result.get("hash"));
 }
 
@@ -773,7 +732,6 @@ export async function getTransactions(params: {
     address?: string | null;
     assetType?: string | null;
     type?: string[] | null;
-    page: number;
     itemsPerPage: number;
     firstEvaluatedKey: [number, number] | null;
     lastEvaluatedKey: [number, number] | null;
@@ -809,7 +767,6 @@ export async function getTransactions(params: {
 }
 
 export async function getTransactionsOfBlock(params: {
-    page: number;
     itemsPerPage: number;
     blockNumber: number;
     firstEvaluatedKey?: number[] | null;
@@ -817,7 +774,6 @@ export async function getTransactionsOfBlock(params: {
 }) {
     try {
         const {
-            page,
             itemsPerPage,
             blockNumber,
             firstEvaluatedKey,
@@ -843,10 +799,6 @@ export async function getTransactionsOfBlock(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage,
             include: [...fullIncludeArray]
         });
     } catch (err) {

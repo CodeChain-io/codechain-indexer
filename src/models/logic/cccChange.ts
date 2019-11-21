@@ -213,7 +213,6 @@ export async function reportDoubleVote(
 export async function getByAddress(
     address: string,
     option: {
-        page: number;
         itemsPerPage: number;
         reasonFilter?: string[];
         firstEvaluatedKey?: number[] | null;
@@ -221,7 +220,6 @@ export async function getByAddress(
     }
 ): Promise<CCCChangeInstance[]> {
     const {
-        page,
         itemsPerPage,
         reasonFilter = defaultAllReasons,
         firstEvaluatedKey,
@@ -264,10 +262,6 @@ export async function getByAddress(
                 }
             ],
             limit: itemsPerPage,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page - 1) * itemsPerPage,
             order: cccChangesPagination.byAccount.orderby({
                 firstEvaluatedKey,
                 lastEvaluatedKey

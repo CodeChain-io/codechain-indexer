@@ -128,7 +128,7 @@ describe("asset-api", function() {
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
             .get(
-                `/api/aggs-utxo?assetType=${assetType}&page=1&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
+                `/api/aggs-utxo?assetType=${assetType}&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
             )
             .expect(200)
             .expect(res => {
@@ -153,7 +153,7 @@ describe("asset-api", function() {
         const address = bobAddress;
         await request(app)
             .get(
-                `/api/aggs-utxo?address=${address}&page=1&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
+                `/api/aggs-utxo?address=${address}&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
             )
             .expect(200)
             .expect(res => {
@@ -174,7 +174,7 @@ describe("asset-api", function() {
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
             .get(
-                `/api/aggs-utxo?address=${address}&assetType=${assetType}&page=1&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
+                `/api/aggs-utxo?address=${address}&assetType=${assetType}&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
             )
             .expect(200)
             .expect(res => {

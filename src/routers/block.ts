@@ -200,11 +200,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         required: true
      *         in: path
      *         type: string
-     *       - name: page
-     *         description: page for the pagination
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination
      *         in: query
@@ -240,7 +235,6 @@ export function handle(context: IndexerContext, router: Router) {
         }),
         async (req, res, next) => {
             const hashOrNumber = req.params.hashOrNumber;
-            const page = (req.query.page && parseInt(req.query.page, 10)) || 1;
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
@@ -253,7 +247,6 @@ export function handle(context: IndexerContext, router: Router) {
                     H256.check(hashOrNumber) &&
                     (await BlockModel.getByHash(new H256(hashOrNumber)));
                 const txs = await TransactionModel.getTransactionsOfBlock({
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     blockNumber: block ? block.get().number : hashOrNumber,
                     firstEvaluatedKey,
@@ -332,11 +325,6 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
-     *       - name: page
-     *         description: page for the pagination (default 1)
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: firstEvaluatedKey
      *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
      *         in: query
@@ -378,7 +366,6 @@ export function handle(context: IndexerContext, router: Router) {
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
-            const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
@@ -388,7 +375,6 @@ export function handle(context: IndexerContext, router: Router) {
             try {
                 const blocks = await BlockModel.getBlocks({
                     address,
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     firstEvaluatedKey,
                     lastEvaluatedKey

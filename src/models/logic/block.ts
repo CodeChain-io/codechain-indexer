@@ -126,14 +126,12 @@ export async function deleteBlockByNumber(
 
 export async function getBlocks(params: {
     address?: string;
-    page?: number | null;
     itemsPerPage?: number | null;
     firstEvaluatedKey?: [number] | null;
     lastEvaluatedKey?: [number] | null;
 }) {
     const {
         address,
-        page = 1,
         itemsPerPage = 15,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -145,10 +143,6 @@ export async function getBlocks(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage!,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page! - 1) * itemsPerPage!,
             where: {
                 ...(address && { author: address }),
                 ...((firstEvaluatedKey || lastEvaluatedKey) &&

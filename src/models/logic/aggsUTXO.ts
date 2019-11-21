@@ -7,7 +7,6 @@ import { aggsUTXOPagination } from "../../routers/pagination";
 export async function getByAddress(params: {
     address: string;
     assetType?: H160 | null;
-    page?: number | null;
     itemsPerPage?: number | null;
     firstEvaluatedKey?: [number] | null;
     lastEvaluatedKey?: [number] | null;
@@ -15,7 +14,6 @@ export async function getByAddress(params: {
     const {
         address,
         assetType,
-        page = 1,
         itemsPerPage = 15,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -45,10 +43,6 @@ export async function getByAddress(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage!,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
@@ -60,7 +54,6 @@ export async function getByAddress(params: {
 export async function getByAssetType(params: {
     assetType: H160;
     address?: string | null;
-    page?: number | null;
     itemsPerPage?: number | null;
     firstEvaluatedKey?: [number] | null;
     lastEvaluatedKey?: [number] | null;
@@ -68,7 +61,6 @@ export async function getByAssetType(params: {
     const {
         address,
         assetType,
-        page = 1,
         itemsPerPage = 15,
         firstEvaluatedKey,
         lastEvaluatedKey
@@ -98,10 +90,6 @@ export async function getByAssetType(params: {
                 lastEvaluatedKey
             }),
             limit: itemsPerPage!,
-            offset:
-                firstEvaluatedKey || lastEvaluatedKey
-                    ? 0
-                    : (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {

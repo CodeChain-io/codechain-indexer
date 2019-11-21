@@ -124,11 +124,6 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: true
      *         in: path
      *         type: string
-     *       - name: page
-     *         description: page for the pagination (default 1)
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
@@ -180,7 +175,6 @@ export function handle(_C: IndexerContext, router: Router) {
         async (req, res, next) => {
             const reasonFilter = req.query.reasonFilter;
             const address = req.params.address;
-            const page = req.query.page ? parseInt(req.query.page, 10) : 1;
             const itemsPerPage = req.query.itemsPerPage
                 ? parseInt(req.query.itemsPerPage, 10)
                 : 15;
@@ -190,7 +184,6 @@ export function handle(_C: IndexerContext, router: Router) {
 
             try {
                 const accounts = await CCCChangeModel.getByAddress(address, {
-                    page,
                     itemsPerPage: itemsPerPage + 1,
                     reasonFilter:
                         typeof reasonFilter === "string"
