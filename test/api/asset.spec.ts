@@ -106,7 +106,7 @@ describe("asset-api", function() {
             )
             .expect(200)
             .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).equal(1)
+                expect(Object.keys(JSON.parse(res.text).data).length).equal(1)
             );
     });
 
