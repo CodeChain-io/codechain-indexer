@@ -380,15 +380,16 @@ export function handle(context: IndexerContext, router: Router) {
             const address = req.query.address;
             const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage &&
-                parseInt(req.query.itemsPerPage, 10) + 1;
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             const lastEvaluatedKey = req.query.lastEvaluatedKey;
             const firstEvaluatedKey = req.query.firstEvaluatedKey;
             try {
                 const blocks = await BlockModel.getBlocks({
                     address,
                     page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
                     firstEvaluatedKey,
                     lastEvaluatedKey
                 }).then(instances =>
