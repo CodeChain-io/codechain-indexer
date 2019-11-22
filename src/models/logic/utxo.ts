@@ -1,11 +1,16 @@
 import { H160, H256, U64 } from "codechain-sdk/lib/core/classes";
+import * as _ from "lodash";
 import * as Sequelize from "sequelize";
+import sequelize = require("sequelize");
 import models from "..";
 import * as Exception from "../../exception";
+import { utxoPagination } from "../../routers/pagination";
+import { AggsUTXOAttribute } from "../aggsUTXO";
 import { AssetSchemeAttribute } from "../assetscheme";
 import { TransactionInstance } from "../transaction";
 import { AssetTransferOutput } from "../transferAsset";
-import { UTXOInstance } from "../utxo";
+import { UTXOAttribute, UTXOInstance } from "../utxo";
+import * as AggsUTXOModel from "./aggsUTXO";
 import * as AssetSchemeModel from "./assetscheme";
 import * as BlockModel from "./block";
 import { getSuccessfulByTracker } from "./transaction";
@@ -24,6 +29,7 @@ export async function createUTXO(
         transactionHash: H256;
         transactionTracker: H256;
         transactionOutputIndex: number;
+        transactionIndex: number;
     },
     blockNumber: number,
     options: { transaction?: Sequelize.Transaction } = {}
@@ -48,7 +54,8 @@ export async function createUTXO(
                 ),
                 transactionOutputIndex: utxo.transactionOutputIndex,
                 assetScheme,
-                blockNumber
+                blockNumber,
+                transactionIndex: utxo.transactionIndex
             },
             {
                 transaction: options.transaction
@@ -76,6 +83,29 @@ export async function setUsed(
             {
                 where: {
                     id
+                },
+                transaction: options.transaction
+            }
+        );
+    } catch (err) {
+        console.error(err);
+        throw Exception.DBError();
+    }
+}
+
+export async function setUTXOTransactionIndex(
+    transactionHash: string,
+    transactionIndex: number,
+    options: { transaction?: Sequelize.Transaction } = {}
+) {
+    try {
+        return await models.UTXO.update(
+            {
+                transactionIndex
+            },
+            {
+                where: {
+                    transactionHash
                 },
                 transaction: options.transaction
             }
@@ -116,33 +146,23 @@ export async function getByAddress(address: string): Promise<UTXOInstance[]> {
     }
 }
 
-export async function getByAssetType(assetType: H160) {
-    try {
-        return await models.UTXO.findAll({
-            where: {
-                assetType: strip0xPrefix(assetType.value),
-                usedTransactionHash: null
-            }
-        });
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
-
 async function getUTXOQuery(params: {
     address?: string | null;
     assetType?: H160 | null;
     shardId?: number | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
+    firstEvaluatedKey?: number[] | null;
+    lastEvaluatedKey?: number[] | null;
 }) {
     const {
         address,
         shardId,
         onlyConfirmed,
         confirmThreshold,
-        assetType
+        assetType,
+        firstEvaluatedKey,
+        lastEvaluatedKey
     } = params;
     const query = [];
     if (address) {
@@ -185,6 +205,16 @@ async function getUTXOQuery(params: {
             usedTransactionHash: null
         });
     }
+
+    if (firstEvaluatedKey || lastEvaluatedKey) {
+        query.push(
+            utxoPagination.where({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            })
+        );
+    }
+
     return query;
 }
 
@@ -192,8 +222,9 @@ export async function getUTXO(params: {
     address?: string | null;
     assetType?: H160 | null;
     shardId?: number | null;
-    page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: number[] | null;
+    lastEvaluatedKey?: number[] | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
@@ -201,8 +232,9 @@ export async function getUTXO(params: {
         address,
         assetType,
         shardId,
-        page = 1,
         itemsPerPage = 15,
+        firstEvaluatedKey,
+        lastEvaluatedKey,
         onlyConfirmed = false,
         confirmThreshold = 0
     } = params;
@@ -211,7 +243,9 @@ export async function getUTXO(params: {
         assetType,
         shardId,
         onlyConfirmed,
-        confirmThreshold
+        confirmThreshold,
+        firstEvaluatedKey,
+        lastEvaluatedKey
     });
     let includeArray: any = [
         {
@@ -251,9 +285,11 @@ export async function getUTXO(params: {
             where: {
                 [Sequelize.Op.and]: query
             },
-            order: [["id", "DESC"]],
+            order: utxoPagination.orderby({
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            }),
             limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
             include: includeArray
         });
     } catch (err) {
@@ -262,86 +298,63 @@ export async function getUTXO(params: {
     }
 }
 
+export function createUTXOEvaluatedKey(utxo: UTXOAttribute): string {
+    return JSON.stringify([
+        utxo.blockNumber,
+        utxo.transactionIndex,
+        utxo.transactionOutputIndex
+    ]);
+}
+
+export function createAggsUTXOEvaluatedKey(
+    aggs: AggsUTXOAttribute,
+    order: "assetType" | "address"
+): string {
+    return JSON.stringify([
+        order === "assetType" ? aggs.assetType : aggs.address
+    ]);
+}
+
 export async function getAggsUTXO(params: {
+    order: "assetType" | "address";
     address?: string | null;
     assetType?: H160 | null;
     shardId?: number | null;
-    page?: number | null;
     itemsPerPage?: number | null;
+    firstEvaluatedKey?: [number] | null;
+    lastEvaluatedKey?: [number] | null;
     onlyConfirmed?: boolean | null;
     confirmThreshold?: number | null;
 }) {
     const {
+        order,
         address,
         assetType,
-        shardId,
-        page = 1,
         itemsPerPage = 15,
-        onlyConfirmed = false,
-        confirmThreshold = 0
+        firstEvaluatedKey,
+        lastEvaluatedKey
     } = params;
-    const query: any = await getUTXOQuery({
-        address,
-        assetType,
-        shardId,
-        onlyConfirmed,
-        confirmThreshold
-    });
-    let includeArray: any = [
-        {
-            as: "assetScheme",
-            model: models.AssetScheme
-        }
-    ];
-    if (onlyConfirmed) {
-        const latestBlockInst = await BlockModel.getLatestBlock();
-        const latestBlockNumber = latestBlockInst
-            ? latestBlockInst.get().number
-            : 0;
-        includeArray = [
-            {
-                as: "usedTransaction",
-                model: models.Transaction,
-                required: false,
-                where: {
-                    blockNumber: {
-                        [Sequelize.Op.lte]:
-                            latestBlockNumber - confirmThreshold!
-                    }
-                },
-                attributes: []
-            },
-            {
-                as: "assetScheme",
-                model: models.AssetScheme
-            }
-        ];
-    }
+
     try {
-        return await models.UTXO.findAll({
-            where: {
-                [Sequelize.Op.and]: query
-            },
-            attributes: [
-                [
-                    Sequelize.fn("SUM", Sequelize.col("quantity")),
-                    "totalAssetQuantity"
-                ],
-                "address",
-                "assetType",
-                [
-                    Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
-                    "utxoQuantity"
-                ]
-            ],
-            order: Sequelize.literal(
-                `"totalAssetQuantity" DESC, "assetType" DESC`
-            ),
-            limit: itemsPerPage!,
-            offset: (page! - 1) * itemsPerPage!,
-            include: includeArray,
-            group: ["UTXO.address", "UTXO.assetType", "assetScheme.assetType"]
-        });
+        if (order === "assetType") {
+            return await AggsUTXOModel.getByAddress({
+                address: address!,
+                assetType,
+                itemsPerPage,
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            });
+        } else if (order === "address") {
+            return await AggsUTXOModel.getByAssetType({
+                address,
+                assetType: assetType!,
+                itemsPerPage,
+                firstEvaluatedKey,
+                lastEvaluatedKey
+            });
+        } else {
+            throw new Error("address == aggs == null");
+        }
     } catch (err) {
         console.error(err);
         throw Exception.DBError();
@@ -426,65 +439,125 @@ export async function getByTxHashIndex(
     }
 }
 
-export async function getByTxTrackerIndex(
-    transactionTracker: H256,
-    outputIndex: number
-) {
+export async function getSnapshot(params: {
+    assetType: H256;
+    blockNumber: number;
+    lastEvaluatedKey?: number[] | null;
+}) {
+    const { assetType, blockNumber, lastEvaluatedKey } = params;
+    const transaction = await models.sequelize.transaction({
+        isolationLevel:
+            models.Sequelize.Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
+        deferrable: models.Sequelize.Deferrable.SET_DEFERRED
+    });
     try {
-        return await models.UTXO.findOne({
-            where: {
-                transactionTracker: strip0xPrefix(transactionTracker.value),
-                transactionOutputIndex: outputIndex
-            }
-        });
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
+        const [
+            fromBlockNumber,
+            fromTransactionIndex,
+            fromTransactionOutputIndex
+        ] = lastEvaluatedKey || [Number.MAX_SAFE_INTEGER, 0, 0];
+        const itemsPerPage = 100;
 
-export async function getSnapshot(assetType: H256, blockNumber: number) {
-    try {
-        return models.UTXO.findAll({
-            where: {
-                assetType: strip0xPrefix(assetType.value),
-                usedBlockNumber: {
-                    [Sequelize.Op.or]: [
-                        { [Sequelize.Op.gt]: blockNumber },
-                        { [Sequelize.Op.eq]: null }
-                    ]
+        const rows = await models.sequelize.query(
+            `SELECT SUM("UTXO"."quantity") AS "totalAssetQuantity", "UTXO"."address", "UTXO"."assetType",
+            COUNT("UTXO"."assetType") AS "utxoQuantity"
+            FROM (SELECT * FROM "UTXOs" WHERE ("blockNumber", "transactionIndex", "transactionOutputIndex")<(:fromBlockNumber, :fromTransactionIndex, :fromTransactionOutputIndex)
+              AND "assetType"=:assetType
+              ORDER BY "blockNumber" DESC, "transactionIndex" DESC, "transactionOutputIndex" DESC
+              LIMIT :itemsPerPage) "UTXO"
+            WHERE ("UTXO"."usedBlockNumber" > :blockNumber OR "UTXO"."usedBlockNumber" IS NULL)
+              AND "UTXO"."blockNumber" <= :blockNumber
+            GROUP BY "UTXO"."address", "UTXO"."assetType"
+        `,
+            {
+                replacements: {
+                    fromBlockNumber,
+                    fromTransactionIndex,
+                    fromTransactionOutputIndex,
+                    blockNumber,
+                    assetType: strip0xPrefix(assetType.toString()),
+                    itemsPerPage
                 },
-                blockNumber: {
-                    [Sequelize.Op.lte]: blockNumber
-                }
-            },
-            attributes: [
-                [
-                    Sequelize.fn("SUM", Sequelize.col("quantity")),
-                    "totalAssetQuantity"
-                ],
-                "address",
-                "assetType",
-                [
-                    Sequelize.fn("COUNT", Sequelize.col("UTXO.assetType")),
-                    "utxoQuantity"
-                ]
-            ],
-            order: Sequelize.literal(
-                `"totalAssetQuantity" DESC, "assetType" DESC`
-            ),
-            include: [
-                {
-                    as: "assetScheme",
-                    model: models.AssetScheme
-                }
-            ],
-            group: ["UTXO.address", "UTXO.assetType", "assetScheme.assetType"]
-        }).then(instances =>
-            instances.map(instance => instance.get({ plain: true }))
+                raw: true,
+                transaction,
+                type: sequelize.QueryTypes.SELECT
+            }
         );
+
+        // The SQL query is copied from the query above.
+        const hasNextPage =
+            (await models.sequelize.query(
+                `SELECT COUNT(*) as count
+                FROM (SELECT id FROM "UTXOs"
+                WHERE ("blockNumber", "transactionIndex", "transactionOutputIndex")<(:fromBlockNumber, :fromTransactionIndex, :fromTransactionOutputIndex)
+                    AND "assetType"=:assetType
+                ORDER BY "blockNumber" DESC, "transactionIndex" DESC, "transactionOutputIndex" DESC
+                LIMIT :itemsPerPage) "UTXO"`,
+                {
+                    replacements: {
+                        fromBlockNumber,
+                        fromTransactionIndex,
+                        fromTransactionOutputIndex,
+                        assetType: strip0xPrefix(assetType.toString()),
+                        itemsPerPage: itemsPerPage + 1
+                    },
+                    plain: true,
+                    raw: true,
+                    transaction,
+                    type: sequelize.QueryTypes.SELECT
+                }
+            )).count ===
+            itemsPerPage + 1;
+
+        // The SQL query is copied from the query above.
+        const lastRow = await models.sequelize.query(
+            `SELECT *
+            FROM (SELECT * FROM "UTXOs" WHERE ("blockNumber", "transactionIndex", "transactionOutputIndex")<(:fromBlockNumber, :fromTransactionIndex, :fromTransactionOutputIndex)
+                  AND "assetType"=:assetType
+                  ORDER BY "blockNumber" DESC, "transactionIndex" DESC, "transactionOutputIndex" DESC
+                  LIMIT :itemsPerPage) "UTXO"
+            ORDER BY "blockNumber" ASC, "transactionIndex" ASC, "transactionOutputIndex" ASC
+            LIMIT 1
+            `,
+            {
+                replacements: {
+                    fromBlockNumber,
+                    fromTransactionIndex,
+                    fromTransactionOutputIndex,
+                    assetType: strip0xPrefix(assetType.toString()),
+                    itemsPerPage
+                },
+                plain: true,
+                raw: true,
+                transaction,
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
+
+        const assetScheme = await AssetSchemeModel.getByAssetType(assetType, {
+            transaction
+        });
+        transaction.commit();
+        return {
+            data: _.map(rows, (row: any) => {
+                row.assetScheme =
+                    assetScheme && assetScheme.get({ plain: true });
+                return row;
+            }),
+            hasNextPage,
+            hasPreviousPage: null,
+            firstEvaluatedKey: null,
+            lastEvaluatedKey: lastRow
+                ? JSON.stringify([
+                      lastRow.blockNumber,
+                      lastRow.transactionIndex,
+                      lastRow.transactionOutputIndex
+                  ])
+                : null
+        };
     } catch (err) {
         console.error(err);
+        transaction.rollback();
         throw Exception.DBError();
     }
 }
@@ -508,6 +581,7 @@ export async function transferUTXO(
         const shardId = mintAsset.shardId;
         const quantity = new U64(mintAsset.supply);
         const transactionOutputIndex = 0;
+        const transactionIndex = tx.transactionIndex!;
         return await createUTXO(
             recipient,
             {
@@ -518,7 +592,8 @@ export async function transferUTXO(
                 quantity,
                 transactionHash,
                 transactionTracker,
-                transactionOutputIndex
+                transactionOutputIndex,
+                transactionIndex
             },
             blockNumber,
             options
@@ -547,6 +622,7 @@ export async function transferUTXO(
                 );
                 const order = orderOnTransfer && orderOnTransfer.order;
                 const orderHash = order && new H256(order.orderHash);
+                const transactionIndex = tx.transactionIndex!;
                 return createUTXO(
                     recipient,
                     {
@@ -558,7 +634,8 @@ export async function transferUTXO(
                         orderHash,
                         transactionHash,
                         transactionTracker,
-                        transactionOutputIndex: output.index
+                        transactionOutputIndex: output.index,
+                        transactionIndex
                     },
                     blockNumber,
                     options
@@ -633,6 +710,7 @@ export async function transferUTXO(
         const lockScriptHash = new H160(incAssetSupply.lockScriptHash);
         const quantity = new U64(incAssetSupply.supply);
         const transactionOutputIndex = 0;
+        const transactionIndex = tx.transactionIndex!;
 
         const recipient = getOwner(
             new H160(incAssetSupply.lockScriptHash),
@@ -650,7 +728,8 @@ export async function transferUTXO(
                 quantity,
                 transactionHash,
                 transactionTracker,
-                transactionOutputIndex
+                transactionOutputIndex,
+                transactionIndex
             },
             blockNumber,
             options
@@ -671,6 +750,7 @@ export async function transferUTXO(
         const parameters = wrapCCC.parameters;
         const quantity = new U64(wrapCCC.quantity);
         const transactionOutputIndex = 0;
+        const transactionIndex = tx.transactionIndex!;
         return createUTXO(
             recipient,
             {
@@ -681,7 +761,8 @@ export async function transferUTXO(
                 quantity,
                 transactionHash,
                 transactionTracker,
-                transactionOutputIndex
+                transactionOutputIndex,
+                transactionIndex
             },
             blockNumber,
             options

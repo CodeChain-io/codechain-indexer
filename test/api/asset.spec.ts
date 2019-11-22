@@ -1,6 +1,7 @@
 import * as bodyParser from "body-parser";
 import { expect } from "chai";
 import * as express from "express";
+import * as _ from "lodash";
 import "mocha";
 import * as request from "supertest";
 
@@ -105,7 +106,7 @@ describe("asset-api", function() {
             )
             .expect(200)
             .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).equal(1)
+                expect(Object.keys(JSON.parse(res.text).data).length).equal(1)
             );
     });
 
@@ -123,23 +124,67 @@ describe("asset-api", function() {
             .expect(200);
     });
 
-    it("api /aggs-utxo", async function() {
-        await request(app)
-            .get("/api/aggs-utxo")
-            .expect(200);
-    });
-
-    it("api /aggs-utxo with args", async function() {
-        const address = bobAddress;
+    it("api /aggs-utxo with assetType args", async function() {
         const assetType = mintTx.getMintedAsset().assetType;
         await request(app)
             .get(
-                `/api/aggs-utxo?address=${address}&assetType=${assetType}&page=1&itemsPerPage=1&onlyConfirmed=true&confirmThreshold=0&sync=true`
+                `/api/aggs-utxo?assetType=${assetType}&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
             )
             .expect(200)
-            .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).equal(1)
-            );
+            .expect(res => {
+                const aggsUTXOs = JSON.parse(res.text).data;
+                expect(aggsUTXOs.length).equal(2);
+                const bobAggs = _.find(
+                    aggsUTXOs,
+                    agg => agg.address === bobAddress
+                );
+                const aliceAggs = _.find(
+                    aggsUTXOs,
+                    agg => agg.address === aliceAddress.toString()
+                );
+                expect(bobAggs.totalAssetQuantity).equal("3000");
+                expect(bobAggs.utxoQuantity).equal("2");
+                expect(aliceAggs.totalAssetQuantity).equal("7000");
+                expect(aliceAggs.utxoQuantity).equal("1");
+            });
+    });
+
+    it("api /aggs-utxo with address args", async function() {
+        const address = bobAddress;
+        await request(app)
+            .get(
+                `/api/aggs-utxo?address=${address}&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
+            )
+            .expect(200)
+            .expect(res => {
+                const aggsUTXOs = JSON.parse(res.text).data;
+                const aggs = _.filter(
+                    aggsUTXOs,
+                    agg => agg.address === bobAddress
+                );
+                expect(aggs.length).equal(aggsUTXOs.length);
+                // This test queries 5 UTXO aggregations.
+                // If we run this test several times, the aggsUTXOs variable may contain previous test results.
+                // We can't add any assertions on the results.
+            });
+    });
+
+    it("api /aggs-utxo with args", async function() {
+        const address = aliceAddress.toString();
+        const assetType = mintTx.getMintedAsset().assetType;
+        await request(app)
+            .get(
+                `/api/aggs-utxo?address=${address}&assetType=${assetType}&itemsPerPage=5&onlyConfirmed=true&confirmThreshold=0&sync=true`
+            )
+            .expect(200)
+            .expect(res => {
+                const aggsUTXOs = JSON.parse(res.text).data;
+                expect(aggsUTXOs.length).equal(1);
+                expect(aggsUTXOs[0].assetType).equal(assetType.toString());
+                expect(aggsUTXOs[0].address).equal(address);
+                expect(aggsUTXOs[0].totalAssetQuantity).equal("7000");
+                expect(aggsUTXOs[0].utxoQuantity).equal("1");
+            });
     });
 
     it("api /aggs-utxo/count", async function() {

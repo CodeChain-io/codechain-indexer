@@ -1,34 +1,27 @@
 import * as Sequelize from "sequelize";
 
-export type AddressLogType =
-    | "TransactionSigner"
-    | "TransactionApprover"
-    | "AssetOwner"
-    | "Approver"
-    | "Registrar";
-
-export interface AddressLogAttribute {
+export interface AssetAddressLogAttribute {
     id?: number;
     transactionHash: string;
-    transactionTracker?: string | null;
-    transactionType: string | null;
+    transactionTracker: string;
+    transactionType: string;
     blockNumber?: number | null;
     transactionIndex?: number | null;
-    success?: boolean | null;
     isPending: boolean;
     address: string;
-    // NOTE: It can be removed it's not used for the API.
-    type: AddressLogType;
+    assetType: string;
 }
 
-export type AddressLogInstance = Sequelize.Instance<AddressLogAttribute>;
+export type AssetAddressLogInstance = Sequelize.Instance<
+    AssetAddressLogAttribute
+>;
 
 export default (
     sequelize: Sequelize.Sequelize,
     DataTypes: Sequelize.DataTypes
 ) => {
-    const AddressLog = sequelize.define(
-        "AddressLog",
+    const AssetAddressLog = sequelize.define(
+        "AssetAddressLog",
         {
             id: {
                 allowNull: false,
@@ -48,24 +41,21 @@ export default (
                     key: "hash"
                 }
             },
-            transactionType: {
-                allowNull: false,
-                type: DataTypes.STRING
-            },
             transactionTracker: {
                 type: DataTypes.STRING,
                 validate: {
                     is: ["^[a-f0-9]{64}$"]
                 }
             },
+            transactionType: {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
             blockNumber: {
                 type: DataTypes.INTEGER
             },
             transactionIndex: {
                 type: DataTypes.INTEGER
-            },
-            success: {
-                type: DataTypes.BOOLEAN
             },
             isPending: {
                 allowNull: false,
@@ -75,9 +65,12 @@ export default (
                 allowNull: false,
                 type: DataTypes.STRING
             },
-            type: {
+            assetType: {
                 allowNull: false,
-                type: DataTypes.STRING
+                type: DataTypes.STRING,
+                validate: {
+                    is: ["^[a-f0-9]{40}$"]
+                }
             },
             createdAt: {
                 allowNull: false,
@@ -90,8 +83,8 @@ export default (
         },
         {}
     );
-    AddressLog.associate = () => {
+    AssetAddressLog.associate = () => {
         // associations can be defined here
     };
-    return AddressLog;
+    return AssetAddressLog;
 };

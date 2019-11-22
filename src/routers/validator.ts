@@ -35,24 +35,13 @@ const TYPES = [
     "custom"
 ];
 
-const ADDRESS_TYPES = [
-    "TransactionSigner",
-    "TransactionApprover",
-    "AssetOwner",
-    "Approver",
-    "Registrar"
-];
 const LOG_FILTER = ["block", "tx", ...TYPES];
 
 // FIXME:
 export const platformAddressSchema = Joi.string();
 // FIXME: PlatformAddress or AssetAddress
 const address = Joi.string();
-const addressFilter = Joi.string().regex(
-    new RegExp(`^(${ADDRESS_TYPES.join("|")})(,(${ADDRESS_TYPES.join("|")}))*$`)
-);
 export const assetTypeSchema = Joi.string().regex(/^(0x)?[0-9a-f]{40}$/);
-const tracker = Joi.string().regex(/^(0x)?[0-9a-f]{64}$/);
 const type = Joi.string().regex(
     new RegExp(`^(${TYPES.join("|")})(,(${TYPES.join("|")}))*$`)
 );
@@ -63,7 +52,6 @@ const reasonFilter = Joi.string().regex(
 );
 const shardId = Joi.number();
 const onlyConfirmed = Joi.boolean();
-const onlySuccessful = Joi.boolean();
 const sync = Joi.boolean();
 const confirmThreshold = Joi.number()
     .min(0)
@@ -71,9 +59,6 @@ const confirmThreshold = Joi.number()
 const includePending = Joi.boolean();
 
 export const paginationSchema = {
-    page: Joi.number()
-        .positive()
-        .integer(),
     itemsPerPage: Joi.number()
         .positive()
         .integer()
@@ -81,14 +66,63 @@ export const paginationSchema = {
         .max(100)
 };
 
+export const utxoPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(
+        Joi.number(),
+        Joi.number(),
+        Joi.number()
+    ),
+    lastEvaluatedKey: Joi.array().items(
+        Joi.number(),
+        Joi.number(),
+        Joi.number()
+    )
+};
+
+const blockEvaluationKey = Joi.array().items(Joi.number());
+export const blockPaginationSchema = {
+    lastEvaluatedKey: blockEvaluationKey,
+    firstEvaluatedKey: blockEvaluationKey
+};
+
+export const blockTxPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number()),
+    lastEvaluatedKey: Joi.array().items(Joi.number())
+};
+
+export const aggsUTXOPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.string()),
+    lastEvaluatedKey: Joi.array().items(Joi.string())
+};
+
+export const txPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number(), Joi.number()),
+    lastEvaluatedKey: Joi.array().items(Joi.number(), Joi.number())
+};
+
+export const pendingTxPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number()),
+    lastEvaluatedKey: Joi.array().items(Joi.number())
+};
+
+export const snapshotPaginationSchema = {
+    lastEvaluatedKey: Joi.array().items(
+        Joi.number(),
+        Joi.number(),
+        Joi.number()
+    )
+};
+
+export const accountBalanceHistoryPaginationSchema = {
+    firstEvaluatedKey: Joi.array().items(Joi.number(), Joi.string()),
+    lastEvaluatedKey: Joi.array().items(Joi.number(), Joi.string())
+};
+
 export const txSchema = {
     address,
-    addressFilter,
     assetType: assetTypeSchema,
-    tracker,
     type,
     includePending,
-    onlySuccessful,
     onlyConfirmed,
     confirmThreshold,
     sync
@@ -96,7 +130,6 @@ export const txSchema = {
 
 export const pendingTxSchema = {
     address,
-    assetType: assetTypeSchema,
     type,
     sync
 };

@@ -13,7 +13,7 @@ import * as _ from "lodash";
 import { Transaction } from "sequelize";
 import models from "../index";
 import { TransferAssetInstance } from "../transferAsset";
-import { createAddressLog } from "./addressLog";
+import { createAssetAddressLog } from "./assetAddressLog";
 import {
     createAssetTransferOutput,
     getOutputOwner
@@ -237,12 +237,6 @@ export async function createTransferAsset(
         ),
         ..._.uniq(resultOutputs.filter(o => o.owner).map(o => o.owner!))
     ]);
-    await Promise.all(
-        addresses.map(address =>
-            createAddressLog(transaction, address, "AssetOwner", options)
-        )
-    );
-    // FIXME: Log the addresses in orders.
     const assetTypes: string[] = _.uniq([
         ..._.uniq(resultInputs.map(i => i.assetType)),
         ..._.uniq(resultBurns.map(b => b.assetType)),
@@ -251,6 +245,26 @@ export async function createTransferAsset(
     await Promise.all(
         assetTypes.map(assetType =>
             createAssetTypeLog(transaction, assetType, options)
+        )
+    );
+    // NOTE: TransferAsset can have many inputs and outputs, and some addresses
+    // may not be related to a specific asset type if it's a
+    // CoinJoin(https://en.bitcoin.it/wiki/CoinJoin) transaction. However, it
+    // creates combinations of all the asset addresses and the asset types
+    // because there is no clear way to tell which addresses are not related to
+    // which asset types.
+    await Promise.all(
+        addresses.map(address =>
+            Promise.all(
+                assetTypes.map(assetType =>
+                    createAssetAddressLog(
+                        transaction,
+                        address,
+                        assetType,
+                        options
+                    )
+                )
+            )
         )
     );
     return result;

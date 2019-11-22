@@ -6,12 +6,19 @@ import * as Exception from "../exception";
 import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
 import * as BlockModel from "../models/logic/block";
-import { syncIfNeeded } from "../models/logic/utils/middleware";
-import * as UTXOModel from "../models/logic/utxo";
 import {
+    parseEvaluatedKey,
+    syncIfNeeded
+} from "../models/logic/utils/middleware";
+import * as UTXOModel from "../models/logic/utxo";
+import { createPaginationResult } from "./pagination";
+import {
+    aggsUTXOPaginationSchema,
     assetTypeSchema,
     paginationSchema,
+    snapshotPaginationSchema,
     snapshotSchema,
+    utxoPaginationSchema,
     utxoSchema,
     validate
 } from "./validator";
@@ -79,11 +86,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
-     *       - name: page
-     *         description: page for the pagination (default 1)
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
      *         in: query
      *         required: false
-     *         type: number
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
@@ -114,10 +126,12 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/utxo",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...utxoSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...utxoPaginationSchema
             }
         }),
         syncIfNeeded(context),
@@ -126,13 +140,17 @@ export function handle(context: IndexerContext, router: Router) {
             const assetTypeString = req.query.assetType;
             const shardId =
                 req.query.shardId && parseInt(req.query.shardId, 10);
-            const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             const onlyConfirmed = req.query.onlyConfirmed;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+
             let assetType;
             try {
                 if (assetTypeString) {
@@ -142,13 +160,25 @@ export function handle(context: IndexerContext, router: Router) {
                     address,
                     assetType,
                     shardId,
-                    page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey,
                     onlyConfirmed,
                     confirmThreshold
                 });
                 const utxo = utxoInsts.map(inst => inst.get({ plain: true }));
-                res.json(utxo);
+
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: utxo,
+                        getEvaluatedKey: UTXOModel.createUTXOEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }
@@ -267,16 +297,21 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: number
-     *       - name: page
-     *         description: page for the pagination (default 1)
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: onlyConfirmed
      *         description: returns only confirmed component
      *         in: query
@@ -301,10 +336,12 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/aggs-utxo",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...utxoSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...aggsUTXOPaginationSchema
             }
         }),
         syncIfNeeded(context),
@@ -313,29 +350,53 @@ export function handle(context: IndexerContext, router: Router) {
             const assetTypeString = req.query.assetType;
             const shardId =
                 req.query.shardId && parseInt(req.query.shardId, 10);
-            const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
             const onlyConfirmed = req.query.onlyConfirmed;
             const confirmThreshold =
                 req.query.confirmThreshold &&
                 parseInt(req.query.confirmThreshold, 10);
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
             let assetType;
+            let order: "assetType" | "address";
+            if (address) {
+                order = "assetType";
+            } else {
+                order = "address";
+            }
+
             try {
                 if (assetTypeString) {
                     assetType = new H160(assetTypeString);
                 }
                 const aggsInst = await UTXOModel.getAggsUTXO({
+                    order,
                     address,
                     assetType,
                     shardId,
-                    page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey,
                     onlyConfirmed,
                     confirmThreshold
                 });
-                const utxo = aggsInst.map(inst => inst.get({ plain: true }));
-                res.json(utxo);
+                const aggs = aggsInst.map(inst => inst.get({ plain: true }));
+
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: aggs,
+                        getEvaluatedKey: row =>
+                            UTXOModel.createAggsUTXOEvaluatedKey(row, order),
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }
@@ -439,6 +500,11 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: true
      *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: snapshot, return null if the block does not exist yet
@@ -449,21 +515,32 @@ export function handle(context: IndexerContext, router: Router) {
      *               type: integer
      *             blockHash:
      *               type: string
-     *             snapshot:
+     *             data:
      *               type: array
      *               items:
      *                 $ref: '#/definitions/UTXO'
+     *             hasNextPage:
+     *               type: string
+     *             hasPreviousPage:
+     *               type: string
+     *             firstEvaluatedKey:
+     *               type: string
+     *             lastEvaluatedKey:
+     *               type: string
      */
     router.get(
         "/snapshot",
+        parseEvaluatedKey,
         validate({
             query: {
-                ...snapshotSchema
+                ...snapshotSchema,
+                ...snapshotPaginationSchema
             }
         }),
         async (req, res, next) => {
             const assetTypeString = req.query.assetType;
             const date = req.query.date;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
             try {
                 const assetType = new H160(assetTypeString);
                 const snapshotTime = moment(date);
@@ -479,14 +556,15 @@ export function handle(context: IndexerContext, router: Router) {
                     return;
                 }
 
-                const snapshot = await UTXOModel.getSnapshot(
+                const snapshot = await UTXOModel.getSnapshot({
                     assetType,
-                    block.get("number")
-                );
+                    blockNumber: block.get("number"),
+                    lastEvaluatedKey
+                });
                 res.json({
                     blockHash: block.get("hash"),
                     blockNumber: block.get("number"),
-                    snapshot
+                    ...snapshot
                 });
             } catch (e) {
                 next(e);

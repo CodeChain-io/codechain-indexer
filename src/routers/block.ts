@@ -4,9 +4,15 @@ import * as _ from "lodash";
 import { IndexerContext } from "../context";
 import * as BlockModel from "../models/logic/block";
 import * as TransactionModel from "../models/logic/transaction";
-import { syncIfNeeded } from "../models/logic/utils/middleware";
 import {
+    parseEvaluatedKey,
+    syncIfNeeded
+} from "../models/logic/utils/middleware";
+import { createPaginationResult } from "./pagination";
+import {
+    blockPaginationSchema,
     blockSchema,
+    blockTxPaginationSchema,
     paginationSchema,
     syncSchema,
     validate
@@ -194,16 +200,21 @@ export function handle(context: IndexerContext, router: Router) {
      *         required: true
      *         in: path
      *         type: string
-     *       - name: page
-     *         description: page for the pagination
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: Transactions
@@ -214,37 +225,45 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/block/:hashOrNumber/tx",
+        parseEvaluatedKey,
         validate({
+            // FIXME: Throw an error if hashOrNumber is not hash or number
             query: {
-                ...paginationSchema
+                ...paginationSchema,
+                ...blockTxPaginationSchema
             }
         }),
         async (req, res, next) => {
             const hashOrNumber = req.params.hashOrNumber;
-            const page = (req.query.page && parseInt(req.query.page, 10)) || 1;
             const itemsPerPage =
                 (req.query.itemsPerPage &&
                     parseInt(req.query.itemsPerPage, 10)) ||
                 15;
-            let hashValue;
-            let numberValue;
-            // FIXME: Throw an error if hashOrNumber is not hash or number
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+
             try {
-                hashValue = new H256(hashOrNumber);
-            } catch (e) {
-                if (!isNaN(hashOrNumber)) {
-                    numberValue = parseInt(hashOrNumber, 10);
-                }
-            }
-            try {
-                const txs = await TransactionModel.getTransactions({
-                    page,
-                    itemsPerPage,
-                    ...(hashValue
-                        ? { blockHash: hashValue }
-                        : { blockNumber: numberValue })
+                const block =
+                    H256.check(hashOrNumber) &&
+                    (await BlockModel.getByHash(new H256(hashOrNumber)));
+                const txs = await TransactionModel.getTransactionsOfBlock({
+                    itemsPerPage: itemsPerPage + 1,
+                    blockNumber: block ? block.get().number : hashOrNumber,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
                 });
-                res.json(txs.map(tx => tx.get({ plain: true })));
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: txs.map(tx => tx.get({ plain: true })),
+                        getEvaluatedKey:
+                            TransactionModel.createBlockTxEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }
@@ -306,11 +325,16 @@ export function handle(context: IndexerContext, router: Router) {
      *         in: query
      *         required: false
      *         type: string
-     *       - name: page
-     *         description: page for the pagination (default 1)
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
      *         in: query
      *         required: false
-     *         type: number
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
@@ -331,29 +355,43 @@ export function handle(context: IndexerContext, router: Router) {
      */
     router.get(
         "/block",
+        parseEvaluatedKey,
         validate({
             query: {
                 ...blockSchema,
-                ...paginationSchema
+                ...paginationSchema,
+                ...blockPaginationSchema
             }
         }),
         syncIfNeeded(context),
         async (req, res, next) => {
             const address = req.query.address;
-            const page = req.query.page && parseInt(req.query.page, 10);
             const itemsPerPage =
-                req.query.itemsPerPage && parseInt(req.query.itemsPerPage, 10);
-
+                (req.query.itemsPerPage &&
+                    parseInt(req.query.itemsPerPage, 10)) ||
+                15;
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
             try {
-                const blockInsts = await BlockModel.getBlocks({
+                const blocks = await BlockModel.getBlocks({
                     address,
-                    page,
-                    itemsPerPage
-                });
-                const blocks = blockInsts.map(blockInst =>
-                    blockInst.get({ plain: true })
+                    itemsPerPage: itemsPerPage + 1,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
+                }).then(instances =>
+                    instances.map(i => i.get({ plain: true }))
                 );
-                res.json(blocks);
+                res.json(
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: blocks,
+                        getEvaluatedKey: BlockModel.createBlockEvaluatedKey,
+                        itemsPerPage
+                    })
+                );
             } catch (e) {
                 next(e);
             }

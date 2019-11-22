@@ -90,19 +90,13 @@ describe("account-api", function() {
     it("api /account with args", async function() {
         const itemsPerPage = 2;
         await request(app)
-            .get(`/api/account?page=1&itemsPerPage=${itemsPerPage}`)
+            .get(`/api/account?itemsPerPage=${itemsPerPage}`)
             .expect(200)
             .expect(res =>
                 expect(Object.keys(JSON.parse(res.text)).length).equal(
                     itemsPerPage
                 )
             );
-    });
-
-    it("api /account/count", async function() {
-        await request(app)
-            .get("/api/account/count")
-            .expect(200);
     });
 
     it("api /account/{address}", async function() {

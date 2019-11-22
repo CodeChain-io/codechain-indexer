@@ -2,7 +2,10 @@ import { Router } from "express";
 import { IndexerContext } from "../context";
 import * as AccountModel from "../models/logic/account";
 import * as CCCChangeModel from "../models/logic/cccChange";
+import { parseEvaluatedKey } from "../models/logic/utils/middleware";
+import { createPaginationResult } from "./pagination";
 import {
+    accountBalanceHistoryPaginationSchema,
     paginationSchema,
     platformAddressSchema,
     reasonFilterSchema,
@@ -72,27 +75,6 @@ export function handle(_C: IndexerContext, router: Router) {
 
     /**
      * @swagger
-     * /account/count:
-     *   get:
-     *     summary: Returns total counts of the accounts
-     *     tags: [Account]
-     *     responses:
-     *       200:
-     *         description: account
-     *         schema:
-     *           type: number
-     *           example: 12
-     */
-    router.get("/account/count", async (_, res, next) => {
-        try {
-            const count = await AccountModel.getCountOfAccounts();
-            res.json(count);
-        } catch (e) {
-            next(e);
-        }
-    });
-    /**
-     * @swagger
      * /account/{address}:
      *   get:
      *     summary: Returns account of the specific address
@@ -142,16 +124,21 @@ export function handle(_C: IndexerContext, router: Router) {
      *         required: true
      *         in: path
      *         type: string
-     *       - name: page
-     *         description: page for the pagination (default 1)
-     *         in: query
-     *         required: false
-     *         type: number
      *       - name: itemsPerPage
      *         description: items per page for the pagination (default 15)
      *         in: query
      *         required: false
      *         type: number
+     *       - name: firstEvaluatedKey
+     *         description: the evaulated key of the first item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
+     *       - name: lastEvaluatedKey
+     *         description: the evaulated key of the last item in the previous page. It will be used for the pagination
+     *         in: query
+     *         required: false
+     *         type: string
      *     responses:
      *       200:
      *         description: account
@@ -176,51 +163,51 @@ export function handle(_C: IndexerContext, router: Router) {
      */
     router.get(
         "/account/:address/balance-history",
+        parseEvaluatedKey,
         validate({
             params: { address: platformAddressSchema },
-            query: { ...reasonFilterSchema, ...paginationSchema }
+            query: {
+                ...reasonFilterSchema,
+                ...paginationSchema,
+                ...accountBalanceHistoryPaginationSchema
+            }
         }),
         async (req, res, next) => {
             const reasonFilter = req.query.reasonFilter;
             const address = req.params.address;
-            const page = req.query.page ? parseInt(req.query.page, 10) : 1;
             const itemsPerPage = req.query.itemsPerPage
                 ? parseInt(req.query.itemsPerPage, 10)
                 : 15;
+
+            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            const firstEvaluatedKey = req.query.firstEvaluatedKey;
+
             try {
                 const accounts = await CCCChangeModel.getByAddress(address, {
-                    page,
-                    itemsPerPage,
+                    itemsPerPage: itemsPerPage + 1,
                     reasonFilter:
                         typeof reasonFilter === "string"
                             ? reasonFilter.split(",")
-                            : undefined
+                            : undefined,
+                    firstEvaluatedKey,
+                    lastEvaluatedKey
                 });
-                res.json(accounts.map(account => account.get({ plain: true })));
-            } catch (e) {
-                next(e);
-            }
-        }
-    );
 
-    router.get(
-        "/account/:address/balance-history/count",
-        validate({
-            params: { address: platformAddressSchema },
-            query: { ...reasonFilterSchema }
-        }),
-        async (req, res, next) => {
-            try {
-                const reasonFilter = req.query.reasonFilter;
-                const address = req.params.address;
                 res.json(
-                    await CCCChangeModel.getCountByAddress(address, {
-                        reasonFilter:
-                            typeof reasonFilter === "string"
-                                ? reasonFilter.split(",")
-                                : undefined
+                    createPaginationResult({
+                        query: {
+                            firstEvaluatedKey,
+                            lastEvaluatedKey
+                        },
+                        rows: accounts.map(account =>
+                            account.get({ plain: true })
+                        ),
+                        getEvaluatedKey:
+                            CCCChangeModel.createCCCChangesEvaluatedKey,
+                        itemsPerPage
                     })
                 );
+                res.json();
             } catch (e) {
                 next(e);
             }

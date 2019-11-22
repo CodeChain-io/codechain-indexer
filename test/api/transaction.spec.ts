@@ -4,12 +4,12 @@ import * as express from "express";
 import "mocha";
 import * as sinon from "sinon";
 import * as request from "supertest";
+import * as _ from "lodash";
 
 import { AssetAddress, H256 } from "codechain-primitives/lib";
 import { MintAsset } from "codechain-sdk/lib/core/classes";
 
 import { IndexerContext } from "../../src/context";
-import { getNumberOfTransactions } from "../../src/models/logic/transaction";
 import { createServer } from "../../src/server";
 import * as Helper from "../helper";
 
@@ -19,7 +19,6 @@ describe("transaction-api", function() {
     let mintRubyTx: MintAsset;
     let mintEmeraldTx: MintAsset;
     let transferTxHash: H256;
-    let initialTxCount: number;
 
     let context: IndexerContext;
     let app: express.Express;
@@ -29,7 +28,6 @@ describe("transaction-api", function() {
         await Helper.runExample("import-test-account");
         await Helper.worker.sync();
 
-        initialTxCount = await getNumberOfTransactions({});
         const shardId = 0;
         aliceAddress = await Helper.sdk.key.createAssetAddress();
         bobAddress = "tcaqyqckq0zgdxgpck6tjdg4qmp52p2vx3qaexqnegylk";
@@ -142,36 +140,105 @@ describe("transaction-api", function() {
         getBestBlockNumberStub.restore();
     });
 
-    it("api /tx with args", async function() {
+    it("api /tx with assetType filter", async function() {
         const assetType = mintRubyTx.getMintedAsset().assetType;
-        const tracker = mintRubyTx.tracker().value;
         await request(app)
-            .get(
-                `/api/tx?assetType=${assetType}&tracker=${tracker}&type=mintAsset`
-            )
+            .get(`/api/tx?assetType=${assetType}`)
             .expect(200)
-            .expect(res =>
-                expect(Object.keys(JSON.parse(res.text)).length).equal(1)
-            );
+            .expect(res => {
+                const txs = JSON.parse(res.text).data;
+                expect(txs.length).equal(2);
+
+                const mintTx: any = _.filter(txs, tx => tx.mintAsset)[0];
+                expect(mintTx.mintAsset.assetType).equals(assetType.toString());
+
+                const transferTx: any = _.filter(
+                    txs,
+                    tx => tx.transferAsset
+                )[0];
+                expect(transferTx.transferAsset.inputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[1].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].assetType).equals(
+                    assetType.toString()
+                );
+            });
     });
 
-    it("api /tx/count", async function() {
+    it("api /tx with address filter", async function() {
         await request(app)
-            .get("/api/tx/count")
+            .get(`/api/tx?address=${aliceAddress.value}`)
             .expect(200)
-            .expect(res => expect(Number(res.text)).equal(initialTxCount + 2));
+            .expect(res => {
+                expect(Object.keys(JSON.parse(res.text).data).length).gte(2);
+                const txs = JSON.parse(res.text).data;
+
+                expect(txs.length).equals(2);
+
+                const mintTx: any = _.filter(txs, tx => tx.mintAsset)[0];
+                expect(mintTx.mintAsset.recipient).equals(
+                    aliceAddress.toString()
+                );
+
+                const transferTx: any = _.filter(
+                    txs,
+                    tx => tx.transferAsset
+                )[0];
+                expect(transferTx.transferAsset.inputs[0].owner).equals(
+                    aliceAddress.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].owner).equals(
+                    aliceAddress.toString()
+                );
+            });
     });
 
-    it("api /tx/count with args", async function() {
+    it("api /tx with both assetType and address filters", async function() {
         const assetType = mintRubyTx.getMintedAsset().assetType;
-        const tracker = mintRubyTx.tracker().value;
-
         await request(app)
-            .get(
-                `/api/tx/count?assetType=${assetType}&tracker=${tracker}&type=mintAsset`
-            )
+            .get(`/api/tx?address=${aliceAddress.value}&assetType=${assetType}`)
             .expect(200)
-            .expect(res => expect(res.text).equal("1"));
+            .expect(res => {
+                expect(Object.keys(JSON.parse(res.text).data).length).gte(2);
+                const txs = JSON.parse(res.text).data;
+
+                expect(txs.length).equals(2);
+
+                const mintTx: any = _.filter(txs, tx => tx.mintAsset)[0];
+                expect(mintTx.mintAsset.recipient).equals(
+                    aliceAddress.toString()
+                );
+                expect(mintTx.mintAsset.assetType).equals(assetType.toString());
+
+                const transferTx: any = _.filter(
+                    txs,
+                    tx => tx.transferAsset
+                )[0];
+                expect(transferTx.transferAsset.inputs[0].owner).equals(
+                    aliceAddress.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].owner).equals(
+                    aliceAddress.toString()
+                );
+                expect(transferTx.transferAsset.inputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[0].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[1].assetType).equals(
+                    assetType.toString()
+                );
+                expect(transferTx.transferAsset.outputs[2].assetType).equals(
+                    assetType.toString()
+                );
+            });
     });
 
     it("api /tx/{hash}", async function() {
@@ -181,36 +248,33 @@ describe("transaction-api", function() {
     });
 
     it("api /pending-tx", async function() {
+        const assetType = mintEmeraldTx.getMintedAsset().assetType;
         await request(app)
             .get(`/api/pending-tx`)
-            .expect(200);
+            .expect(200)
+            .expect(res => {
+                const txs = JSON.parse(res.text).data;
+                expect(txs.length).equals(1);
+
+                const mintAsset = txs[0].mintAsset;
+                expect(mintAsset.recipient).equals(aliceAddress.toString());
+                expect(mintAsset.assetType).equals(assetType.toString());
+            });
     });
 
-    it.skip("api /pending-tx with args", async function() {
-        const address = aliceAddress.value;
+    it("api /pending-tx with args", async function() {
+        const address = Helper.ACCOUNT_ADDRESS;
         const assetType = mintEmeraldTx.getMintedAsset().assetType;
         await request(app)
-            .get(
-                `/api/pending-tx?address=${address}&assetType=${assetType}&type=mintAsset`
-            )
-            .expect(200);
-    });
-
-    it("api /pending-tx/count", async function() {
-        await request(app)
-            .get(`/api/pending-tx/count`)
+            .get(`/api/pending-tx?address=${address}`)
             .expect(200)
-            .expect(res => expect(res.text).equal("1"));
-    });
+            .expect(res => {
+                const txs = JSON.parse(res.text).data;
+                expect(txs.length).equals(1);
 
-    it.skip("api /pending-tx/count with args", async function() {
-        const address = aliceAddress.value;
-        const assetType = mintEmeraldTx.getMintedAsset().assetType;
-        await request(app)
-            .get(
-                `/api/pending-tx/count?address=${address}&assetType=${assetType}&type=mintAsset`
-            )
-            .expect(200)
-            .expect(res => expect(res.text).equal("1"));
+                const mintAsset = txs[0].mintAsset;
+                expect(mintAsset.recipient).equals(aliceAddress.toString());
+                expect(mintAsset.assetType).equals(assetType.toString());
+            });
     });
 });

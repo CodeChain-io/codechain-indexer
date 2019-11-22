@@ -28,7 +28,6 @@ describe("pending-tx", function() {
 
             const pendingTransactionsInst = await TxModel.getPendingTransactions(
                 {
-                    page: 1,
                     itemsPerPage: 15
                 }
             );
@@ -50,7 +49,6 @@ describe("pending-tx", function() {
         await Helper.worker.sync();
 
         const newPendingTransactions = await TxModel.getPendingTransactions({
-            page: 1,
             itemsPerPage: 15
         });
         expect(newPendingTransactions.length).equal(0);

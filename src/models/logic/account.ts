@@ -61,12 +61,3 @@ export async function getAccounts(params: {
         throw Exception.DBError();
     }
 }
-
-export async function getCountOfAccounts() {
-    try {
-        return await models.Account.count();
-    } catch (err) {
-        console.error(err);
-        throw Exception.DBError();
-    }
-}
