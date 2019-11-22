@@ -90,7 +90,9 @@ module.exports = {
         `);
 
         await queryInterface.sequelize.query(`
-            INSERT INTO "AggsUTXOs"("assetType", "address", "totalAssetQuantity", "utxoQuantity", "createdAt", "updatedAt") SELECT "assetType", "address", SUM("quantity") as "totalAssetQuantity", COUNT(*) as "utxoQuantity", NOW(), NOW() FROM "UTXOs" GROUP BY "assetType", "address"
+            INSERT INTO "AggsUTXOs"("assetType", "address", "totalAssetQuantity", "utxoQuantity", "createdAt", "updatedAt")
+                SELECT "assetType", "address", SUM("quantity") as "totalAssetQuantity", COUNT(*) as "utxoQuantity", NOW(), NOW()
+                FROM "UTXOs" WHERE "usedBlockNumber" IS NULL GROUP BY "assetType", "address"
         `);
     },
 
