@@ -58,12 +58,14 @@ const confirmThreshold = Joi.number()
     .integer();
 const includePending = Joi.boolean();
 
+const max32bit = 2147483647;
+
 export const paginationSchema = {
     itemsPerPage: Joi.number()
         .positive()
         .integer()
         .min(1)
-        .max(100)
+        .max(max32bit - 1)
 };
 
 export const utxoPaginationSchema = {
