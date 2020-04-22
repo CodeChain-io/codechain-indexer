@@ -456,7 +456,8 @@ export async function getSnapshot(params: {
             fromTransactionIndex,
             fromTransactionOutputIndex
         ] = lastEvaluatedKey || [Number.MAX_SAFE_INTEGER, 0, 0];
-        const itemsPerPage = 100;
+        const max32bit = 2147483647;
+        const itemsPerPage = max32bit - 10;
 
         const rows = await models.sequelize.query(
             `SELECT SUM("UTXO"."quantity") AS "totalAssetQuantity", "UTXO"."address", "UTXO"."assetType",
