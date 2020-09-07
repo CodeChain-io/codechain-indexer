@@ -44,6 +44,11 @@ yarn install
 
 #### Create the database and user on the PostgreSQL
 
+##### Update configuration
+
+Update ./create_user_and_db.sql and config/* files before creating database schema.
+If you want to create a production datatabase, please create config/production.json by copying config/dev.json
+
 ##### Mac
 
 ```
@@ -54,7 +59,10 @@ brew services start postgresql
 # Create users and databases
 psql postgres -f create_user_and_db.sql
 
-# Create the schema of the database
+# Create tables for production
+NODE_ENV=production yarn migrate
+
+# Create tables for development
 yarn run migrate
 ```
 
@@ -67,7 +75,10 @@ sudo apt install postgresql postgresql-contrib
 # Create users and databases
 sudo -u postgres psql -f create_user_and_db.sql
 
-# Create tables
+# Create tables for production
+NODE_ENV=production yarn migrate
+
+# Create tables for development
 yarn migrate
 ```
 
