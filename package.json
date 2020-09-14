@@ -31,7 +31,7 @@
     "pg-hstore": "^2.3.2",
     "request": "^2.88.0",
     "rlp": "^2.2.2",
-    "sequelize": "^4.42.0",
+    "sequelize": "^5.15.1",
     "sharp": "^0.23.0",
     "sinon": "^7.2.7",
     "ts-node": "^8.3.0",
