@@ -19,14 +19,16 @@ jobs:
         - yarn run lint
         - NODE_ENV=test yarn migrate
         - yarn run test
-    - name: Check schema migration is reversable
+    - name: Check schema migration
       before_install:
+        - apt install pgformatter
         - npm install -g yarn
         - yarn install
       before_script:
         - psql postgres -f create_user_and_db.sql
       script:
         - ./check-schema-migration-reversable.sh
+        - ./check-schema-up-to-date.sh diff-only
 services:
   - docker
   - postgresql
