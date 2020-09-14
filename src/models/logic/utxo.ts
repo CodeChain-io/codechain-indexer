@@ -507,8 +507,7 @@ export async function getSnapshot(params: {
                     transaction,
                     type: sequelize.QueryTypes.SELECT
                 }
-            )).count ===
-            itemsPerPage + 1;
+            )).count === String(itemsPerPage + 1);
 
         // The SQL query is copied from the query above.
         const lastRow = await models.sequelize.query(

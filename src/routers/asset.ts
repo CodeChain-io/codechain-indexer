@@ -540,7 +540,10 @@ export function handle(context: IndexerContext, router: Router) {
         async (req, res, next) => {
             const assetTypeString = req.query.assetType;
             const date = req.query.date;
-            const lastEvaluatedKey = req.query.lastEvaluatedKey;
+            let lastEvaluatedKey = req.query.lastEvaluatedKey;
+            if (typeof lastEvaluatedKey === "string") {
+                lastEvaluatedKey = JSON.parse(lastEvaluatedKey);
+            }
             try {
                 const assetType = new H160(assetTypeString);
                 const snapshotTime = moment(date);
