@@ -6,7 +6,6 @@ import { ChangeAssetSchemeActionJSON } from "codechain-sdk/lib/core/transaction/
 import { Transaction } from "sequelize";
 import models from "..";
 import { ChangeAssetSchemeInstance } from "../changeAssetScheme";
-import * as AssetImageModel from "./assetimage";
 import { createAssetTypeLog } from "./assetTypeLog";
 import { strip0xPrefix } from "./utils/format";
 
@@ -44,20 +43,6 @@ export async function createChangeAssetScheme(
         },
         { transaction: options.transaction }
     );
-    let metadataObj;
-    try {
-        metadataObj = JSON.parse(metadata);
-    } catch (e) {
-        // The metadata can be non-JSON.
-    }
-    if (metadataObj && metadataObj.icon_url) {
-        // NOTE: No await here because the URL might be unreachable or slow
-        AssetImageModel.createAssetImage(
-            transactionHash,
-            strip0xPrefix(assetType),
-            metadataObj.icon_url
-        );
-    }
     await createAssetTypeLog(transaction, assetType, options);
     return inst;
 }
