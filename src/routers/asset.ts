@@ -1,9 +1,9 @@
 import { H160 } from "codechain-sdk/lib/core/classes";
 import { Router } from "express";
+import * as fs from "fs";
 import * as moment from "moment";
 import { IndexerContext } from "../context";
 import * as Exception from "../exception";
-import * as AssetImageModel from "../models/logic/assetimage";
 import * as AssetSchemeModel from "../models/logic/assetscheme";
 import * as BlockModel from "../models/logic/block";
 import {
@@ -252,18 +252,14 @@ export function handle(context: IndexerContext, router: Router) {
                 assetType: assetTypeSchema.required()
             }
         }),
-        async (req, res, next) => {
-            const assetTypeString = req.params.assetType;
+        async (_, res, next) => {
             try {
-                const assetType = new H160(assetTypeString);
-                const assetImageInst = await AssetImageModel.getByAssetType(
-                    assetType
-                );
-                if (!assetImageInst) {
+                // use this if the following code doesn't work
+                if (false) {
                     res.status(404).send("Not found");
                     return;
                 }
-                const { image } = assetImageInst.get();
+                const image = fs.readFileSync("./resources/wCCC.png");
                 res.writeHead(200, {
                     "Content-Type": "image/png",
                     "Content-Length": image.byteLength
