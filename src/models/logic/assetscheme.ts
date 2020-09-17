@@ -5,7 +5,6 @@ import * as Exception from "../../exception";
 import { AssetSchemeInstance } from "../assetscheme";
 import models from "../index";
 import { TransactionInstance } from "../transaction";
-import * as AssetImageModel from "./assetimage";
 import { strip0xPrefix } from "./utils/format";
 
 export async function createAssetScheme(
@@ -44,21 +43,6 @@ export async function createAssetScheme(
             },
             { transaction: options.transaction }
         );
-
-        let metadataObj;
-        try {
-            metadataObj = JSON.parse(assetScheme.metadata);
-        } catch (e) {
-            //
-        }
-        if (metadataObj && metadataObj.icon_url) {
-            // NOTE: No await here because the URL might be unreachable or slow
-            AssetImageModel.createAssetImage(
-                transactionHash,
-                assetType,
-                metadataObj.icon_url
-            );
-        }
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {
             const duplicateFields = (err as any).fields;
@@ -103,7 +87,6 @@ export async function createAssetSchemeOfWCCC(
             },
             { transaction: options.transaction }
         );
-        await AssetImageModel.createAssetImageOfWCCC(transactionHash, options);
         return assetSchemeInstance;
     } catch (err) {
         if (err instanceof Sequelize.UniqueConstraintError) {

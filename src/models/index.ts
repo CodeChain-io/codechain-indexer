@@ -10,7 +10,6 @@ import {
     AssetAddressLogAttribute,
     AssetAddressLogInstance
 } from "./assetAddressLog";
-import { AssetImageAttribute, AssetImageInstance } from "./assetimage";
 import { AssetSchemeAttribute, AssetSchemeInstance } from "./assetscheme";
 import {
     AssetTransferOutputAttribute,
@@ -127,7 +126,6 @@ interface DB {
         AssetTransferOutputInstance,
         AssetTransferOutputAttribute
     >;
-    AssetImage: Sequelize.Model<AssetImageInstance, AssetImageAttribute>;
     Log: Sequelize.Model<LogInstance, LogAttribute>;
     AddressLog: Sequelize.Model<AddressLogInstance, AddressLogAttribute>;
     AssetAddressLog: Sequelize.Model<
