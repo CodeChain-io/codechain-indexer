@@ -3,8 +3,8 @@
   "publicAddress": "localhost",
   "httpPort": 9001,
   "codechain": {
-    "host": "http://localhost:8080",
-    "networkId": "tc"
+    "host": "http://localhost:7070",
+    "networkId": "bm"
   },
   "sequelize": {
     "dialect": "postgres",
